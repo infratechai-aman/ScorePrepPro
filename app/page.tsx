@@ -10,6 +10,7 @@ import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft } fr
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -367,9 +368,15 @@ export default function Home() {
 
               <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "40px", minHeight: "800px", color: "#1e293b" }} className="rounded-2xl shadow-xl space-y-8">
                 <div className="prose prose-slate max-w-none">
-                  <ReactMarkdown rehypePlugins={[rehypeRaw]} components={{
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={{
                     h1: ({ node, ...props }) => <h1 style={{ borderBottom: "2px solid #0f172a", textAlign: "center", marginBottom: "20px", paddingBottom: "10px", textTransform: "uppercase" }} className="text-3xl font-bold" {...props} />,
                     h2: ({ node, ...props }) => <h2 style={{ backgroundColor: "#f8fafc", borderLeft: "4px solid #1e293b", padding: "10px", marginTop: "30px", marginBottom: "15px", textTransform: "uppercase" }} className="text-xl font-bold" {...props} />,
+                    table: ({ node, ...props }) => <div className="overflow-x-auto my-6"><table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #e2e8f0" }} {...props} /></div>,
+                    thead: ({ node, ...props }) => <thead style={{ backgroundColor: "#f8fafc" }} {...props} />,
+                    tbody: ({ node, ...props }) => <tbody {...props} />,
+                    tr: ({ node, ...props }) => <tr style={{ borderBottom: "1px solid #e2e8f0" }} {...props} />,
+                    th: ({ node, ...props }) => <th style={{ padding: "12px", textAlign: "left", fontWeight: "600", color: "#1e293b", borderRight: "1px solid #e2e8f0" }} {...props} />,
+                    td: ({ node, ...props }) => <td style={{ padding: "12px", color: "#475569", borderRight: "1px solid #e2e8f0" }} {...props} />,
                     p: ({ node, ...props }) => <p style={{ marginBottom: "16px", lineHeight: "1.6", textAlign: "justify" }} {...props} />,
                     hr: ({ node, ...props }) => <hr style={{ margin: "30px 0", borderTop: "1px dashed #cbd5e1" }} {...props} />,
                     ul: ({ node, ...props }) => <ul style={{ listStyleType: "disc", paddingLeft: "20px", marginBottom: "16px" }} {...props} />,

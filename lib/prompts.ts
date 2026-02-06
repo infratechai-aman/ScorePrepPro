@@ -118,7 +118,12 @@ export function constructPrompt(
       - **SPACING**: Separated every question by TWO empty lines.
       - Options for MCQs must be on new lines (a) ... (b) ...
       - **Diagrams**: Use "> [Insert Diagram: description]" blockquote style.
-      - **Match Pairs**: Use a Markdown Table for Column A | Column B.
+      - **Match Pairs**: ALWAYS use a valid Markdown Table with alignment.
+        Example:
+        | Column A | Column B |
+        | :--- | :--- |
+        | 1. Item | A. Match |
+        | 2. Item | B. Match |
     - **Styling**:
       - Use Bold for numbers: '**1.**'.
       - Marks at the end: '**[1 Mark]**'.
