@@ -51,6 +51,56 @@ export const SYLLABUS_DB: Record<string, any> = {
                 "Money and Credit",
                 "Globalization and the Indian Economy"
             ]
+        },
+        "9": {
+            "Mathematics": [
+                "Number Systems",
+                "Polynomials",
+                "Coordinate Geometry",
+                "Linear Equations in Two Variables",
+                "Introduction to Euclid's Geometry",
+                "Lines and Angles",
+                "Triangles",
+                "Quadrilaterals",
+                "Circles",
+                "Heron's Formula",
+                "Surface Areas and Volumes",
+                "Statistics"
+            ],
+            "Science": [
+                "Matter in Our Surroundings",
+                "Is Matter Around Us Pure",
+                "Atoms and Molecules",
+                "Structure of the Atom",
+                "The Fundamental Unit of Life",
+                "Tissues",
+                "Motion",
+                "Force and Laws of Motion",
+                "Gravitation",
+                "Work and Energy",
+                "Sound",
+                "Improvement in Food Resources"
+            ],
+            "Social Science": [
+                "The French Revolution",
+                "Socialism in Europe and the Russian Revolution",
+                "Nazism and the Rise of Hitler",
+                "India – Size and Location",
+                "Physical Features of India",
+                "Drainage",
+                "Climate",
+                "Natural Vegetation and Wildlife",
+                "Population",
+                "What is Democracy? Why Democracy?",
+                "Constitutional Design",
+                "Electoral Politics",
+                "Working of Institutions",
+                "Democratic Rights",
+                "The Story of Village Palampur",
+                "People as Resource",
+                "Poverty as a Challenge",
+                "Food Security in India"
+            ]
         }
     },
     "maharashtra": {
@@ -122,6 +172,81 @@ export const SYLLABUS_DB: Record<string, any> = {
                 "Human Settlements",
                 "Economy and Occupations",
                 "Tourism, Transport and Communication"
+            ]
+        },
+        "9": {
+            "Mathematics Part-I (Algebra)": [
+                "Sets",
+                "Real Numbers",
+                "Polynomials",
+                "Ratio and Proportion",
+                "Linear Equations in Two Variables",
+                "Financial Planning",
+                "Statistics"
+            ],
+            "Mathematics Part-II (Geometry)": [
+                "Basic Concepts in Geometry",
+                "Parallel Lines",
+                "Triangles",
+                "Construction of Triangles",
+                "Quadrilaterals",
+                "Circle",
+                "Coordinate Geometry",
+                "Trigonometry",
+                "Surface Area and Volume"
+            ],
+            "Science and Technology Part-1": [
+                "Laws of Motion",
+                "Work and Energy",
+                "Current Electricity",
+                "Measurement of Matter",
+                "Acids, Bases and Salts",
+                "Reflection of Light",
+                "Study of Sound",
+                "Carbon: An Important Element",
+                "Substances in Common Use"
+            ],
+            "Science and Technology Part-2": [
+                "Classification of Plants",
+                "Energy Flow in an Ecosystem",
+                "Useful and Harmful Microbes",
+                "Environmental Management",
+                "Life Processes in Living Organisms",
+                "Heredity and Variation",
+                "Introduction to Biotechnology",
+                "Observing Space: Telescopes"
+            ],
+            "History and Political Science": [
+                "Sources of History",
+                "India: Events after 1960",
+                "India's Internal Challenges",
+                "Economic Development",
+                "Education",
+                "Empowerment of Women and other Weaker Sections",
+                "Science and Technology",
+                "Industry and Trade",
+                "Changing Life: 1",
+                "Changing Life: 2",
+                "Post-World War Political Developments",
+                "India's Foreign Policy",
+                "India's Defence System",
+                "The United Nations",
+                "India and Other Nations",
+                "International Problems"
+            ],
+            "Geography": [
+                "Distributional Maps",
+                "Endogenetic Movements",
+                "Exogenetic Movements Part-1",
+                "Exogenetic Movements Part-2",
+                "Precipitation",
+                "Properties of Sea Water",
+                "International Date Line",
+                "Introduction to Economics",
+                "Trade",
+                "Urbanisation",
+                "Transport and Communication",
+                "Tourism"
             ]
         }
     }

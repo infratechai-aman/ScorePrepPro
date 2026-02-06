@@ -17,6 +17,7 @@ export async function POST(req: Request) {
         const systemPrompt = constructPrompt(board, grade, subject, chapters, { difficulty, chapterWeights });
 
         if (!systemPrompt) {
+            console.error("System prompt generation failed for:", { board, grade, subject });
             return NextResponse.json(
                 { error: "Invalid board/subject configuration" },
                 { status: 400 }
