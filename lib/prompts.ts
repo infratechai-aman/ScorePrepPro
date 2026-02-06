@@ -5,8 +5,7 @@ export type DifficultyLevel = "easy" | "moderate" | "hard" | "replica" | "challe
 
 interface GenerateOptions {
   difficulty?: DifficultyLevel;
-  // Answer key logic is handled separately now, but keeping prop if needed for context
-  includeAnswers?: boolean;
+  chapterWeights?: Record<string, number>;
 }
 
 export function constructPrompt(
@@ -68,6 +67,17 @@ export function constructPrompt(
       `;
   }
 
+  // Weightage Logic
+  let weightageInstruction = "";
+  if (options.chapterWeights) {
+    weightageInstruction = "STRICT CHAPTER WEIGHTAGE (Approximate Marks Distribution):\n";
+    Object.entries(options.chapterWeights).forEach(([chap, weight]) => {
+      if (weight > 0) {
+        weightageInstruction += `- ${chap}: ${weight}% of total marks\n`;
+      }
+    });
+  }
+
   return `
     You are an expert ${board.toUpperCase()} Board Paper Setter for Class ${grade}.
     
@@ -83,6 +93,12 @@ export function constructPrompt(
     3. **TEXTBOOK FIRST**: numericals and questions must resemble standard textbook exercises.
     4. **TONE ENFORCEMENT**: ${toneInstruction}
     5. **DIFFICULTY**: ${difficultyInstruction}
+    6. **WEIGHTAGE**: ${weightageInstruction}
+
+    === MANDATORY INCLUSIONS (Crucial) ===
+    - **DIAGRAM QUESTION**: You MUST include at least ONE question that asks students to "Draw a diagram" OR "Observe the diagram" (provide a placeholder description like [Insert Diagram of...]).
+    - **MATCH THE FOLLOWING**: You MUST include at least ONE "Match the Following" question set (e.g., Column A vs Column B) worth 2-4 marks.
+    - **ACTIVITY/CASE**: If applicable to the board, include a case study or activity-based question.
     
     === PAPER PATTERN ===
     ${structureText}
@@ -101,6 +117,8 @@ export function constructPrompt(
       - Use '1.', '2.', '3.' for sub-questions inside a main question.
       - **SPACING**: Separated every question by TWO empty lines.
       - Options for MCQs must be on new lines (a) ... (b) ...
+      - **Diagrams**: Use "> [Insert Diagram: description]" blockquote style.
+      - **Match Pairs**: Use a Markdown Table for Column A | Column B.
     - **Styling**:
       - Use Bold for numbers: '**1.**'.
       - Marks at the end: '**[1 Mark]**'.
