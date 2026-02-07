@@ -17,6 +17,9 @@ export function Navbar() {
                 </Link>
 
                 <div className="hidden md:flex items-center gap-6">
+                    <Link href="/" className="text-sm font-medium text-slate-600 hover:text-primary transition-colors">
+                        Home
+                    </Link>
                     <Link href="#" className="text-sm font-medium text-slate-600 hover:text-primary transition-colors">
                         How it works
                     </Link>

@@ -371,6 +371,9 @@ export default function Home() {
                   )}
                   <Button variant="outline" size="sm" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4" /> PDF</Button>
                   <Button variant="outline" size="sm" onClick={handleDownloadDOCX}><Download className="mr-2 h-4 w-4" /> Word</Button>
+                  <Button variant="ghost" size="sm" onClick={() => { setStep(1); setGeneratedPaper(""); setGeneratedSolution(""); }} className="text-slate-500 hover:text-slate-800">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Start Over
+                  </Button>
                 </div>
               </div>
 
