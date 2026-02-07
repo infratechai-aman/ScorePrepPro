@@ -96,7 +96,6 @@ export function constructPrompt(
     6. **WEIGHTAGE**: ${weightageInstruction}
 
     === MANDATORY INCLUSIONS (Crucial) ===
-    - **DIAGRAM QUESTION**: You MUST include at least ONE question that asks students to "Draw a diagram" OR "Observe the diagram" (provide a placeholder description like [Insert Diagram of...]).
     - **MATCH THE FOLLOWING**: You MUST include at least ONE "Match the Following" question set (e.g., Column A vs Column B) worth 2-4 marks.
     - **ACTIVITY/CASE**: If applicable to the board, include a case study or activity-based question.
     
@@ -117,12 +116,14 @@ export function constructPrompt(
       - Use '1.', '2.', '3.' for sub-questions inside a main question.
       - **SPACING**: Separated every question by TWO empty lines.
       - Options for MCQs must be on new lines (a) ... (b) ...
-      - **Diagrams**: Use standard Markdown image syntax with a special prefix: \`![DIAGRAM: detailed description of image](placeholder)\`.
       - **Match Pairs**: ALWAYS use a valid Markdown Table.
         Example:
         | Column A | Column B |
         | :--- | :--- |
         | 1. Item | A. Match |
+    - **Math & Geometry**:
+      - Use standard symbols: ∠ABC, 90°, π, ΔABC.
+      - **STRICTLY NO DIAGRAMS**: Do NOT generate questions that rely on a figure/graph/map. All questions must be purely text-based and solvable without visual aids.
     - **Styling**:
       - Use Bold for numbers: '**1.**'.
       - Marks at the end: '**[1 Mark each]**' (if multiple items) or '**[X Marks]**' (if single big question).
