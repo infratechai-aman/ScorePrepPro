@@ -34,7 +34,7 @@ export default function Home() {
   const [step, setStep] = useState(1);
 
   // Data State
-  const [board, setBoard] = useState("");
+  const [board, setBoard] = useState("maharashtra");
   const [grade, setGrade] = useState("10");
   const [subject, setSubject] = useState("");
   const [totalMarks, setTotalMarks] = useState("40");

@@ -83,9 +83,13 @@ export function constructPrompt(
   }
 
   // Generate Scaled Pattern Text
-  const structureText = newStructure.map((s: any) =>
-    `- **${s.section}**: ${s.type} | ${s.count} Questions | ${s.marskPerQuestion} Marks each. ${s.choice ? `(${s.choice})` : ""}`
-  ).join("\n");
+  const structureText = newStructure.map((s: any) => {
+    // If we scaled the paper (factor != 1), we MUST remove the "Choice" instruction (e.g. "Any 2 from 3")
+    // because that forces the AI to generate extra questions ("from 3"), breaking our strict count.
+    const showChoice = scalingFactor === 1 ? (s.choice ? `(${s.choice})` : "") : "";
+
+    return `- **${s.section}**: ${s.type} | ${s.count} Questions | ${s.marskPerQuestion} Marks each. ${showChoice}`;
+  }).join("\n");
 
   const diff = options.difficulty || "moderate";
 
