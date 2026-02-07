@@ -117,16 +117,16 @@ export function constructPrompt(
       - Use '1.', '2.', '3.' for sub-questions inside a main question.
       - **SPACING**: Separated every question by TWO empty lines.
       - Options for MCQs must be on new lines (a) ... (b) ...
-      - **Diagrams**: Use "> [Insert Diagram: description]" blockquote style.
-      - **Match Pairs**: ALWAYS use a valid Markdown Table with alignment.
+      - **Diagrams**: Use standard Markdown image syntax with a special prefix: \`![DIAGRAM: detailed description of image](placeholder)\`.
+      - **Match Pairs**: ALWAYS use a valid Markdown Table.
         Example:
         | Column A | Column B |
         | :--- | :--- |
         | 1. Item | A. Match |
-        | 2. Item | B. Match |
     - **Styling**:
       - Use Bold for numbers: '**1.**'.
-      - Marks at the end: '**[1 Mark]**'.
+      - Marks at the end: '**[1 Mark each]**' (if multiple items) or '**[X Marks]**' (if single big question).
+      - Section Headers should clarify marks: "Q.1 Choose the Correct Option: **[1 Mark each]**"
     - NO preamble. Just the paper.
   `;
 }

@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import { ImageIcon } from "lucide-react";
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -377,6 +378,18 @@ export default function Home() {
                     tr: ({ node, ...props }) => <tr style={{ borderBottom: "1px solid #e2e8f0" }} {...props} />,
                     th: ({ node, ...props }) => <th style={{ padding: "12px", textAlign: "left", fontWeight: "600", color: "#1e293b", borderRight: "1px solid #e2e8f0" }} {...props} />,
                     td: ({ node, ...props }) => <td style={{ padding: "12px", color: "#475569", borderRight: "1px solid #e2e8f0" }} {...props} />,
+                    img: ({ node, ...props }) => {
+                      if (props.alt?.startsWith("DIAGRAM:")) {
+                        return (
+                          <div className="my-6 p-6 bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-center">
+                            <ImageIcon className="h-10 w-10 text-slate-400 mb-2" />
+                            <p className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Diagram Required</p>
+                            <p className="text-sm text-slate-500 italic mt-1">{props.alt.replace("DIAGRAM:", "").trim()}</p>
+                          </div>
+                        );
+                      }
+                      return <img {...props} className="rounded-lg shadow-md max-w-full my-4" />;
+                    },
                     p: ({ node, ...props }) => <p style={{ marginBottom: "16px", lineHeight: "1.6", textAlign: "justify" }} {...props} />,
                     hr: ({ node, ...props }) => <hr style={{ margin: "30px 0", borderTop: "1px dashed #cbd5e1" }} {...props} />,
                     ul: ({ node, ...props }) => <ul style={{ listStyleType: "disc", paddingLeft: "20px", marginBottom: "16px" }} {...props} />,
