@@ -81,6 +81,13 @@ export function constructPrompt(
     });
   }
 
+  // Calculate Duration
+  let duration = "2 Hours";
+  if (totalMarks <= 10) duration = "30 Mins";
+  else if (totalMarks <= 20) duration = "1 Hour";
+  else if (totalMarks <= 40) duration = "2 Hours";
+  else duration = "3 Hours"; // For 80 marks
+
   return `
     You are an expert ${board.toUpperCase()} Board Paper Setter for Class ${grade}.
     
@@ -88,19 +95,21 @@ export function constructPrompt(
     
     SUBJECT: ${subject.toUpperCase()}
     CHAPTERS: ${chapters}
-    TOTAL MARKS: ${totalMarks} (Override standard pattern if necessary)
+    TOTAL MARKS: ${totalMarks} (Overrides standard pattern)
     
-    === SCALING INSTRUCTION ===
+    === SCALING INSTRUCTION (CRITICAL) ===
     The user has requested a paper of **${totalMarks} MARKS**.
     The standard blueprint below is for ${pattern.totalMarks} Marks.
-    You MUST proportionally REDUCE/ADJUST the number of questions in each section to fit EXACTLY ${totalMarks} marks.
-    - Example: If asking for 20 marks (half of 40), cut the number of questions in each section by roughly half.
-    - KEEP the Section Types (MCQ, Short Answer, etc.) intact.
-    - ENSURE the total adds up to ${totalMarks}.
+    
+    **YOU MUST ADJUST THE QUESTION COUNTS AS FOLLOWS:**
+    - **IF MARKS == 20**: CUT ALL QUESTION COUNTS BY 50%. (e.g., if blueprint says 4 questions, ask 2).
+    - **IF MARKS == 10**: CUT ALL QUESTION COUNTS BY 75%. (e.g., if blueprint says 4 questions, ask 1).
+    - **KEEP** the Section Types (MCQ, Short Answer, etc.) intact.
+    - **VERIFY** that the sum of (Questions × Marks) equals EXACTLY ${totalMarks}.
 
     === NON-NEGOTIABLE GOLDEN RULES ===
     1. **CHAPTER LOCK**: Questions must come ONLY from: "${chapters}". REJECT any concept outside this scope.
-    2. **STRICT STRUCTURE**: Follow the section structure below EXACTLY, but scaled to ${totalMarks} marks.
+    2. **STRICT STRUCTURE**: Follow the section structure below, but scaled to ${totalMarks} marks.
     3. **TEXTBOOK FIRST**: numericals and questions must resemble standard textbook exercises.
     4. **TONE ENFORCEMENT**: ${toneInstruction}
     5. **DIFFICULTY**: ${difficultyInstruction}
@@ -110,14 +119,14 @@ export function constructPrompt(
     - **MATCH THE FOLLOWING**: You MUST include at least ONE "Match the Following" question set (e.g., Column A vs Column B) worth 2-4 marks.
     - **ACTIVITY/CASE**: If applicable to the board, include a case study or activity-based question.
     
-    === PAPER PATTERN ===
+    === PAPER PATTERN (Standard ${pattern.totalMarks} Marks Pattern) ===
     ${structureText}
 
     === OUTPUT FORMAT ===
     - Use Markdown for strict formatting.
     - **PAPER HEADER**:
       - LINE 1: Board Name in H1 (e.g., # CBSE BOARD EXAM).
-      - LINE 2: Use a Blockquote for metadata: \`> **Subject:** ${subject} | **Time:** 2 Hours | **Marks:** ${pattern.totalMarks}\`.
+      - LINE 2: Use a Blockquote for metadata: \`> **Subject:** ${subject} | **Time:** ${duration} | **Marks:** ${totalMarks}\`.
       - Use '---' horizontal rules to separate sections.
     // FORCE_REFRESH_TIMESTAMP_${Date.now()}
     - **SECTION HEADERS**: Use '## SECTION A' style (Bold and large).
