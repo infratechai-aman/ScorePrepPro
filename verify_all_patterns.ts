@@ -1,4 +1,5 @@
-export const BOARD_PATTERNS: any = {
+// --- COPY OF PATTERNS ---
+const BOARD_PATTERNS: any = {
     cbse: {
         class10: {
             "Science": {
@@ -127,7 +128,6 @@ export const BOARD_PATTERNS: any = {
                     { section: "Q.3", type: "Explain Statements with Reasons", marskPerQuestion: 2, count: 2, choice: "Any 2 from 4" },
                     { section: "Q.4", type: "Read Paragraph and Answer", marskPerQuestion: 4, count: 1 },
                     { section: "Q.5", type: "Detailed Answer", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
-                    // Political Science (12 Marks)
                     { section: "Q.6", type: "Choose Correct Option (Pol Sci)", marskPerQuestion: 1, count: 2 },
                     { section: "Q.7", type: "True/False with Reasons", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
                     { section: "Q.8 (A)", type: "Explain Concept", marskPerQuestion: 2, count: 1, choice: "Any 1 from 2" },
@@ -151,7 +151,6 @@ export const BOARD_PATTERNS: any = {
             }
         },
         class9: {
-            // Reusing Class 10 patterns for Class 9 as structure is identical for MSBSHSE
             "Science and Technology Part-1": {
                 totalMarks: 40,
                 structure: [
@@ -209,7 +208,12 @@ export const BOARD_PATTERNS: any = {
                     { section: "Q.2 (B)", type: "Short Notes", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
                     { section: "Q.3", type: "Explain Statements with Reasons", marskPerQuestion: 2, count: 2, choice: "Any 2 from 4" },
                     { section: "Q.4", type: "Read Paragraph and Answer", marskPerQuestion: 4, count: 1 },
-                    { section: "Q.5", type: "Detailed Answer", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" }
+                    { section: "Q.5", type: "Detailed Answer", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
+                    { section: "Q.6", type: "Choose Correct Option (Pol Sci)", marskPerQuestion: 1, count: 2 },
+                    { section: "Q.7", type: "True/False with Reasons", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.8 (A)", type: "Explain Concept", marskPerQuestion: 2, count: 1, choice: "Any 1 from 2" },
+                    { section: "Q.8 (B)", type: "Do as Directed", marskPerQuestion: 1, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.9", type: "Answer in Brief", marskPerQuestion: 2, count: 1, choice: "Any 1 from 2" }
                 ]
             },
             "Geography": {
@@ -219,6 +223,8 @@ export const BOARD_PATTERNS: any = {
                     { section: "Q.2", type: "Match the Following", marskPerQuestion: 1, count: 4 },
                     { section: "Q.3", type: "One Sentence Answer", marskPerQuestion: 1, count: 4, choice: "Any 4 from 5" },
                     { section: "Q.4 (A)", type: "Fill Map", marskPerQuestion: 4, count: 1, choice: "Any 4 from 6" },
+                    { section: "Q.4 (B)", type: "Read Map & Answer", marskPerQuestion: 4, count: 1, choice: "Any 4 from 5" },
+                    { section: "Q.5", type: "Geographical Reasons", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
                     { section: "Q.6 (A)", type: "Draw Graph", marskPerQuestion: 3, count: 1 },
                     { section: "Q.6 (B)", type: "Read Graph", marskPerQuestion: 3, count: 1, choice: "Or Q.6(A)" },
                     { section: "Q.7", type: "Detailed Answer", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" }
@@ -227,3 +233,96 @@ export const BOARD_PATTERNS: any = {
         }
     }
 };
+
+// --- LOGIC FROM prompts.ts ---
+
+function calculateStructure(board: any, grade: any, subject: any, targetMarks: any) {
+    const pattern = BOARD_PATTERNS[board]?.[`class${grade}`]?.[subject];
+    if (!pattern) return { structureText: "Pattern not found", total: 0, originalTotal: 0 };
+
+    const originalMarks = pattern.totalMarks;
+    const scalingFactor = targetMarks / originalMarks;
+
+    // 1. Initial Scale
+    let newStructure = pattern.structure.map((s: any) => {
+        let newCount = Math.floor(s.count * scalingFactor);
+        if (s.count > 0 && newCount === 0 && scalingFactor > 0.1) newCount = 1;
+        return { ...s, count: newCount };
+    });
+
+    // Calculate sum
+    let currentTotal = newStructure.reduce((sum: any, s: any) => sum + (s.count * s.marskPerQuestion), 0);
+
+    // 2. Correction Loop
+    let attempts = 0;
+    while (currentTotal !== targetMarks && attempts < 50) {
+        const diff = targetMarks - currentTotal;
+
+        if (diff > 0) {
+            let candidate = newStructure.find((s: any) => s.marskPerQuestion <= diff && s.marskPerQuestion > 0);
+            if (!candidate) candidate = newStructure.reduce((prev: any, curr: any) => (prev.marskPerQuestion < curr.marskPerQuestion && prev.marskPerQuestion > 0) ? prev : curr);
+            if (candidate) {
+                candidate.count++;
+                currentTotal += candidate.marskPerQuestion;
+            }
+        } else {
+            const diffAbs = Math.abs(diff);
+            let candidate = newStructure.find((s: any) => s.count > 1 && s.marskPerQuestion <= diffAbs);
+            if (!candidate) candidate = newStructure.find((s: any) => s.count > 0 && s.marskPerQuestion <= diffAbs);
+            if (!candidate) candidate = newStructure.find((s: any) => s.count > 0);
+            if (candidate) {
+                candidate.count--;
+                currentTotal -= candidate.marskPerQuestion;
+            }
+        }
+        attempts++;
+    }
+
+    // Generate String with Choice Logic
+    const structureText = newStructure.map((s: any) => {
+        const showChoice = scalingFactor === 1 ? (s.choice ? `(${s.choice})` : "") : "";
+        return `- **${s.section}**: ${s.type} | ${s.count} Questions | ${s.marskPerQuestion} Marks each. ${showChoice}`;
+    }).join("\n");
+
+    return { structureText, total: currentTotal, originalTotal: originalMarks };
+}
+
+// --- VERIFICATION RUNNER ---
+console.log("=== STARTING COMPREHENSIVE VERIFICATION ===");
+const targets = [10, 20, 40];
+
+Object.keys(BOARD_PATTERNS).forEach(boardName => {
+    Object.keys(BOARD_PATTERNS[boardName]).forEach(className => {
+        Object.keys(BOARD_PATTERNS[boardName][className]).forEach(subjectName => {
+            // Verify Base Pattern Total
+            const pattern = BOARD_PATTERNS[boardName][className][subjectName];
+            const baseTotal = pattern.structure.reduce((sum: any, s: any) => sum + (s.count * s.marskPerQuestion), 0);
+
+            if (baseTotal !== pattern.totalMarks) {
+                console.error(`❌ [${boardName}:${className}:${subjectName}] BASE TOTAL MISMATCH! Config says ${pattern.totalMarks}, Calculated ${baseTotal}`);
+                // Debug details
+                pattern.structure.forEach((s: any) => console.log(`   ${s.section}: ${s.count} * ${s.marskPerQuestion} = ${s.count * s.marskPerQuestion}`));
+            } else {
+                // console.log(`✅ [${boardName}:${className}:${subjectName}] Base Total OK (${baseTotal})`);
+            }
+
+            // Verify Scaling
+            targets.forEach(target => {
+                if (target > pattern.totalMarks) return; // Skip 40 for 80 marks
+
+                const result = calculateStructure(boardName, className.replace('class', ''), subjectName, target);
+                if (result.total !== target) {
+                    console.error(`❌ [${boardName}:${className}:${subjectName}] SCALING FAILED for ${target} marks. Got ${result.total}`);
+                } else {
+                    // Check for choice text leak
+                    if (target < pattern.totalMarks && result.structureText.includes("Any ")) {
+                        console.error(`❌ [${boardName}:${className}:${subjectName}] CHOICE TEXT LEAKED for ${target} marks.`);
+                    } else {
+                        // console.log(`✅ [${boardName}:${className}:${subjectName}] ${target} Marks OK`);
+                    }
+                }
+            });
+        });
+    });
+});
+console.log("=== VERIFICATION COMPLETE ===");
