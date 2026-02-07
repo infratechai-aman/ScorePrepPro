@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navbar } from "@/components/Navbar";
@@ -6,7 +7,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft } from "lucide-react";
+import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft, Lock, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -18,6 +19,9 @@ import html2canvas from "html2canvas";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 import { Switch } from "@/components/ui/Switch";
 import { SYLLABUS_DB } from "@/lib/syllabus";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUsage } from "@/hooks/useUsage";
+import { useRouter } from "next/navigation";
 
 // Hack for file-saver if not installed
 const saveBlob = (blob: Blob, filename: string) => {
@@ -32,6 +36,11 @@ const saveBlob = (blob: Blob, filename: string) => {
 export default function Home() {
   // Wizard State
   const [step, setStep] = useState(1);
+
+  // Auth & Usage Hook
+  const { user, userData, loading: authLoading } = useAuth();
+  const { checkLimit, incrementUsage, loading: usageLoading, canGenerateKey } = useUsage();
+  const router = useRouter();
 
   // Data State
   const [board, setBoard] = useState("maharashtra");
@@ -59,6 +68,17 @@ export default function Home() {
 
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Free Preview Check
+  useEffect(() => {
+    // If not logged in, check local storage for free preview usage
+    if (!authLoading && !user) {
+      const freeUsed = localStorage.getItem("free_preview_used");
+      if (freeUsed) {
+        // Optionally redirect or show banner, for now we handle in generate
+      }
+    }
+  }, [authLoading, user]);
+
   // Effect to load chapters when subject changes
   useEffect(() => {
     if (board && grade && subject) {
@@ -85,6 +105,20 @@ export default function Home() {
       return;
     }
 
+    // AUTH & LIMIT CHECK
+    if (!user) {
+      const freeUsed = localStorage.getItem("free_preview_used");
+      if (freeUsed) {
+        router.push("/login");
+        return;
+      }
+    } else {
+      if (!checkLimit("paper")) {
+        setError("Monthly paper quota reached. Upgrade plan.");
+        return;
+      }
+    }
+
     setLoading(true);
     setGeneratedPaper("");
     setGeneratedSolution("");
@@ -94,7 +128,6 @@ export default function Home() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Updated payload to include detailed weightage
         body: JSON.stringify({
           board,
           grade,
@@ -109,6 +142,14 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to generate");
       setGeneratedPaper(data.content);
+
+      // INCREMENT USAGE
+      if (user) {
+        await incrementUsage("paper");
+      } else {
+        localStorage.setItem("free_preview_used", "true");
+      }
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -118,6 +159,21 @@ export default function Home() {
 
   const handleGenerateSolution = async () => {
     if (!generatedPaper) return;
+
+    // AUTH & LIMIT CHECK FOR KEYS
+    if (!user) {
+      router.push("/signup");
+      return;
+    }
+    if (!canGenerateKey) {
+      setError("Upgrade to Premium to generate Answer Keys.");
+      return;
+    }
+    if (!checkLimit("key")) {
+      setError("Monthly answer key quota reached.");
+      return;
+    }
+
     setSolutionLoading(true);
     try {
       const res = await fetch("/api/solutions", {
@@ -130,6 +186,10 @@ export default function Home() {
       if (!res.ok) throw new Error(data.error);
 
       setGeneratedSolution(data.content);
+
+      // INCREMENT USAGE
+      await incrementUsage("key");
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -176,6 +236,11 @@ export default function Home() {
 
       <section className="max-w-5xl mx-auto space-y-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-2">
+          {!user && (
+            <div className="bg-amber-100 text-amber-800 text-sm py-1 px-3 rounded-full inline-block mb-2 font-medium">
+              Free Preview Mode: 1 Paper Allowed
+            </div>
+          )}
           <h1 className="text-3xl md:text-5xl font-bold font-serif text-slate-900">
             Smart Paper <span className="text-primary">Wizard</span>
           </h1>
@@ -198,12 +263,19 @@ export default function Home() {
                       { value: "cbse", label: "CBSE" }, { value: "maharashtra", label: "Maharashtra SSC" }
                     ]} />
                     <Select label="Class" value={grade} onChange={(e) => setGrade(e.target.value)} options={[
-                      { value: "10", label: "Class 10" }, { value: "9", label: "Class 9" }
+                      { value: "10", label: "Class 10" },
+                      { value: "9", label: "Class 9" },
+                      // Gated Options for Basic Plan (Hidden)
+                      ...(userData?.plan === 'premium' ? [
+                        { value: "11", label: "Class 11 (Premium)" },
+                        { value: "12", label: "Class 12 (Premium)" }
+                      ] : [])
                     ]} />
                     <Select label="Total Marks" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} options={[
                       { value: "10", label: "10 Marks" },
                       { value: "20", label: "20 Marks" },
                       { value: "40", label: "40 Marks" },
+                      { value: "80", label: "80 Marks" },
                     ]} />
                   </div>
 
@@ -221,6 +293,12 @@ export default function Home() {
                       { value: "Social Science", label: "Social Science" },
                     ]
                   } />
+
+                  {userData && userData.plan === 'basic' && (
+                    <div className="text-xs text-slate-500 flex items-center gap-1">
+                      <Lock className="h-3 w-3" /> Class 11 & 12 are available in Premium Plan
+                    </div>
+                  )}
 
                   <div className="mt-auto pt-8">
                     <Button className="w-full" onClick={nextStep} disabled={!board || !subject}>
@@ -316,6 +394,16 @@ export default function Home() {
                           { value: "challenging", label: "Challenging" },
                         ]} />
                         <Switch label="Teacher Mode" checked={isTeacherMode} onCheckedChange={setIsTeacherMode} />
+
+                        {/* Feature Gate: Diagrams */}
+                        {userData?.plan === 'basic' && (
+                          <div className="flex items-center justify-between opacity-50 cursor-not-allowed">
+                            <div className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                              <Lock className="h-3 w-3" /> Diagram/Map Questions
+                            </div>
+                            <div className="text-xs text-amber-600 bg-amber-100 px-2 py-0.5 rounded">Premium</div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -356,6 +444,13 @@ export default function Home() {
                 {error}
               </div>
             )}
+
+            {!user && (
+              <div onClick={() => router.push("/login")} className="cursor-pointer p-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-colors text-center">
+                <p className="font-bold">Login to Save Papers</p>
+                <p className="text-xs opacity-80 mt-1">Unlock more features & removal limit</p>
+              </div>
+            )}
           </div>
 
           {/* Result Section (Full Width) */}
@@ -365,8 +460,17 @@ export default function Home() {
                 <h2 className="text-2xl font-serif font-bold text-slate-800">Generated Question Paper</h2>
                 <div className="flex gap-2">
                   {!generatedSolution && (
-                    <Button variant="secondary" size="sm" onClick={handleGenerateSolution} isLoading={solutionLoading}>
-                      <CheckCircle className="mr-2 h-4 w-4" /> Generate Answer Key
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleGenerateSolution}
+                      isLoading={solutionLoading}
+                      // Feature Gate: Answer Key
+                      disabled={userData?.plan === 'basic' || (!user && !canGenerateKey)} // Disable if basic or not logged in (assuming free preview has no keys)
+                      className={userData?.plan === 'basic' ? "opacity-50 cursor-not-allowed" : ""}
+                    >
+                      {userData?.plan === 'basic' ? <Lock className="mr-2 h-4 w-4" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                      Generate Answer Key
                     </Button>
                   )}
                   <Button variant="outline" size="sm" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4" /> PDF</Button>
@@ -378,7 +482,14 @@ export default function Home() {
               </div>
 
               <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "40px", minHeight: "800px", color: "#1e293b" }} className="rounded-2xl shadow-xl space-y-8">
-                <div className="prose prose-slate max-w-none">
+                {/* Free Preview Watermark */}
+                {!user && (
+                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%) rotate(-45deg)", fontSize: "80px", color: "rgba(0,0,0,0.05)", fontWeight: "bold", pointerEvents: "none", zIndex: 0 }}>
+                    FREE PREVIEW
+                  </div>
+                )}
+
+                <div className="prose prose-slate max-w-none relative z-10">
                   <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={{
                     h1: ({ node, ...props }) => <h1 style={{ borderBottom: "2px solid #0f172a", textAlign: "center", marginBottom: "20px", paddingBottom: "10px", textTransform: "uppercase" }} className="text-3xl font-bold" {...props} />,
                     h2: ({ node, ...props }) => <h2 style={{ backgroundColor: "#f8fafc", borderLeft: "4px solid #1e293b", padding: "10px", marginTop: "30px", marginBottom: "15px", textTransform: "uppercase" }} className="text-xl font-bold" {...props} />,

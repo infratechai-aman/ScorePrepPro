@@ -4,7 +4,7 @@ export const BOARD_PATTERNS: any = {
             "Science": {
                 totalMarks: 80,
                 structure: [
-                    { section: "SECTION A", type: "Objective / MCQ", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION A", type: "Objective / MCQ / Assertion-Reason", marskPerQuestion: 1, count: 20 },
                     { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 6 },
                     { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 7 },
                     { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 3 },
