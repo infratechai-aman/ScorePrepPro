@@ -5,7 +5,7 @@ import { constructPrompt } from "@/lib/prompts";
 
 export async function POST(req: Request) {
     try {
-        const { board, grade, subject, chapters, difficulty, chapterWeights } = await req.json();
+        const { board, grade, subject, chapters, difficulty, chapterWeights, marks } = await req.json();
 
         if (!board || !grade || !subject || !chapters) {
             return NextResponse.json(
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
             );
         }
 
-        const systemPrompt = constructPrompt(board, grade, subject, chapters, { difficulty, chapterWeights });
+        const systemPrompt = constructPrompt(board, grade, subject, chapters, { difficulty, chapterWeights, totalMarks: marks });
 
         if (!systemPrompt) {
             console.error("System prompt generation failed for:", { board, grade, subject });

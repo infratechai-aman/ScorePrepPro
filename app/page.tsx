@@ -37,6 +37,7 @@ export default function Home() {
   const [board, setBoard] = useState("");
   const [grade, setGrade] = useState("10");
   const [subject, setSubject] = useState("");
+  const [totalMarks, setTotalMarks] = useState("40");
 
   // Derived Data
   const [availableChapters, setAvailableChapters] = useState<string[]>([]);
@@ -98,6 +99,7 @@ export default function Home() {
           board,
           grade,
           subject,
+          marks: parseInt(totalMarks),
           chapters: selectedChapters,
           chapterWeights,
           difficulty
@@ -197,6 +199,11 @@ export default function Home() {
                     ]} />
                     <Select label="Class" value={grade} onChange={(e) => setGrade(e.target.value)} options={[
                       { value: "10", label: "Class 10" }, { value: "9", label: "Class 9" }
+                    ]} />
+                    <Select label="Total Marks" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} options={[
+                      { value: "10", label: "10 Marks" },
+                      { value: "20", label: "20 Marks" },
+                      { value: "40", label: "40 Marks" },
                     ]} />
                   </div>
 
@@ -391,7 +398,23 @@ export default function Home() {
                       return <img {...props} className="rounded-lg shadow-md max-w-full my-4" />;
                     },
                     p: ({ node, ...props }) => <p style={{ marginBottom: "16px", lineHeight: "1.6", textAlign: "justify" }} {...props} />,
-                    hr: ({ node, ...props }) => <hr style={{ margin: "30px 0", borderTop: "1px dashed #cbd5e1" }} {...props} />,
+                    blockquote: ({ node, ...props }) => (
+                      <blockquote
+                        style={{
+                          backgroundColor: "#f1f5f9",
+                          borderLeft: "4px solid #334155",
+                          padding: "16px",
+                          margin: "24px 0",
+                          borderRadius: "0 8px 8px 0",
+                          fontStyle: "italic",
+                          textAlign: "center",
+                          fontWeight: "500",
+                          color: "#334155"
+                        }}
+                        {...props}
+                      />
+                    ),
+                    hr: ({ node, ...props }) => <hr style={{ margin: "30px 0", borderTop: "2px solid #cbd5e1" }} {...props} />,
                     ul: ({ node, ...props }) => <ul style={{ listStyleType: "disc", paddingLeft: "20px", marginBottom: "16px" }} {...props} />,
                     ol: ({ node, ...props }) => <ol style={{ listStyleType: "decimal", paddingLeft: "20px", marginBottom: "16px" }} {...props} />,
                     li: ({ node, ...props }) => <li style={{ marginBottom: "8px", paddingLeft: "5px" }} {...props} />

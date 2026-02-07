@@ -6,6 +6,7 @@ export type DifficultyLevel = "easy" | "moderate" | "hard" | "replica" | "challe
 interface GenerateOptions {
   difficulty?: DifficultyLevel;
   chapterWeights?: Record<string, number>;
+  totalMarks?: number;
 }
 
 export function constructPrompt(
@@ -19,6 +20,8 @@ export function constructPrompt(
   const pattern = BOARD_PATTERNS[board]?.[`class${grade}`]?.[subject];
 
   if (!pattern) return null;
+
+  const totalMarks = options.totalMarks || pattern.totalMarks || 40;
 
   const structureText = pattern.structure.map((s: any) =>
     `- **${s.section}**: ${s.type} | ${s.count} Questions | ${s.marskPerQuestion} Marks each. ${s.choice ? `(${s.choice})` : ""}`
@@ -85,11 +88,19 @@ export function constructPrompt(
     
     SUBJECT: ${subject.toUpperCase()}
     CHAPTERS: ${chapters}
-    TOTAL MARKS: ${pattern.totalMarks}
+    TOTAL MARKS: ${totalMarks} (Override standard pattern if necessary)
+    
+    === SCALING INSTRUCTION ===
+    The user has requested a paper of **${totalMarks} MARKS**.
+    The standard blueprint below is for ${pattern.totalMarks} Marks.
+    You MUST proportionally REDUCE/ADJUST the number of questions in each section to fit EXACTLY ${totalMarks} marks.
+    - Example: If asking for 20 marks (half of 40), cut the number of questions in each section by roughly half.
+    - KEEP the Section Types (MCQ, Short Answer, etc.) intact.
+    - ENSURE the total adds up to ${totalMarks}.
 
     === NON-NEGOTIABLE GOLDEN RULES ===
     1. **CHAPTER LOCK**: Questions must come ONLY from: "${chapters}". REJECT any concept outside this scope.
-    2. **STRICT STRUCTURE**: Follow the section structure below EXACTLY. Do not change question counts or marks.
+    2. **STRICT STRUCTURE**: Follow the section structure below EXACTLY, but scaled to ${totalMarks} marks.
     3. **TEXTBOOK FIRST**: numericals and questions must resemble standard textbook exercises.
     4. **TONE ENFORCEMENT**: ${toneInstruction}
     5. **DIFFICULTY**: ${difficultyInstruction}
@@ -105,8 +116,8 @@ export function constructPrompt(
     === OUTPUT FORMAT ===
     - Use Markdown for strict formatting.
     - **PAPER HEADER**:
-      - Center Align the Board Name (e.g., <center># CBSE BOARD EXAM</center>).
-      - Below it, put Subject, Time, and Marks in a clean horizontal line pattern or table.
+      - LINE 1: Board Name in H1 (e.g., # CBSE BOARD EXAM).
+      - LINE 2: Use a Blockquote for metadata: \`> **Subject:** ${subject} | **Time:** 2 Hours | **Marks:** ${pattern.totalMarks}\`.
       - Use '---' horizontal rules to separate sections.
     // FORCE_REFRESH_TIMESTAMP_${Date.now()}
     - **SECTION HEADERS**: Use '## SECTION A' style (Bold and large).
@@ -146,6 +157,14 @@ export function constructSolutionPrompt(paperContent: string, board: string) {
     2. **Step-marking**: Show steps for numericals/derivations (Formula -> Substitution -> Calculation -> Final Answer).
     3. **Tone**: Official marking scheme style.
     4. **Diagrams**: Describe what the diagram should show if a diagram is required.
+    
+    STRICT OUTPUT FORMATTING:
+    - **Numbering**: COPY the question numbers EXACTLY from the paper (e.g. "Q.1", "1."). Do not invent new numbering.
+    - **Match Columns**: ALWAYS return as a valid Markdown Table.
+      | Pair | Answer |
+      | :--- | :--- |
+      | 1. Item A | B. Item B |
+    - **Spacing**: Separated EVERY solution with ONE empty line.
     
     OUTPUT:
     Start with "## ANSWER KEY / MARKING SCHEME".
