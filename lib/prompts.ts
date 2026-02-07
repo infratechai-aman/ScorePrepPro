@@ -23,26 +23,69 @@ export function constructPrompt(
 
   // Calculate scaling factor
   const totalMarks = options.totalMarks || pattern.totalMarks || 40;
-  // If user requests 20 marks but pattern is 40, factor is 0.5
-  const scalingFactor = totalMarks / (pattern.totalMarks || 40);
+  const originalMarks = pattern.totalMarks || 40;
+  const scalingFactor = totalMarks / originalMarks;
+
+  // 1. Initial Scale (Floor to avoid overshooting, then fill up)
+  let newStructure = pattern.structure.map((s: any) => {
+    let newCount = Math.floor(s.count * scalingFactor);
+    // Ensure at least 1 question if original had questions and ratio is decent
+    if (s.count > 0 && newCount === 0 && scalingFactor > 0.15) newCount = 1;
+    return { ...s, count: newCount };
+  });
+
+  // 2. Correction Loop to match Total Marks EXACTLY
+  let currentTotal = newStructure.reduce((sum: number, s: any) => sum + (s.count * s.marskPerQuestion), 0);
+  let attempts = 0;
+
+  // We loop to adjust counts until we hit the target or run out of attempts
+  while (currentTotal !== totalMarks && attempts < 50) {
+    const diff = totalMarks - currentTotal;
+
+    if (diff > 0) {
+      // Need MORE marks. Prefer adding to sections with lowest marks/q (e.g. MCQs) to fill gap precisely
+      // Find smallest denomination that fits or just smallest available
+      let candidate = newStructure.find((s: any) => s.marskPerQuestion <= diff && s.marskPerQuestion > 0);
+
+      // If strict fit not found, just pick smallest available question type
+      if (!candidate) {
+        candidate = newStructure.reduce((prev: any, curr: any) =>
+          (prev.marskPerQuestion < curr.marskPerQuestion && prev.marskPerQuestion > 0) ? prev : curr
+        );
+      }
+
+      if (candidate) {
+        candidate.count++;
+        currentTotal += candidate.marskPerQuestion;
+      }
+    } else {
+      // Need FEWER marks.
+      // Try to remove from sections with >1 question first
+      const diffAbs = Math.abs(diff);
+      let candidate = newStructure.find((s: any) => s.count > 1 && s.marskPerQuestion <= diffAbs);
+
+      if (!candidate) {
+        // Fallback: Remove even if count is 1, preferring smallest marks to avoid massive undershoot
+        candidate = newStructure.find((s: any) => s.count > 0 && s.marskPerQuestion <= diffAbs);
+      }
+
+      // If still no candidate (e.g. all questions are too big), remove ANY to get below target, then add back
+      if (!candidate) {
+        candidate = newStructure.find((s: any) => s.count > 0);
+      }
+
+      if (candidate) {
+        candidate.count--;
+        currentTotal -= candidate.marskPerQuestion;
+      }
+    }
+    attempts++;
+  }
 
   // Generate Scaled Pattern Text
-  let calculatedTotalMarks = 0;
-  const structureText = pattern.structure.map((s: any) => {
-    // Scale count: Math.ceil ensures we don't get 0 questions unless original was 0
-    // But for very small marks, we might need stricter logic.
-    // For 20 marks (0.5), 5 q becomes 3. 
-    // For 10 marks (0.25), 5 q becomes 2.
-    // Let's use simple Math.max(1, Math.round(...)) to ensure at least 1 Q if section exists
-    let newCount = Math.round(s.count * scalingFactor);
-    if (s.count > 0 && newCount === 0) newCount = 1; // Ensure at least 1 if original had questions
-
-    // Recalculate marks for this section
-    const sectionMarks = newCount * s.marskPerQuestion;
-    calculatedTotalMarks += sectionMarks;
-
-    return `- **${s.section}**: ${s.type} | ${newCount} Questions | ${s.marskPerQuestion} Marks each. ${s.choice ? `(${s.choice})` : ""}`;
-  }).join("\n");
+  const structureText = newStructure.map((s: any) =>
+    `- **${s.section}**: ${s.type} | ${s.count} Questions | ${s.marskPerQuestion} Marks each. ${s.choice ? `(${s.choice})` : ""}`
+  ).join("\n");
 
   const diff = options.difficulty || "moderate";
 
