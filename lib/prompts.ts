@@ -21,11 +21,28 @@ export function constructPrompt(
 
   if (!pattern) return null;
 
+  // Calculate scaling factor
   const totalMarks = options.totalMarks || pattern.totalMarks || 40;
+  // If user requests 20 marks but pattern is 40, factor is 0.5
+  const scalingFactor = totalMarks / (pattern.totalMarks || 40);
 
-  const structureText = pattern.structure.map((s: any) =>
-    `- **${s.section}**: ${s.type} | ${s.count} Questions | ${s.marskPerQuestion} Marks each. ${s.choice ? `(${s.choice})` : ""}`
-  ).join("\n");
+  // Generate Scaled Pattern Text
+  let calculatedTotalMarks = 0;
+  const structureText = pattern.structure.map((s: any) => {
+    // Scale count: Math.ceil ensures we don't get 0 questions unless original was 0
+    // But for very small marks, we might need stricter logic.
+    // For 20 marks (0.5), 5 q becomes 3. 
+    // For 10 marks (0.25), 5 q becomes 2.
+    // Let's use simple Math.max(1, Math.round(...)) to ensure at least 1 Q if section exists
+    let newCount = Math.round(s.count * scalingFactor);
+    if (s.count > 0 && newCount === 0) newCount = 1; // Ensure at least 1 if original had questions
+
+    // Recalculate marks for this section
+    const sectionMarks = newCount * s.marskPerQuestion;
+    calculatedTotalMarks += sectionMarks;
+
+    return `- **${s.section}**: ${s.type} | ${newCount} Questions | ${s.marskPerQuestion} Marks each. ${s.choice ? `(${s.choice})` : ""}`;
+  }).join("\n");
 
   const diff = options.difficulty || "moderate";
 
@@ -86,8 +103,9 @@ export function constructPrompt(
   if (totalMarks <= 10) duration = "30 Mins";
   else if (totalMarks <= 20) duration = "1 Hour";
   else if (totalMarks <= 40) duration = "2 Hours";
-  else duration = "3 Hours"; // For 80 marks
+  else duration = "3 Hours";
 
+  // Adjust prompt to force strict adherence to the CALCULATED structure
   return `
     You are an expert ${board.toUpperCase()} Board Paper Setter for Class ${grade}.
     
@@ -95,31 +113,27 @@ export function constructPrompt(
     
     SUBJECT: ${subject.toUpperCase()}
     CHAPTERS: ${chapters}
-    TOTAL MARKS: ${totalMarks} (Overrides standard pattern)
+    TOTAL MARKS: ${totalMarks}
     
-    === SCALING INSTRUCTION (CRITICAL) ===
-    The user has requested a paper of **${totalMarks} MARKS**.
-    The standard blueprint below is for ${pattern.totalMarks} Marks.
+    === BLUEPRINT (STRICTLY FOLLOW) ===
+    The following blueprint has been pre-calculated for ${totalMarks} marks.
+    YOU MUST FOLLOW QUESTION COUNTS EXACTLY. DO NOT CHANGE THEM.
     
-    **YOU MUST ADJUST THE QUESTION COUNTS AS FOLLOWS:**
-    - **IF MARKS == 20**: CUT ALL QUESTION COUNTS BY 50%. (e.g., if blueprint says 4 questions, ask 2).
-    - **IF MARKS == 10**: CUT ALL QUESTION COUNTS BY 75%. (e.g., if blueprint says 4 questions, ask 1).
-    - **KEEP** the Section Types (MCQ, Short Answer, etc.) intact.
-    - **VERIFY** that the sum of (Questions × Marks) equals EXACTLY ${totalMarks}.
+    ${structureText}
 
     === NON-NEGOTIABLE GOLDEN RULES ===
     1. **CHAPTER LOCK**: Questions must come ONLY from: "${chapters}". REJECT any concept outside this scope.
-    2. **STRICT STRUCTURE**: Follow the section structure below, but scaled to ${totalMarks} marks.
+    2. **STRICT COUNTS**: usage of the blueprint above is MANDATORY. Do not ask more or fewer questions.
     3. **TEXTBOOK FIRST**: numericals and questions must resemble standard textbook exercises.
     4. **TONE ENFORCEMENT**: ${toneInstruction}
     5. **DIFFICULTY**: ${difficultyInstruction}
-    6. **WEIGHTAGE**: ${weightageInstruction}
+    6. **WEIGHTAGE**: ${options.chapterWeights ? weightageInstruction : "Balanced distribution."}
 
     === MANDATORY INCLUSIONS (Crucial) ===
     - **MATCH THE FOLLOWING**: You MUST include at least ONE "Match the Following" question set (e.g., Column A vs Column B) worth 2-4 marks.
     - **ACTIVITY/CASE**: If applicable to the board, include a case study or activity-based question.
     
-    === PAPER PATTERN (Standard ${pattern.totalMarks} Marks Pattern) ===
+    === PAPER PATTERN (Calculated for ${totalMarks} Marks) ===
     ${structureText}
 
     === OUTPUT FORMAT ===
