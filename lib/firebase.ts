@@ -10,6 +10,7 @@ const firebaseConfig = {
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
     messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 
@@ -19,16 +20,7 @@ const getFirebaseApp = () => {
         // If config is missing, return dummy or throw clear error
         if (!firebaseConfig.apiKey) {
             console.warn("Firebase not configured: Missing NEXT_PUBLIC_FIREBASE_API_KEY");
-            // During build time, this might happen. Return a dummy app or handle gracefully.
-            // However, getAuth() will fail if app is invalid.
-            // If running on server/build and no keys, we can't really init.
-
-            // Check if we are in browser
-            if (typeof window === 'undefined') {
-                return null;
-            }
-            // Client side without keys? This is bad.
-            throw new Error("Missing Firebase API Key");
+            return null;
         }
         return initializeApp(firebaseConfig);
     }

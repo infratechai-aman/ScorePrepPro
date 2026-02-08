@@ -10,11 +10,19 @@ import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+// Add Razorpay type definition
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
+
 const PLANS = [
     {
         id: "basic",
         name: "Basic Plan",
         price: "₹499",
+        amount: 499,
         period: "/month",
         features: [
             "100 Papers / month",
@@ -34,6 +42,7 @@ const PLANS = [
         id: "premium",
         name: "Premium Plan",
         price: "₹699",
+        amount: 699,
         period: "/month",
         features: [
             "300 Papers / month",
@@ -53,7 +62,7 @@ export default function PricingPage() {
     const [processing, setProcessing] = useState<string | null>(null);
     const router = useRouter();
 
-    const handleUpgrade = async (planId: string) => {
+    const handleUpgrade = async (planId: string, amount: number) => {
         if (!user) {
             router.push("/login?redirect=/pricing");
             return;
@@ -61,22 +70,90 @@ export default function PricingPage() {
 
         setProcessing(planId);
 
-        // MOCK PAYMENT PROCESS
-        setTimeout(async () => {
-            try {
-                const userRef = doc(db, "users", user.uid);
-                await updateDoc(userRef, {
-                    plan: planId,
-                    planExpiry: Date.now() + 30 * 24 * 60 * 60 * 1000 // +30 days
-                });
-                await refreshUserData();
-                router.push("/dashboard");
-            } catch (error) {
-                console.error("Payment failed:", error);
-            } finally {
+        try {
+            // 1. Create Order
+            const response = await fetch("/api/create-order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount }), // Amount in INR
+            });
+
+            const order = await response.json();
+
+            if (order.error) {
+                alert("Error creating order: " + order.error);
                 setProcessing(null);
+                return;
             }
-        }, 2000);
+
+            // 2. Load Razorpay Script
+            const script = document.createElement("script");
+            script.src = "https://checkout.razorpay.com/v1/checkout.js";
+            script.async = true;
+            document.body.appendChild(script);
+
+            script.onload = () => {
+                const options = {
+                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: "ScorePrepPro",
+                    description: `${planId === 'premium' ? 'Premium' : 'Basic'} Plan Subscription`,
+                    order_id: order.id,
+                    handler: async function (response: any) {
+                        // 3. Verify Payment
+                        const verifyResponse = await fetch("/api/verify-payment", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                            }),
+                        });
+
+                        const verifyResult = await verifyResponse.json();
+
+                        if (verifyResult.status === "success") {
+                            // 4. Update User Plan in Firestore
+                            if (userData?.uid && db) {
+                                const userRef = doc(db, "users", userData.uid);
+                                await updateDoc(userRef, {
+                                    plan: planId as "basic" | "premium",
+                                    planExpiry: Date.now() + 30 * 24 * 60 * 60 * 1000 // +30 days
+                                });
+                                await refreshUserData();
+                                alert(`Upgrade Successful! You are now on the ${planId} plan.`);
+                                router.push("/dashboard");
+                            }
+                        } else {
+                            alert("Payment Verification Failed");
+                        }
+                    },
+                    prefill: {
+                        name: userData?.name || "",
+                        email: userData?.email || "",
+                        contact: ""
+                    },
+                    theme: {
+                        color: "#3B82F6"
+                    }
+                };
+                const rzp1 = new window.Razorpay(options);
+                rzp1.open();
+                setProcessing(null);
+            };
+
+            script.onerror = () => {
+                alert("Razorpay SDK failed to load. Are you online?");
+                setProcessing(null);
+            };
+
+        } catch (error) {
+            console.error("Payment failed:", error);
+            alert("Payment initialization failed");
+            setProcessing(null);
+        }
     };
 
     return (
@@ -132,7 +209,7 @@ export default function PricingPage() {
                                     className={`w-full ${plan.id === 'premium' ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
                                     size="lg"
                                     isLoading={processing === plan.id}
-                                    onClick={() => handleUpgrade(plan.id)}
+                                    onClick={() => handleUpgrade(plan.id, plan.amount)}
                                     disabled={userData?.plan === plan.id}
                                 >
                                     {userData?.plan === plan.id ? "Current Plan" : (
