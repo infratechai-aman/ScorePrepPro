@@ -65,7 +65,7 @@ export default function LandingPage() {
             style={{ perspective: "1000px" }}
           >
             <GlassCard className="bg-white/80 backdrop-blur-xl border-white/50 shadow-2xl rounded-3xl p-2 ml-4 md:p-4 transform rotate-1 hover:rotate-0 transition-transform duration-500 overflow-hidden h-[400px] md:h-[500px]">
-              <img src="/paper_wizard_preview.png" alt="Dashboard Preview" className="w-full h-full object-cover object-top rounded-2xl shadow-inner border border-slate-100 scale-110 hover:scale-100 transition-transform duration-700" />
+              <img src="/paper_wizard_preview.png" alt="Dashboard Preview" className="w-full h-full object-contain rounded-2xl shadow-inner border border-slate-100 bg-white" />
               {/* Note: In a real app, I'd use an actual screenshot here */}
             </GlassCard>
 
