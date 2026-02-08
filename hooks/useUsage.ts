@@ -37,7 +37,7 @@ export function useUsage() {
     };
 
     const incrementUsage = async (type: "paper" | "key") => {
-        if (!userData) return; // Free preview logic handled separately or strictly frontend
+        if (!userData || !db) return; // Free preview logic handled separately or strictly frontend
         setLoading(true);
         try {
             const userRef = doc(db, "users", userData.uid);

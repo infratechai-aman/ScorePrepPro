@@ -39,6 +39,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Helper to fetch user data from Firestore
     const fetchUserData = async (uid: string) => {
+        if (!db) return; // Guard clause for missing DB
+
         try {
             const userRef = doc(db, "users", uid);
             const userSnap = await getDoc(userRef);
@@ -49,8 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 // If user document doesn't exist (e.g. first Google login), create it
                 const newUserData: UserData = {
                     uid,
-                    email: auth.currentUser?.email || null,
-                    name: auth.currentUser?.displayName || null,
+                    email: auth?.currentUser?.email || null,
+                    name: auth?.currentUser?.displayName || null,
                     role: "student", // Default role
                     plan: "basic",
                     planExpiry: null,
@@ -67,6 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     useEffect(() => {
+        if (!auth) {
+            setLoading(false);
+            return;
+        }
+
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
             if (currentUser) {
@@ -81,6 +88,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const loginWithGoogle = async () => {
+        if (!auth) {
+            alert("Authentication is not configured. Please add Firebase keys.");
+            return;
+        }
         try {
             await signInWithPopup(auth, googleProvider);
         } catch (error) {
@@ -90,6 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const logout = async () => {
+        if (!auth) return;
         await signOut(auth);
     };
 
