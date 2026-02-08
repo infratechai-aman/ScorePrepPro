@@ -70,21 +70,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!auth) {
+            console.warn("Auth not initialized, skipping auth listener");
             setLoading(false);
             return;
         }
 
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            setUser(currentUser);
-            if (currentUser) {
-                await fetchUserData(currentUser.uid);
-            } else {
-                setUserData(null);
-            }
+        try {
+            const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+                setUser(currentUser);
+                if (currentUser) {
+                    await fetchUserData(currentUser.uid);
+                } else {
+                    setUserData(null);
+                }
+                setLoading(false);
+            });
+            return () => unsubscribe();
+        } catch (error) {
+            console.error("Error setting up auth listener:", error);
             setLoading(false);
-        });
-
-        return () => unsubscribe();
+        }
     }, []);
 
     const loginWithGoogle = async () => {
