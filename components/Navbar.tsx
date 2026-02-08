@@ -1,9 +1,15 @@
+"use client";
 
-import { BookOpen } from "lucide-react";
+import { BookOpen, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/Button";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
+    const { user, loading } = useAuth();
+    const pathname = usePathname();
+
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-white/40 bg-white/60 backdrop-blur-xl">
             <div className="container mx-auto h-full flex items-center justify-between px-4 md:px-6">
@@ -20,15 +26,25 @@ export function Navbar() {
                     <Link href="/" className="text-sm font-medium text-slate-600 hover:text-primary transition-colors">
                         Home
                     </Link>
-                    <Link href="#" className="text-sm font-medium text-slate-600 hover:text-primary transition-colors">
-                        How it works
-                    </Link>
-                    <Link href="#" className="text-sm font-medium text-slate-600 hover:text-primary transition-colors">
+                    <Link href="/pricing" className={`text-sm font-medium transition-colors ${pathname === '/pricing' ? 'text-primary font-semibold' : 'text-slate-600 hover:text-primary'}`}>
                         Pricing
                     </Link>
-                    <Button size="sm" variant="primary">
-                        Get Started
-                    </Button>
+
+                    {!loading && (
+                        user ? (
+                            <Link href="/dashboard">
+                                <Button size="sm" variant="outline" className="gap-2">
+                                    <UserCircle className="h-4 w-4" /> Dashboard
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Link href="/login">
+                                <Button size="sm" variant="primary">
+                                    Login / Sign Up
+                                </Button>
+                            </Link>
+                        )
+                    )}
                 </div>
             </div>
         </nav>
