@@ -21,15 +21,7 @@ export default function LandingPage() {
         <div className="absolute top-0 right-1/4 w-[800px] h-[600px] bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-blob animation-delay-2000"></div>
 
         <div className="max-w-6xl mx-auto text-center space-y-8 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-slate-200 rounded-full px-4 py-1.5 text-sm font-medium text-slate-600 shadow-sm"
-          >
-            <Sparkles className="h-4 w-4 text-amber-500" />
-            <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-bold">New</span>
-            AI-Powered Exam Preparation
-          </motion.div>
+
 
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -73,7 +65,7 @@ export default function LandingPage() {
             style={{ perspective: "1000px" }}
           >
             <GlassCard className="bg-white/80 backdrop-blur-xl border-white/50 shadow-2xl rounded-3xl p-2 ml-4 md:p-4 transform rotate-1 hover:rotate-0 transition-transform duration-500">
-              <img src="https://placehold.co/1200x600/e2e8f0/475569?text=Paper+Wizard+Preview" alt="Dashboard Preview" className="rounded-2xl shadow-inner border border-slate-100" />
+              <img src="/paper_wizard_preview_dashboard.png" alt="Dashboard Preview" className="rounded-2xl shadow-inner border border-slate-100" />
               {/* Note: In a real app, I'd use an actual screenshot here */}
             </GlassCard>
 
