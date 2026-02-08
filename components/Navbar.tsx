@@ -23,8 +23,11 @@ export function Navbar() {
                 </Link>
 
                 <div className="hidden md:flex items-center gap-6">
-                    <Link href="/" className="text-sm font-medium text-slate-600 hover:text-primary transition-colors">
+                    <Link href="/" className={`text-sm font-medium transition-colors ${pathname === '/' ? 'text-primary font-semibold' : 'text-slate-600 hover:text-primary'}`}>
                         Home
+                    </Link>
+                    <Link href="/generate" className={`text-sm font-medium transition-colors ${pathname === '/generate' ? 'text-primary font-semibold' : 'text-slate-600 hover:text-primary'}`}>
+                        Generator
                     </Link>
                     <Link href="/pricing" className={`text-sm font-medium transition-colors ${pathname === '/pricing' ? 'text-primary font-semibold' : 'text-slate-600 hover:text-primary'}`}>
                         Pricing
