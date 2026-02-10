@@ -31,13 +31,13 @@ export async function POST(req: Request) {
         
         # [Topic Name]
         
-        ### 1️⃣ Exam Weightage
+        ### 1. Exam Weightage
         **Weightage**: [High/Medium/Low] (Estimate based on standard curriculum)
         
-        ### 2️⃣ Definition
+        ### 2. Definition
         > **Definition**: [Short, direct explanation (2-3 lines max)]
         
-        ### 3️⃣ Core Concept
+        ### 3. Core Concept
         *   [Point 1]
         *   [Point 2]
         *   [Point 3]
@@ -45,49 +45,49 @@ export async function POST(req: Request) {
         *   [Point 5]
         *(Bullet points only, no long paragraphs)*
         
-        ### 4️⃣ Working / Process / Flow
+        ### 4. Working / Process / Flow
         1.  [Step 1]
         2.  [Step 2]
         3.  [Step 3]
         
-        ### 5️⃣ Key Components
+        ### 5. Key Components
         *   **[Component A]**: [Brief description]
         *   **[Component B]**: [Brief description]
         
-        ### 6️⃣ Advantages & Disadvantages
-        *   ✅ **Advantages**: [Point 1], [Point 2]
-        *   ❌ **Disadvantages**: [Point 1], [Point 2]
+        ### 6. Advantages & Disadvantages
+        *   **Advantages**: [Point 1], [Point 2]
+        *   **Disadvantages**: [Point 1], [Point 2]
         
-        ### 7️⃣ Real-World Examples
+        ### 7. Real-World Examples
         *   Example 1: [Example]
         *   Example 2: [Example]
         
-        ### 8️⃣ Important Points (IMP)
-        > 💡 **IMP**: 
+        ### 8. Important Points (IMP)
+        > **IMP**: 
         > *   **Keyword**: [Definition]
         > *   **Trap**: [Common mistake students make]
         > *   **Fact**: [Key fact for exams]
 
-        ### 9️⃣ Comparison (If applicable)
+        ### 9. Comparison (If applicable)
         | Feature | This Topic | Related Concept |
         | :--- | :--- | :--- |
         | [Feature 1] | [Value] | [Value] |
         | [Feature 2] | [Value] | [Value] |
 
-        ### 🔟 Exam Answer Frame (5-Marks)
+        ### 10. Exam Answer Frame (5-Marks)
         *   **Definition**: [One line]
         *   **Working**: [Step-by-step]
         *   **Example**: [Real world]
         *   **Conclusion**: [One line summary]
         
-        ### 1️⃣1️⃣ Quick Revision Box
-        > 🚀 **Quick Revision**:
+        ### 11. Quick Revision Box
+        > **Quick Revision**:
         > *   **Keywords**: [Keyword 1], [Keyword 2], [Keyword 3]
         > *   **Concept**: [One line summary]
 
         **Format Rules**:
         - Use clean Markdown. 
-        - Use emojis as section icons where appropriate (like above).
+        - DO NOT use emojis in headers or text.
         - Use Blockquotes (>) for Definitions, IMP sections, and Revision Boxes to make them stand out stylistically.
         - Bold (**text**) key terms.
         - Keep it "Exam Ready" and "Aesthetic".
