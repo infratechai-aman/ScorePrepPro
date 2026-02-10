@@ -17,69 +17,92 @@ declare global {
     }
 }
 
-const PLANS = [
-    {
-        id: "free",
-        name: "Free Plan",
-        price: "₹0",
-        amount: 0,
-        period: "/forever",
-        features: [
-            "1 Paper Total",
-            "Classes 9th - 10th",
-            "View Only (No Download)"
-        ],
-        missing: [
-            "Answer Key Generation",
-            "Diagrams & Maps",
-            "Standard Support",
-            "Blueprint Mode"
-        ],
-        color: "slate"
-    },
-    {
-        id: "basic",
-        name: "Basic Plan",
-        price: "₹499",
-        amount: 499,
-        period: "/month",
-        features: [
-            "100 Papers / month",
-            "Classes 7th - 10th",
-            "Standard Support",
-            "No Watermark (Draft)"
-        ],
-        missing: [
-            "Answer Key Generation",
-            "Diagrams & Maps",
-            "Blueprint Mode",
-            "Classes 11th - 12th"
-        ],
-        color: "blue"
-    },
-    {
-        id: "premium",
-        name: "Premium Plan",
-        price: "₹699",
-        amount: 699,
-        period: "/month",
-        features: [
-            "300 Papers / month",
-            "Classes 7th - 12th",
-            "Answer Key Generation",
-            "Diagram Support",
-            "Blueprint Control",
-            "Priority Support"
-        ],
-        missing: [],
-        color: "amber"
-    }
-];
+
+
+
 
 export default function PricingPage() {
     const { user, userData, refreshUserData } = useAuth();
     const [processing, setProcessing] = useState<string | null>(null);
+    const [billingCycle, setBillingCycle] = useState<"half-yearly" | "yearly">("yearly");
     const router = useRouter();
+
+    const PLANS = [
+        {
+            id: "free",
+            name: "Free Plan",
+            price: "₹0",
+            amount: 0,
+            features: [
+                "1 Paper Total",
+                "Classes 9th - 10th",
+                "View Only (No Download)"
+            ],
+            missing: [
+                "Answer Key Generation",
+                "Diagrams & Maps",
+                "Standard Support",
+                "Blueprint Mode",
+                "Teacher Mode"
+            ],
+            color: "slate",
+            popular: false
+        },
+        {
+            id: "basic",
+            name: "Basic Plan",
+            price: billingCycle === "half-yearly" ? "₹3,000" : "₹5,000",
+            amount: billingCycle === "half-yearly" ? 3000 : 5000,
+            features: [
+                "Unlimited Papers",
+                "Classes 7th - 10th",
+                "Standard Support",
+                "No Watermark"
+            ],
+            missing: [
+                "Answer Key Generation",
+                "Blueprint Mode",
+                "Classes 11th - 12th",
+                "Teacher Mode"
+            ],
+            color: "blue",
+            popular: false
+        },
+        {
+            id: "premium",
+            name: "Premium Plan",
+            price: billingCycle === "half-yearly" ? "₹3,500" : "₹6,000",
+            amount: billingCycle === "half-yearly" ? 3500 : 6000,
+            features: [
+                "Unlimited Papers",
+                "Classes 7th - 12th",
+                "Answer Key Generation",
+                "Diagram Support",
+                "Blueprint Control",
+                "Priority Support"
+            ],
+            missing: ["Teacher Mode"],
+            color: "amber",
+            popular: true
+        },
+        {
+            id: "teacher",
+            name: "Teacher Mode",
+            price: billingCycle === "half-yearly" ? "₹4,500" : "₹8,000",
+            amount: billingCycle === "half-yearly" ? 4500 : 8000,
+            features: [
+                "All Premium Features",
+                "Custom Subjects (Add up to 3)",
+                "Unit & Topic Management",
+                "AI Notes Generator (5/unit)",
+                "Custom Paper Generator",
+                "Flip Question Feature"
+            ],
+            missing: [],
+            color: "purple",
+            popular: false
+        }
+    ];
 
     const handleUpgrade = async (planId: string, amount: number) => {
         if (!user) {
@@ -187,28 +210,45 @@ export default function PricingPage() {
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <div className="flex justify-center mb-8">
+                    <div className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 inline-flex">
+                        <button
+                            onClick={() => setBillingCycle("half-yearly")}
+                            className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${billingCycle === "half-yearly" ? "bg-primary text-white shadow-md" : "text-slate-500 hover:text-slate-800"}`}
+                        >
+                            6 Months
+                        </button>
+                        <button
+                            onClick={() => setBillingCycle("yearly")}
+                            className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${billingCycle === "yearly" ? "bg-primary text-white shadow-md" : "text-slate-500 hover:text-slate-800"}`}
+                        >
+                            Yearly (Best Value)
+                        </button>
+                    </div>
+                </div>
+
+                <div className="grid md:grid-cols-4 gap-4 max-w-7xl mx-auto">
                     {PLANS.map((plan) => (
-                        <GlassCard key={plan.id} className={`p-8 relative ${plan.id === 'premium' ? 'border-amber-200 bg-amber-50/30' : ''}`}>
-                            {plan.id === 'premium' && (
-                                <div className="absolute top-0 right-0 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                                    Recommended
+                        <GlassCard key={plan.id} className={`p-6 relative ${plan.id === 'teacher' ? 'border-purple-200 bg-purple-50/30' : plan.id === 'premium' ? 'border-amber-200 bg-amber-50/30' : ''}`}>
+                            {plan.popular && (
+                                <div className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg uppercase tracking-wider">
+                                    Popular
                                 </div>
                             )}
 
                             <div className="space-y-6">
                                 <div>
-                                    <h3 className="text-2xl font-bold text-slate-900">{plan.name}</h3>
+                                    <h3 className="text-xl font-bold text-slate-900">{plan.name}</h3>
                                     <div className="mt-4 flex items-baseline justify-center">
-                                        <span className="text-4xl font-extrabold text-slate-900">{plan.price}</span>
-                                        <span className="text-slate-500 ml-1">{plan.period}</span>
+                                        <span className="text-3xl font-extrabold text-slate-900">{plan.price}</span>
+                                        <span className="text-slate-500 ml-1 text-sm">{plan.id === 'free' ? '' : billingCycle === 'half-yearly' ? '/6mo' : '/yr'}</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-3 text-left">
                                     {plan.features.map((feat) => (
                                         <div key={feat} className="flex items-center gap-3">
-                                            <div className={`p-1 rounded-full ${plan.id === 'premium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
+                                            <div className={`p-1 rounded-full ${plan.id === 'teacher' ? 'bg-purple-100 text-purple-600' : plan.id === 'premium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
                                                 <Check className="h-3 w-3" />
                                             </div>
                                             <span className="text-slate-700">{feat}</span>
@@ -225,7 +265,7 @@ export default function PricingPage() {
                                 </div>
 
                                 <Button
-                                    className={`w-full ${plan.id === 'premium' ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
+                                    className={`w-full ${plan.id === 'teacher' ? 'bg-purple-600 hover:bg-purple-700' : plan.id === 'premium' ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
                                     size="lg"
                                     isLoading={processing === plan.id}
                                     onClick={() => handleUpgrade(plan.id, plan.amount)}

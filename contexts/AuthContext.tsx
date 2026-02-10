@@ -7,7 +7,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db, googleProvider } from "@/lib/firebase";
 
 type UserRole = "student" | "teacher" | "coaching";
-type PlanType = "free" | "basic" | "premium";
+type PlanType = "free" | "basic" | "premium" | "teacher";
 
 interface UserData {
     uid: string;

@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 
 export function Navbar() {
-    const { user, loading } = useAuth();
+    const { user, userData, loading } = useAuth();
     const pathname = usePathname();
 
     return (
@@ -35,9 +35,9 @@ export function Navbar() {
 
                     {!loading && (
                         user ? (
-                            <Link href="/dashboard">
+                            <Link href={userData?.plan === 'teacher' ? "/teacher-dashboard" : "/dashboard"}>
                                 <Button size="sm" variant="outline" className="gap-2">
-                                    <UserCircle className="h-4 w-4" /> Dashboard
+                                    <UserCircle className="h-4 w-4" /> {userData?.plan === 'teacher' ? 'Teacher Panel' : 'Dashboard'}
                                 </Button>
                             </Link>
                         ) : (
