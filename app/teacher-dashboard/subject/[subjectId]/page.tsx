@@ -321,8 +321,19 @@ export default function SubjectUnitsPage() {
                                                 </Button>
                                             </div>
                                             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-                                                <div className="prose prose-slate max-w-none text-sm line-clamp-[10] mask-linear-fade">
-                                                    <ReactMarkdown>{unit.notesContent}</ReactMarkdown>
+                                                <div className="prose prose-sm prose-slate max-w-none line-clamp-[10] mask-linear-fade">
+                                                    <ReactMarkdown
+                                                        components={{
+                                                            h1: ({ node, ...props }) => <h1 className="text-xl font-bold text-slate-900 border-b border-slate-200 pb-1 mb-3" {...props} />,
+                                                            h2: ({ node, ...props }) => <h2 className="text-base font-bold text-slate-800 mt-4 mb-2 bg-slate-50 p-1 px-2 rounded border-l-2 border-indigo-500" {...props} />,
+                                                            h3: ({ node, ...props }) => <h3 className="text-sm font-semibold text-slate-700 mt-3 mb-1" {...props} />,
+                                                            p: ({ node, ...props }) => <p className="mb-2 text-slate-600 leading-relaxed" {...props} />,
+                                                            ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-1 mb-2 text-slate-600 marker:text-indigo-400" {...props} />,
+                                                            blockquote: ({ node, ...props }) => <blockquote className="border-l-2 border-amber-400 bg-amber-50 p-2 my-3 rounded-r text-slate-600 text-xs not-italic" {...props} />,
+                                                        }}
+                                                    >
+                                                        {unit.notesContent}
+                                                    </ReactMarkdown>
                                                 </div>
                                                 <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent flex items-end justify-center pb-4">
                                                     <Button
@@ -355,18 +366,30 @@ export default function SubjectUnitsPage() {
                 isOpen={!!viewingNote}
                 onClose={() => setViewingNote(null)}
                 title={viewingNote?.name || "Topic Notes"}
-                className="max-h-[85vh]"
+                className="max-h-[85vh] bg-slate-50"
             >
-                <div className="prose prose-lg prose-indigo max-w-none font-serif leading-relaxed text-slate-800">
+                <div className="prose prose-slate max-w-none font-sans text-slate-800 p-2">
                     <ReactMarkdown
                         components={{
-                            h1: ({ node, ...props }) => <h1 className="text-3xl font-bold text-indigo-900 border-b border-indigo-100 pb-2 mb-6" {...props} />,
-                            h2: ({ node, ...props }) => <h2 className="text-2xl font-semibold text-slate-800 mt-8 mb-4" {...props} />,
-                            h3: ({ node, ...props }) => <h3 className="text-xl font-medium text-indigo-700 mt-6 mb-3" {...props} />,
-                            p: ({ node, ...props }) => <p className="mb-4 text-slate-700" {...props} />,
-                            ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-4 space-y-1" {...props} />,
-                            li: ({ node, ...props }) => <li className="text-slate-700" {...props} />,
-                            blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-indigo-300 pl-4 italic text-slate-600 my-4 bg-slate-50 py-2 pr-2 rounded-r" {...props} />,
+                            h1: ({ node, ...props }) => <h1 className="text-3xl font-bold font-serif text-slate-900 border-b-2 border-slate-900 pb-2 mb-6 mt-4" {...props} />,
+                            h2: ({ node, ...props }) => <h2 className="text-xl font-bold text-slate-800 mt-8 mb-4 flex items-center gap-2 bg-slate-100 p-2 rounded-lg border-l-4 border-indigo-500" {...props} />,
+                            h3: ({ node, ...props }) => <h3 className="text-lg font-semibold text-slate-700 mt-6 mb-2 underline decoration-indigo-200 underline-offset-4" {...props} />,
+                            p: ({ node, ...props }) => <p className="mb-4 text-slate-700 leading-relaxed" {...props} />,
+                            ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-2 mb-4 text-slate-700 marker:text-indigo-500" {...props} />,
+                            ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-2 mb-4 text-slate-700 marker:font-bold marker:text-slate-900" {...props} />,
+                            li: ({ node, ...props }) => <li className="pl-1" {...props} />,
+                            blockquote: ({ node, ...props }) => (
+                                <blockquote className="border-l-4 border-amber-400 bg-amber-50 p-4 my-6 rounded-r-lg shadow-sm text-slate-700 not-italic" {...props} />
+                            ),
+                            // Styling for tables
+                            table: ({ node, ...props }) => <div className="overflow-x-auto my-6 rounded-lg border border-slate-200"><table className="w-full text-sm text-left" {...props} /></div>,
+                            thead: ({ node, ...props }) => <thead className="bg-slate-100 text-slate-700 font-bold uppercase" {...props} />,
+                            tbody: ({ node, ...props }) => <tbody className="divide-y divide-slate-100" {...props} />,
+                            tr: ({ node, ...props }) => <tr className="hover:bg-slate-50 transition-colors" {...props} />,
+                            th: ({ node, ...props }) => <th className="px-4 py-3 whitespace-nowrap" {...props} />,
+                            td: ({ node, ...props }) => <td className="px-4 py-3" {...props} />,
+                            strong: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
+                            hr: ({ node, ...props }) => <hr className="my-8 border-slate-200" {...props} />,
                         }}
                     >
                         {viewingNote?.notesContent || ""}

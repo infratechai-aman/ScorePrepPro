@@ -24,13 +24,72 @@ export async function POST(req: Request) {
         ${topicList}
 
         Guidelines:
-        1. **Structure**: Start with a comma-separated list of topics covered. Then use clear headings, bullet points, and subheadings.
-        2. **Study Friendly**: Explain complex concepts simply. Use analogies where helpful.
-        3. **Highlight Important**: Pay special attention to topics marked as IMPORTANT.
-        4. **Key Takeaways**: End with a summary of key points.
-        5. **Format**: Return the response in clean Markdown.
+        1. **Strict Structure**: You MUST follow this exact "UNIVERSAL NOTES TEMPLATE" for the notes. Do not skip sections unless absolutely irrelevant.
 
-        Make the notes detailed enough for a student to understand the unit completely without needing a textbook.
+        📘 **UNIVERSAL NOTES TEMPLATE**
+        
+        # [Topic Name]
+        
+        ### 1️⃣ Exam Weightage
+        **Weightage**: [High/Medium/Low] (Estimate based on standard curriculum)
+        
+        ### 2️⃣ Definition
+        > **Definition**: [Short, direct explanation (2-3 lines max)]
+        
+        ### 3️⃣ Core Concept
+        *   [Point 1]
+        *   [Point 2]
+        *   [Point 3]
+        *   [Point 4]
+        *   [Point 5]
+        *(Bullet points only, no long paragraphs)*
+        
+        ### 4️⃣ Working / Process / Flow
+        1.  [Step 1]
+        2.  [Step 2]
+        3.  [Step 3]
+        
+        ### 5️⃣ Key Components
+        *   **[Component A]**: [Brief description]
+        *   **[Component B]**: [Brief description]
+        
+        ### 6️⃣ Advantages & Disadvantages
+        *   ✅ **Advantages**: [Point 1], [Point 2]
+        *   ❌ **Disadvantages**: [Point 1], [Point 2]
+        
+        ### 7️⃣ Real-World Examples
+        *   Example 1: [Example]
+        *   Example 2: [Example]
+        
+        ### 8️⃣ Important Points (IMP)
+        > 💡 **IMP**: 
+        > *   **Keyword**: [Definition]
+        > *   **Trap**: [Common mistake students make]
+        > *   **Fact**: [Key fact for exams]
+
+        ### 9️⃣ Comparison (If applicable)
+        | Feature | This Topic | Related Concept |
+        | :--- | :--- | :--- |
+        | [Feature 1] | [Value] | [Value] |
+        | [Feature 2] | [Value] | [Value] |
+
+        ### 🔟 Exam Answer Frame (5-Marks)
+        *   **Definition**: [One line]
+        *   **Working**: [Step-by-step]
+        *   **Example**: [Real world]
+        *   **Conclusion**: [One line summary]
+        
+        ### 1️⃣1️⃣ Quick Revision Box
+        > 🚀 **Quick Revision**:
+        > *   **Keywords**: [Keyword 1], [Keyword 2], [Keyword 3]
+        > *   **Concept**: [One line summary]
+
+        **Format Rules**:
+        - Use clean Markdown. 
+        - Use emojis as section icons where appropriate (like above).
+        - Use Blockquotes (>) for Definitions, IMP sections, and Revision Boxes to make them stand out stylistically.
+        - Bold (**text**) key terms.
+        - Keep it "Exam Ready" and "Aesthetic".
         `;
 
         const completion = await openai.chat.completions.create({
