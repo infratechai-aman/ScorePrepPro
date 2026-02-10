@@ -7,16 +7,39 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Crown, FileText, Key, TrendingUp, LogOut } from "lucide-react";
+import { Crown, FileText, Key, TrendingUp, LogOut, Clock, ChevronRight, Eye } from "lucide-react";
+import { collection, query, orderBy, limit, getDocs, Timestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 export default function DashboardPage() {
     const { user, userData, logout, loading } = useAuth();
     const { usage, limits } = useUsage();
     const router = useRouter();
+    const [recentPapers, setRecentPapers] = useState<any[]>([]);
+    const [viewPaper, setViewPaper] = useState<any | null>(null); // For modal
 
     useEffect(() => {
         if (!loading && !user) {
             router.push("/login");
+        } else if (user) {
+            // Fetch History
+            const fetchHistory = async () => {
+                try {
+                    const q = query(
+                        collection(db, "users", user.uid, "papers"),
+                        orderBy("createdAt", "desc"),
+                        limit(5)
+                    );
+                    const querySnapshot = await getDocs(q);
+                    const papers = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setRecentPapers(papers);
+                } catch (error) {
+                    console.error("Error fetching history:", error);
+                }
+            };
+            fetchHistory();
         }
     }, [user, loading, router]);
 
@@ -66,7 +89,7 @@ export default function DashboardPage() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-slate-500">Current Plan</p>
-                                    <h3 className="text-xl font-bold text-slate-900 capitalize">{userData.plan} Plan</h3>
+                                    <h3 className="text-xl font-bold text-slate-900 capitalize">{userData.plan === 'basic' ? 'Free' : userData.plan} Plan</h3>
                                 </div>
                             </div>
 
@@ -126,11 +149,57 @@ export default function DashboardPage() {
                 {/* Recent Activity Placeholder */}
                 <div className="pt-4">
                     <h2 className="text-xl font-bold text-slate-800 mb-4">Recent Activity</h2>
-                    <GlassCard className="p-8 text-center text-slate-500 italic">
-                        <TrendingUp className="h-8 w-8 mx-auto mb-2 text-slate-300" />
-                        No recent papers found. Start generating to see history here.
-                    </GlassCard>
+
+                    {recentPapers.length > 0 ? (
+                        <div className="grid gap-4">
+                            {recentPapers.map((paper) => (
+                                <GlassCard key={paper.id} className="p-4 flex items-center justify-between group hover:border-primary/30 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition-colors">
+                                            <FileText className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-slate-900">{paper.subject} - Class {paper.grade}</h4>
+                                            <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                                <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {paper.createdAt?.seconds ? new Date(paper.createdAt.seconds * 1000).toLocaleDateString() : 'Just now'}</span>
+                                                <span>•</span>
+                                                <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-medium capitalize">{paper.difficulty}</span>
+                                                <span>•</span>
+                                                <span>{paper.totalMarks} Marks</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <Button variant="outline" size="sm" onClick={() => setViewPaper(paper)}>
+                                        <Eye className="mr-2 h-4 w-4" /> View
+                                    </Button>
+                                </GlassCard>
+                            ))}
+                        </div>
+                    ) : (
+                        <GlassCard className="p-8 text-center text-slate-500 italic">
+                            <TrendingUp className="h-8 w-8 mx-auto mb-2 text-slate-300" />
+                            No recent papers found. Start generating to see history here.
+                        </GlassCard>
+                    )}
                 </div>
+
+                {/* View Paper Modal */}
+                {viewPaper && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setViewPaper(null)}>
+                        <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+                            <div className="sticky top-0 bg-white border-b border-slate-100 p-4 flex justify-between items-center">
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900">{viewPaper.subject} - Class {viewPaper.grade}</h3>
+                                    <p className="text-xs text-slate-500">Generated on {viewPaper.createdAt?.seconds ? new Date(viewPaper.createdAt.seconds * 1000).toLocaleString() : 'Just now'}</p>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={() => setViewPaper(null)}>Close</Button>
+                            </div>
+                            <div className="p-8 prose prose-slate max-w-none">
+                                <ReactMarkdown>{viewPaper.content}</ReactMarkdown>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
             </div>
         </main>

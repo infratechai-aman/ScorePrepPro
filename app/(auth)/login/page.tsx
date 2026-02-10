@@ -26,7 +26,7 @@ export default function LoginPage() {
         setError("");
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            router.push("/dashboard");
+            router.push("/");
         } catch (err: any) {
             setError(err.message.replace("Firebase: ", ""));
         } finally {
@@ -37,7 +37,7 @@ export default function LoginPage() {
     const handleGoogleLogin = async () => {
         try {
             await loginWithGoogle();
-            router.push("/dashboard");
+            router.push("/");
         } catch (err: any) {
             setError("Failed to login with Google.");
         }

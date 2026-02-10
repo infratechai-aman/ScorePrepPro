@@ -7,7 +7,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db, googleProvider } from "@/lib/firebase";
 
 type UserRole = "student" | "teacher" | "coaching";
-type PlanType = "basic" | "premium";
+type PlanType = "free" | "basic" | "premium";
 
 interface UserData {
     uid: string;
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     email: auth?.currentUser?.email || null,
                     name: auth?.currentUser?.displayName || null,
                     role: "student", // Default role
-                    plan: "basic",
+                    plan: "free", // Default plan
                     planExpiry: null,
                     papersGenerated: 0,
                     keysGenerated: 0,

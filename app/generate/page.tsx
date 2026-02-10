@@ -21,6 +21,8 @@ import { SYLLABUS_DB } from "@/lib/syllabus";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsage } from "@/hooks/useUsage";
 import { useRouter } from "next/navigation";
+import { db } from "@/lib/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 // Hack for file-saver if not installed
 const saveBlob = (blob: Blob, filename: string) => {
@@ -145,6 +147,24 @@ export default function GeneratorPage() {
             // INCREMENT USAGE
             if (user) {
                 await incrementUsage("paper");
+
+                // SAVE PAPER TO FIREBASE HISTORY
+                try {
+                    await addDoc(collection(db, "users", user.uid, "papers"), {
+                        board,
+                        grade,
+                        subject,
+                        chapters: selectedChapters,
+                        totalMarks: parseInt(totalMarks),
+                        difficulty,
+                        content: data.content,
+                        createdAt: serverTimestamp(),
+                        solution: null // Will be updated if generated later
+                    });
+                } catch (saveError) {
+                    console.error("Failed to save paper to history:", saveError);
+                    // Don't block the user, just log it
+                }
             } else {
                 localStorage.setItem("free_preview_used", "true");
             }
@@ -197,6 +217,10 @@ export default function GeneratorPage() {
     };
 
     const handleDownloadPDF = async () => {
+        if (!checkLimit("download")) {
+            setError("Download is available in Basic & Premium plans only.");
+            return;
+        }
         if (!contentRef.current) return;
         try {
             const canvas = await html2canvas(contentRef.current, { scale: 2 });
@@ -212,6 +236,10 @@ export default function GeneratorPage() {
     };
 
     const handleDownloadDOCX = async () => {
+        if (!checkLimit("download")) {
+            setError("Download is available in Basic & Premium plans only.");
+            return;
+        }
         const contentToExport = generatedPaper + (generatedSolution ? "\n\n" + generatedSolution : "");
         const lines = contentToExport.split("\n");
         const children = lines.map(line => {

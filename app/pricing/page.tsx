@@ -19,6 +19,25 @@ declare global {
 
 const PLANS = [
     {
+        id: "free",
+        name: "Free Plan",
+        price: "₹0",
+        amount: 0,
+        period: "/forever",
+        features: [
+            "1 Paper Total",
+            "Classes 9th - 10th",
+            "View Only (No Download)"
+        ],
+        missing: [
+            "Answer Key Generation",
+            "Diagrams & Maps",
+            "Standard Support",
+            "Blueprint Mode"
+        ],
+        color: "slate"
+    },
+    {
         id: "basic",
         name: "Basic Plan",
         price: "₹499",
@@ -168,7 +187,7 @@ export default function PricingPage() {
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
                     {PLANS.map((plan) => (
                         <GlassCard key={plan.id} className={`p-8 relative ${plan.id === 'premium' ? 'border-amber-200 bg-amber-50/30' : ''}`}>
                             {plan.id === 'premium' && (
