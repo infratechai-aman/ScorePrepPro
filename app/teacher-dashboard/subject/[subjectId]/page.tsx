@@ -331,6 +331,15 @@ export default function SubjectUnitsPage() {
                                                             p: ({ node, ...props }) => <p className="mb-2 text-slate-600 leading-relaxed" {...props} />,
                                                             ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-1 mb-2 text-slate-600 marker:text-indigo-400" {...props} />,
                                                             blockquote: ({ node, ...props }) => <blockquote className="border-l-2 border-amber-400 bg-amber-50 p-2 my-3 rounded-r text-slate-600 text-xs not-italic" {...props} />,
+                                                            pre: ({ node, ...props }) => <pre className="bg-slate-900 text-cyan-300 p-3 rounded-lg overflow-x-auto font-mono text-xs shadow-inner my-3 border border-slate-800" {...props} />,
+                                                            code: ({ node, className, children, ...props }: any) => {
+                                                                const isInline = !String(children).includes("\n");
+                                                                return isInline ? (
+                                                                    <code className="bg-indigo-50 text-indigo-600 px-1 py-0.5 rounded font-mono text-xs" {...props}>{children}</code>
+                                                                ) : (
+                                                                    <code className="bg-transparent" {...props}>{children}</code>
+                                                                );
+                                                            },
                                                         }}
                                                     >
                                                         {unit.notesContent}
@@ -391,6 +400,23 @@ export default function SubjectUnitsPage() {
                             td: ({ node, ...props }) => <td className="px-4 py-3" {...props} />,
                             strong: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
                             hr: ({ node, ...props }) => <hr className="my-8 border-slate-200" {...props} />,
+                            pre: ({ node, ...props }) => (
+                                <div className="my-6 rounded-lg overflow-hidden border border-slate-800 shadow-md bg-slate-900 ring-1 ring-white/10">
+                                    <div className="bg-slate-800/50 px-4 py-2 text-[10px] uppercase tracking-widest font-mono text-slate-500 border-b border-slate-700/50 flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+                                        Blueprint View
+                                    </div>
+                                    <pre className="p-4 overflow-x-auto text-cyan-400 font-mono text-sm leading-relaxed" {...props} />
+                                </div>
+                            ),
+                            code: ({ node, className, children, ...props }: any) => {
+                                const isInline = !String(children).includes("\n");
+                                return isInline ? (
+                                    <code className="bg-slate-100 text-pink-600 px-1.5 py-0.5 rounded font-mono text-sm border border-slate-200" {...props}>{children}</code>
+                                ) : (
+                                    <code className="" {...props}>{children}</code>
+                                );
+                            },
                         }}
                     >
                         {viewingNote?.notesContent || ""}

@@ -47,8 +47,18 @@ export async function POST(req: Request) {
         *   [Point 4]
         *   [Point 5]
         *(Bullet points only, no long paragraphs)*
+
+        ### 3. Diagram / Flowchart (IF REQUIRED)
+        > **Blueprint**:
+        > \`\`\`text
+        > [Input]  --->  [Process]  --->  [Output]
+        >                   |
+        >                   v
+        >             [Feedback]
+        > \`\`\`
+        *(Use simple text-based diagrams for processes/structures)*
         
-        ### 3. Working / Process / Flow (OMIT IF NOT APPLICABLE)
+        ### 4. Working / Process / Flow (OMIT IF NOT APPLICABLE)
         1.  [Step 1]
         2.  [Step 2]
         3.  [Step 3]

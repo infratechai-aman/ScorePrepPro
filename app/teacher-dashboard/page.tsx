@@ -114,9 +114,14 @@ export default function TeacherDashboardPage() {
                             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                                 <BookOpen className="h-5 w-5 text-primary" /> Your Custom Subjects
                             </h2>
-                            <Button size="sm" onClick={() => setIsAddingSubject(true)} disabled={subjects.length >= 3}>
-                                <Plus className="h-4 w-4 mr-2" /> Add Subject
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button size="sm" variant="secondary" onClick={() => router.push("/teacher-dashboard/question-generator")}>
+                                    <FileText className="h-4 w-4 mr-2" /> Create Paper
+                                </Button>
+                                <Button size="sm" onClick={() => setIsAddingSubject(true)} disabled={subjects.length >= 3}>
+                                    <Plus className="h-4 w-4 mr-2" /> Add Subject
+                                </Button>
+                            </div>
                         </div>
 
                         {isAddingSubject && (
