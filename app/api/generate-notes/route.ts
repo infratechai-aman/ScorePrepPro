@@ -24,7 +24,7 @@ export async function POST(req: Request) {
         ${topicList}
 
         Guidelines:
-        1. **Structure**: Use clear headings, bullet points, and subheadings.
+        1. **Structure**: Start with a comma-separated list of topics covered. Then use clear headings, bullet points, and subheadings.
         2. **Study Friendly**: Explain complex concepts simply. Use analogies where helpful.
         3. **Highlight Important**: Pay special attention to topics marked as IMPORTANT.
         4. **Key Takeaways**: End with a summary of key points.

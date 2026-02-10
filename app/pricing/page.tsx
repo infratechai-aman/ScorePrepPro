@@ -265,16 +265,17 @@ export default function PricingPage() {
                                 </div>
 
                                 <Button
-                                    className={`w-full ${plan.id === 'teacher' ? 'bg-purple-600 hover:bg-purple-700' : plan.id === 'premium' ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
+                                    className={`w-full h-auto py-3 whitespace-normal text-center leading-snug ${plan.id === 'teacher' ? 'bg-purple-600 hover:bg-purple-700' : plan.id === 'premium' ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
                                     size="lg"
                                     isLoading={processing === plan.id}
                                     onClick={() => handleUpgrade(plan.id, plan.amount)}
                                     disabled={userData?.plan === plan.id}
                                 >
                                     {userData?.plan === plan.id ? "Current Plan" : (
-                                        <>
-                                            <CreditCard className="mr-2 h-4 w-4" /> Upgrade to {plan.name}
-                                        </>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <CreditCard className="h-5 w-5 flex-shrink-0" />
+                                            <span>Upgrade to {plan.name}</span>
+                                        </div>
                                     )}
                                 </Button>
                             </div>

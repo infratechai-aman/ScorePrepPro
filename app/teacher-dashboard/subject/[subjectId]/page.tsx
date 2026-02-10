@@ -3,6 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Plus, Trash2, FileText, Sparkles, Download, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
@@ -42,6 +43,7 @@ export default function SubjectUnitsPage() {
 
     // AI Generation State
     const [generatingNoteId, setGeneratingNoteId] = useState<string | null>(null);
+    const [viewingNote, setViewingNote] = useState<Unit | null>(null);
 
     useEffect(() => {
         if (!loading && !user) {
@@ -270,14 +272,27 @@ export default function SubjectUnitsPage() {
                                     {/* Topics Section */}
                                     <div>
                                         <h4 className="font-bold text-sm text-slate-700 mb-3 uppercase tracking-wide">Topics in this Unit</h4>
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            {unit.topics.map(topic => (
-                                                <span key={topic.id} className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-2 ${topic.isImp ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-slate-600 border-slate-200'}`}>
-                                                    {topic.isImp && <Sparkles className="h-3 w-3 text-amber-500" />}
-                                                    {topic.name}
-                                                    <button onClick={() => handleDeleteTopic(unit.id, topic.id)} className="hover:text-red-500 ml-1">×</button>
-                                                </span>
-                                            ))}
+                                        <div className="mb-4 text-sm text-slate-700 leading-relaxed bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                                            {unit.topics.length > 0 ? (
+                                                unit.topics.map((topic, i) => (
+                                                    <span key={topic.id} className="group relative inline-block">
+                                                        <span className={`${topic.isImp ? 'font-semibold text-amber-700' : 'text-slate-700'}`}>
+                                                            {topic.name}
+                                                            {topic.isImp && <Sparkles className="inline h-3 w-3 text-amber-500 ml-1" />}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => handleDeleteTopic(unit.id, topic.id)}
+                                                            className="ml-0.5 -mr-1 text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 font-bold px-1 transition-opacity"
+                                                            title="Delete topic"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                        {i < unit.topics.length - 1 && <span className="mr-2">, </span>}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-slate-400 italic">No topics added yet.</span>
+                                            )}
                                         </div>
                                         <div className="flex gap-2 max-w-lg">
                                             <input
@@ -286,6 +301,7 @@ export default function SubjectUnitsPage() {
                                                 className="flex-1 px-3 py-1.5 text-sm rounded-md border border-slate-300"
                                                 value={newTopic}
                                                 onChange={(e) => setNewTopic(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleAddTopic(unit.id)}
                                             />
                                             <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
                                                 <input type="checkbox" checked={isImpTopic} onChange={(e) => setIsImpTopic(e.target.checked)} className="rounded border-slate-300 text-primary focus:ring-primary" />
@@ -304,10 +320,19 @@ export default function SubjectUnitsPage() {
                                                     <Download className="h-3 w-3 mr-2" /> Download PDF
                                                 </Button>
                                             </div>
-                                            <div className="bg-white p-6 rounded-xl border border-slate-200 prose prose-slate max-w-none shadow-sm text-sm">
-                                                <ReactMarkdown>{(unit.notesContent ? unit.notesContent.substring(0, 500) : "") + "..."}</ReactMarkdown>
-                                                <div className="mt-4 pt-4 border-t border-dashed border-slate-200 text-center">
-                                                    <button className="text-primary text-sm font-medium hover:underline">View Full Notes</button>
+                                            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                                                <div className="prose prose-slate max-w-none text-sm line-clamp-[10] mask-linear-fade">
+                                                    <ReactMarkdown>{unit.notesContent}</ReactMarkdown>
+                                                </div>
+                                                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent flex items-end justify-center pb-4">
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="shadow-lg border border-indigo-100 text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
+                                                        onClick={() => setViewingNote(unit)}
+                                                    >
+                                                        View Full Notes
+                                                    </Button>
                                                 </div>
                                             </div>
                                         </div>
@@ -324,6 +349,33 @@ export default function SubjectUnitsPage() {
                     )}
                 </div>
             </div>
+
+            {/* Full Notes Modal */}
+            <Modal
+                isOpen={!!viewingNote}
+                onClose={() => setViewingNote(null)}
+                title={viewingNote?.name || "Topic Notes"}
+                className="max-h-[85vh]"
+            >
+                <div className="prose prose-lg prose-indigo max-w-none font-serif leading-relaxed text-slate-800">
+                    <ReactMarkdown
+                        components={{
+                            h1: ({ node, ...props }) => <h1 className="text-3xl font-bold text-indigo-900 border-b border-indigo-100 pb-2 mb-6" {...props} />,
+                            h2: ({ node, ...props }) => <h2 className="text-2xl font-semibold text-slate-800 mt-8 mb-4" {...props} />,
+                            h3: ({ node, ...props }) => <h3 className="text-xl font-medium text-indigo-700 mt-6 mb-3" {...props} />,
+                            p: ({ node, ...props }) => <p className="mb-4 text-slate-700" {...props} />,
+                            ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-4 space-y-1" {...props} />,
+                            li: ({ node, ...props }) => <li className="text-slate-700" {...props} />,
+                            blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-indigo-300 pl-4 italic text-slate-600 my-4 bg-slate-50 py-2 pr-2 rounded-r" {...props} />,
+                        }}
+                    >
+                        {viewingNote?.notesContent || ""}
+                    </ReactMarkdown>
+                </div>
+                <div className="mt-8 pt-4 border-t border-slate-100 flex justify-end">
+                    <Button onClick={() => setViewingNote(null)}>Close</Button>
+                </div>
+            </Modal>
         </main>
     );
 }
