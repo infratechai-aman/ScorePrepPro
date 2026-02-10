@@ -25,19 +25,22 @@ export async function POST(req: Request) {
         ${topicList}
 
         Guidelines:
-        1. **Strict Structure**: You MUST follow this exact "UNIVERSAL NOTES TEMPLATE" for the notes. Do not skip sections unless absolutely irrelevant.
+        1. **Strict Structure**: Follow the "UNIVERSAL NOTES TEMPLATE" below, but use your intelligence to **OMIT** sections that are completely irrelevant to the specific topic (e.g., do not invent a "Working/Process" for a purely theoretical definition).
+        2. **Content Depth**: 
+           - If the topic is explicitly "Advantages & Disadvantages", you MUST list at least 4-5 points for each, not just 2.
+           - Keep content **BRIEF** and **TO THE POINT**. No fluff.
+        3. **Formatting**:
+           - **Tables**: Ensure all tables are properly formatted with newlines between rows so they render correctly.
+           - **No Emojis**: Do not use emojis in headers or text.
 
         📘 **UNIVERSAL NOTES TEMPLATE**
         
         # [Topic Name]
         
-        ### 1. Exam Weightage
-        **Weightage**: [High/Medium/Low] (Estimate based on standard curriculum)
-        
-        ### 2. Definition
+        ### 1. Definition
         > **Definition**: [Short, direct explanation (2-3 lines max)]
         
-        ### 3. Core Concept
+        ### 2. Core Concept
         *   [Point 1]
         *   [Point 2]
         *   [Point 3]
@@ -45,52 +48,53 @@ export async function POST(req: Request) {
         *   [Point 5]
         *(Bullet points only, no long paragraphs)*
         
-        ### 4. Working / Process / Flow
+        ### 3. Working / Process / Flow (OMIT IF NOT APPLICABLE)
         1.  [Step 1]
         2.  [Step 2]
         3.  [Step 3]
         
-        ### 5. Key Components
+        ### 4. Key Components
         *   **[Component A]**: [Brief description]
         *   **[Component B]**: [Brief description]
         
-        ### 6. Advantages & Disadvantages
-        *   **Advantages**: [Point 1], [Point 2]
-        *   **Disadvantages**: [Point 1], [Point 2]
+        ### 5. Advantages & Disadvantages (Expand if this is the main topic)
+        *   **Advantages**: [Point 1], [Point 2], [Point 3], [Point 4]
+        *   **Disadvantages**: [Point 1], [Point 2], [Point 3], [Point 4]
         
-        ### 7. Real-World Examples
+        ### 6. Real-World Examples
         *   Example 1: [Example]
         *   Example 2: [Example]
         
-        ### 8. Important Points (IMP)
+        ### 7. Important Points (IMP)
         > **IMP**: 
         > *   **Keyword**: [Definition]
         > *   **Trap**: [Common mistake students make]
         > *   **Fact**: [Key fact for exams]
 
-        ### 9. Comparison (If applicable)
+        ### 8. Comparison (If applicable)
         | Feature | This Topic | Related Concept |
         | :--- | :--- | :--- |
         | [Feature 1] | [Value] | [Value] |
         | [Feature 2] | [Value] | [Value] |
+        *(Ensure newlines between table rows)*
 
-        ### 10. Exam Answer Frame (5-Marks)
+        ### 9. Exam Answer Frame (5-Marks)
         *   **Definition**: [One line]
         *   **Working**: [Step-by-step]
         *   **Example**: [Real world]
         *   **Conclusion**: [One line summary]
         
-        ### 11. Quick Revision Box
+        ### 10. Quick Revision Box
         > **Quick Revision**:
         > *   **Keywords**: [Keyword 1], [Keyword 2], [Keyword 3]
         > *   **Concept**: [One line summary]
 
         **Format Rules**:
         - Use clean Markdown. 
-        - DO NOT use emojis in headers or text.
-        - Use Blockquotes (>) for Definitions, IMP sections, and Revision Boxes to make them stand out stylistically.
+        - **NO EMOJIS**.
+        - Blockquotes (>) for Definitions, IMP, Revision.
         - Bold (**text**) key terms.
-        - Keep it "Exam Ready" and "Aesthetic".
+        - **Tables MUST have newlines**.
         `;
 
         const completion = await openai.chat.completions.create({
