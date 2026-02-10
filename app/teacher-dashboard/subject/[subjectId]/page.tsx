@@ -189,12 +189,13 @@ export default function SubjectUnitsPage() {
                     fetchUnits(); // Refresh to show new notes
                 }
             } else {
-                alert("Failed to generate notes. Please try again.");
+                const errorData = data.error || "Unknown error";
+                alert(`Failed to generate notes: ${errorData}`);
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error generating notes:", error);
-            alert("Error generating notes.");
+            alert(`Error generating notes: ${error.message || "Please check your connection and try again."}`);
         } finally {
             setGeneratingNoteId(null);
         }

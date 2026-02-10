@@ -2,7 +2,8 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
+export const maxDuration = 60; // 60 seconds timeout
 
 export async function POST(req: Request) {
     try {
