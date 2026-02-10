@@ -5,7 +5,7 @@ export const runtime = "edge";
 
 export async function POST(req: Request) {
     try {
-        const { subject, units, pattern, totalMarks, title, duration } = await req.json();
+        const { subject, units, pattern, totalMarks, title, duration, collegeName, includeAnswerKey } = await req.json();
 
         // units: [{ name: "Unit 1", weight: 20 }, ...]
         // pattern: [{ name: "Section A", type: "MCQ", count: 5, marksPerQuestion: 1 }, ...]
@@ -18,29 +18,36 @@ export async function POST(req: Request) {
         const prompt = `
         You are an expert examiner for ${subject}. Create a professional question paper.
 
+        **College/Institute**: ${collegeName ? collegeName : "Your Institute Name"}
+        
         **Paper Details**:
         - **Title**: ${title}
         - **Subject**: ${subject}
         - **Time**: ${duration} Minutes
         - **Max Marks**: ${totalMarks}
 
-        **Syllabus & Weightage**:
+        **Syllabus & Weightage (STRICTLY ADHERE)**:
         ${unitList}
-        *(Distribute questions across units based on the weightage percentages provided. High weightage units should have more questions.)*
+        *(IMPORTANT: Do NOT ask questions from topics outside these units.)*
 
         **Question Paper Pattern (STRICTLY FOLLOW THIS)**:
         ${patternList}
 
         **Instructions**:
-        1. create specific, high-quality academic questions.
-        2. **Do not** provide answers/solutions in this output. Only questions.
-        3. Ensure the total marks sum up to exactly ${totalMarks}.
-        4. If a section is "Diagram/Map", ask students to draw/label a specific diagram.
-        5. Use clear, professional Markdown formatting.
+        1. Create specific, high-quality academic questions.
+        2. **Numbering**: Use strictly 1. 2. 3. ... across sections (or restart if typical for this subject, but be consistent).
+        3. **Formatting**: Center the College Name and Title if possible (use HTML <center> tags or markdown centering).
+        4. **Scope**: Questions must be ONLY from the listed units.
+        ${includeAnswerKey ? "5. **Answer Key**: After the question paper, provide a brief 'Answer Key' section." : "5. **No Answers**: Do NOT provide answers/solutions."}
 
         **Output Format**:
-        # ${title}
-        **Subject**: ${subject}
+        
+        <center>
+        # ${collegeName ? collegeName : "EXAMINATION PAPER"}
+        ### ${title}
+        </center>
+        
+        **Subject**: ${subject}  
         **Time**: ${duration} Mins | **Max Marks**: ${totalMarks}
         
         ---
@@ -57,12 +64,19 @@ export async function POST(req: Request) {
         1. [Question]
         2. [Question]
         ...
+
+        ${includeAnswerKey ? `
+        ---
+        ## Answer Key
+        1. [Brief Answer]
+        2. [Brief Answer]
+        ...` : ""}
         `;
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
-                { role: "system", content: "You are a vital assistant for a teacher. Generate high-quality exam papers." },
+                { role: "system", content: "You are a professional examiner. Generate high-quality exam papers with precise formatting." },
                 { role: "user", content: prompt }
             ],
             temperature: 0.7,

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Crown, BookOpen, Plus, FileText, Settings, LogOut, Trash2 } from "lucide-react";
-import { collection, query, getDocs, addDoc, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
+import { collection, query, getDocs, addDoc, deleteDoc, doc, serverTimestamp, getCountFromServer } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export default function TeacherDashboardPage() {
@@ -35,7 +35,17 @@ export default function TeacherDashboardPage() {
         try {
             const q = query(collection(db, "users", user.uid, "custom_subjects"));
             const querySnapshot = await getDocs(q);
-            const subs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const subs = await Promise.all(querySnapshot.docs.map(async (doc) => {
+                const unitsColl = collection(db, "users", user.uid, "custom_subjects", doc.id, "units");
+                const snapshot = await getCountFromServer(unitsColl);
+                return {
+                    id: doc.id,
+                    ...doc.data(),
+                    unitCount: snapshot.data().count
+                };
+            }));
+
             setSubjects(subs);
         } catch (error) {
             console.error("Error fetching subjects:", error);
@@ -160,7 +170,7 @@ export default function TeacherDashboardPage() {
                                             </div>
                                             <div>
                                                 <h4 className="font-bold text-slate-900">{subject.name}</h4>
-                                                <p className="text-xs text-slate-500">{subject.type} • 0 Units Created</p>
+                                                <p className="text-xs text-slate-500">{subject.type} • {subject.unitCount || 0} Units Created</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">

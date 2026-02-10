@@ -46,6 +46,8 @@ export default function TeacherQuestionGenerator() {
 
     // Setup State
     const [paperTitle, setPaperTitle] = useState("");
+    const [collegeName, setCollegeName] = useState("");
+    const [includeAnswerKey, setIncludeAnswerKey] = useState(false);
     const [duration, setDuration] = useState("120"); // minutes
 
     // Unit Selection & Weightage
@@ -149,6 +151,8 @@ export default function TeacherQuestionGenerator() {
                     pattern: sections,
                     totalMarks,
                     title: paperTitle || `Unit Test - ${subjects.find(s => s.id === selectedSubject)?.name}`,
+                    collegeName,
+                    includeAnswerKey,
                     duration
                 })
             });
@@ -218,6 +222,24 @@ export default function TeacherQuestionGenerator() {
                                             value={paperTitle}
                                             onChange={(e) => setPaperTitle(e.target.value)}
                                         />
+                                        <Input
+                                            label="College / Institute Name"
+                                            placeholder="e.g. St. Xavier's College"
+                                            value={collegeName}
+                                            onChange={(e) => setCollegeName(e.target.value)}
+                                        />
+                                        <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                            <input
+                                                type="checkbox"
+                                                id="answerKey"
+                                                className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                                                checked={includeAnswerKey}
+                                                onChange={(e) => setIncludeAnswerKey(e.target.checked)}
+                                            />
+                                            <label htmlFor="answerKey" className="text-sm font-medium text-slate-700 cursor-pointer select-none">
+                                                Include Answer Key in Output
+                                            </label>
+                                        </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <Input
                                                 label="Duration (Minutes)"
@@ -225,7 +247,6 @@ export default function TeacherQuestionGenerator() {
                                                 value={duration}
                                                 onChange={(e) => setDuration(e.target.value)}
                                             />
-                                            {/* Marks are calculated automatically later */}
                                         </div>
                                     </div>
                                     <div className="pt-4 flex justify-end">

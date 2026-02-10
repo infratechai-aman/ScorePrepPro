@@ -25,20 +25,23 @@ export async function POST(req: Request) {
         ${topicList}
 
         Guidelines:
-        1. **Strict Structure**: Follow the "UNIVERSAL NOTES TEMPLATE" below, but use your intelligence to **OMIT** sections that are completely irrelevant to the specific topic (e.g., do not invent a "Working/Process" for a purely theoretical definition).
-        2. **Content Depth**: 
-           - If the topic is explicitly "Advantages & Disadvantages", you MUST list at least 4-5 points for each, not just 2.
-           - Keep content **BRIEF** and **TO THE POINT**. No fluff.
-        3. **Formatting**:
-           - **Tables**: Ensure all tables are properly formatted with newlines between rows so they render correctly.
-           - **No Emojis**: Do not use emojis in headers or text.
+        1. **Structure Order**:
+           - **First**: Write a "## Unit Overview" section (Brief introduction to the whole unit in 4-5 lines).
+           - **Then**: Generate notes for **EACH** topic listed above using the "UNIVERSAL NOTES TEMPLATE".
+        2. **Exclusions**:
+           - **ABSOLUTELY NO "Exam Weightage" section**. Do not estimate marks.
+           - OMIT sections like "Working/Process" if irrelevant to the topic.
+        3. **Content Depth**: 
+           - **Advantages/Disadvantages**: List at least 4-5 points each.
+           - **Tables**: MUST have a blank line between every row to render correctly in Markdown.
+           - **Diagrams**: Use the text-based blueprint style for processes.
 
-        📘 **UNIVERSAL NOTES TEMPLATE**
+        📘 **UNIVERSAL NOTES TEMPLATE (For Each Topic)**
         
         # [Topic Name]
         
         ### 1. Definition
-        > **Definition**: [Short, direct explanation (2-3 lines max)]
+        > **Definition**: [Short, direct explanation]
         
         ### 2. Core Concept
         *   [Point 1]
@@ -46,65 +49,45 @@ export async function POST(req: Request) {
         *   [Point 3]
         *   [Point 4]
         *   [Point 5]
-        *(Bullet points only, no long paragraphs)*
-
-        ### 3. Diagram / Flowchart (IF REQUIRED)
+        
+        ### 3. Diagram / Blueprint (If Applicable)
         > **Blueprint**:
         > \`\`\`text
         > [Input]  --->  [Process]  --->  [Output]
-        >                   |
-        >                   v
-        >             [Feedback]
         > \`\`\`
-        *(Use simple text-based diagrams for processes/structures)*
         
-        ### 4. Working / Process / Flow (OMIT IF NOT APPLICABLE)
-        1.  [Step 1]
-        2.  [Step 2]
-        3.  [Step 3]
+        ### 4. Working / Process (OMIT IF IRRELEVANT)
+        1. [Step 1]
+        2. [Step 2]
         
-        ### 4. Key Components
-        *   **[Component A]**: [Brief description]
-        *   **[Component B]**: [Brief description]
+        ### 5. Key Components (OMIT IF IRRELEVANT)
+        *   **[Component]**: [Desc]
         
-        ### 5. Advantages & Disadvantages (Expand if this is the main topic)
-        *   **Advantages**: [Point 1], [Point 2], [Point 3], [Point 4]
-        *   **Disadvantages**: [Point 1], [Point 2], [Point 3], [Point 4]
+        ### 6. Advantages & Disadvantages (Required for comparison topics)
+        *   ✅ **Advantages**: [Point 1], [Point 2], [Point 3], [Point 4]
+        *   ❌ **Disadvantages**: [Point 1], [Point 2], [Point 3], [Point 4]
         
-        ### 6. Real-World Examples
-        *   Example 1: [Example]
-        *   Example 2: [Example]
-        
-        ### 7. Important Points (IMP)
-        > **IMP**: 
-        > *   **Keyword**: [Definition]
-        > *   **Trap**: [Common mistake students make]
-        > *   **Fact**: [Key fact for exams]
-
-        ### 8. Comparison (If applicable)
-        | Feature | This Topic | Related Concept |
+        ### 7. Comparison (If Applicable)
+        | Feature | Topic A | Topic B |
         | :--- | :--- | :--- |
-        | [Feature 1] | [Value] | [Value] |
-        | [Feature 2] | [Value] | [Value] |
-        *(Ensure newlines between table rows)*
-
-        ### 9. Exam Answer Frame (5-Marks)
-        *   **Definition**: [One line]
-        *   **Working**: [Step-by-step]
-        *   **Example**: [Real world]
-        *   **Conclusion**: [One line summary]
+        | Point 1 | Val A | Val B |
         
-        ### 10. Quick Revision Box
+        | Point 2 | Val A | Val B |
+        *(Add blank lines between rows)*
+
+        ### 8. Real-World Examples
+        *   [Example 1]
+        *   [Example 2]
+        
+        ### 9. Quick Revision
         > **Quick Revision**:
-        > *   **Keywords**: [Keyword 1], [Keyword 2], [Keyword 3]
-        > *   **Concept**: [One line summary]
+        > *   **Keywords**: [Keywords...]
+        > *   **Takeaway**: [One line summary]
 
         **Format Rules**:
-        - Use clean Markdown. 
-        - **NO EMOJIS**.
-        - Blockquotes (>) for Definitions, IMP, Revision.
-        - Bold (**text**) key terms.
-        - **Tables MUST have newlines**.
+        - **NO EMOJIS** (Except checks/crosses in Adv/Disadv).
+        - **NO Exam Weightage**.
+        - Blockquotes for Definitions/Revision.
         `;
 
         const completion = await openai.chat.completions.create({
