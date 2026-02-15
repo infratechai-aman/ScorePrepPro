@@ -291,9 +291,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                             { value: "cbse", label: "CBSE" }, { value: "maharashtra", label: "Maharashtra SSC" }
                                         ]} />
                                         <Select label="Class" value={grade} onChange={(e) => setGrade(e.target.value)} options={[
-                                            { value: "10", label: "Class 10" },
-                                            { value: "9", label: "Class 9" },
-                                            // Gated Options for Premium Plan
+                                            // Premium/Teacher get all classes 1-12
                                             ...(userData?.plan === 'premium' || userData?.plan === 'teacher' ? [
                                                 { value: "1", label: "Class 1" },
                                                 { value: "2", label: "Class 2" },
@@ -303,13 +301,22 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                 { value: "6", label: "Class 6" },
                                                 { value: "7", label: "Class 7" },
                                                 { value: "8", label: "Class 8" },
+                                                { value: "9", label: "Class 9" },
+                                                { value: "10", label: "Class 10" },
                                                 { value: "11", label: "Class 11" },
                                                 { value: "12", label: "Class 12" }
                                             ] : []),
-                                            // Basic plan only gets 7-10
+                                            // Basic plan gets 7-10
                                             ...(userData?.plan === 'basic' ? [
                                                 { value: "7", label: "Class 7" },
                                                 { value: "8", label: "Class 8" },
+                                                { value: "9", label: "Class 9" },
+                                                { value: "10", label: "Class 10" },
+                                            ] : []),
+                                            // Free plan gets 9-10
+                                            ...(!userData?.plan || userData?.plan === 'free' ? [
+                                                { value: "9", label: "Class 9" },
+                                                { value: "10", label: "Class 10" },
                                             ] : [])
                                         ]} />
                                         <Select label="Total Marks" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} options={[
