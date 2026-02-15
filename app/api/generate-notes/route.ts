@@ -77,19 +77,30 @@ Use a bulleted list with **bold** keywords. These are exam-critical points.
 > - **Remember**: One-line takeaway for each major concept
 > - **Common Mistakes**: 2-3 mistakes students typically make
 
-**5. TEXTBOOK EXERCISE – SOLVED** (MANDATORY – DO NOT SKIP)
-This section is CRITICAL. Include ALL important textbook exercise questions from the ${textbookName} textbook for this chapter with complete, step-by-step answers.
+**5. TEXTBOOK EXERCISE – SOLVED** (MANDATORY – THIS IS THE MOST IMPORTANT SECTION)
+
+⚠️ This section MUST be COMPREHENSIVE. You MUST include EVERY SINGLE exercise question from the ${textbookName} textbook for this chapter. Do NOT skip, truncate, or summarize any question. Do NOT say "and so on" or "similarly for other questions".
+
+List EVERY question from EVERY exercise in the chapter — Exercise 1, Exercise 2, Exercise 3, etc. Include:
+- ALL "Answer in one sentence" / short answer questions
+- ALL "Answer in brief" / long answer questions  
+- ALL "Give reasons" / "Give scientific reasons" questions
+- ALL "Differentiate between" questions
+- ALL "Define" / "What is" questions
+- ALL "True or False" with corrections
+- ALL "Fill in the blanks" with answers
+- ALL "Match the columns" with correct pairs
+- ALL MCQs with correct answers marked
+- ALL numerical / solve type problems with step-by-step solutions
+- ALL diagram-based questions with descriptions
+- ALL "Can you tell?" / "Use your brain power" / in-text questions
 
 Format each as:
-### Q1. [Full question text]
+### Q1. [Full question text exactly as it appears in the textbook]
 **Answer:**
-[Complete, detailed answer with steps/explanations]
+[Complete, detailed, exam-ready answer]
 
-Include at minimum:
-- ALL exercise questions from the ${textbookName} textbook for this chapter — do not skip any
-- Cover every question type (short answer, long answer, reasoning, numerical, MCQ, fill in the blanks, true/false, match the columns)
-- Include "Give reasons", "Differentiate between", "Define", "Explain", and "Solve" type questions
-- Answers should be exam-ready — concise but complete
+Continue numbering sequentially: Q1, Q2, Q3... until EVERY question is covered. There should typically be 15-40+ questions per chapter. If the output is long, that is expected and desired. DO NOT stop early.
 
 ---
 
@@ -115,10 +126,11 @@ Include at minimum:
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
-                { role: "system", content: `You are a premium educational content creator specializing in ${boardName} Board. You create beautifully formatted, textbook-quality study notes that are specific, detailed, and visually structured. Your notes feel like a premium study guide, NOT generic web content. Every note you create is unique to the specific board, class, and chapter.` },
+                { role: "system", content: `You are a premium educational content creator specializing in ${boardName} Board. You create beautifully formatted, textbook-quality study notes that are specific, detailed, and visually structured. Your notes feel like a premium study guide, NOT generic web content. Every note you create is unique to the specific board, class, and chapter. You MUST include ALL textbook exercise questions with complete answers — never cut short or summarize. Write the full response no matter how long.` },
                 { role: "user", content: prompt }
             ],
             temperature: 0.75,
+            max_tokens: 16000,
         });
 
         const content = completion.choices[0].message.content;
