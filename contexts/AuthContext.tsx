@@ -107,7 +107,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         if (!auth) return;
-        await signOut(auth);
+        try {
+            await signOut(auth);
+            setUser(null);
+            setUserData(null);
+            window.location.href = '/';
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
     };
 
     const refreshUserData = async () => {
