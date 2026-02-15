@@ -288,7 +288,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <Select label="Board" value={board} onChange={(e) => setBoard(e.target.value)} options={[
-                                            { value: "cbse", label: "CBSE" }, { value: "maharashtra", label: "Maharashtra SSC" }
+                                            { value: "cbse", label: "CBSE" }, { value: "icse", label: "ICSE" }, { value: "maharashtra", label: "Maharashtra SSC" }
                                         ]} />
                                         <Select label="Class" value={grade} onChange={(e) => setGrade(e.target.value)} options={[
                                             // Premium/Teacher get all classes 1-12

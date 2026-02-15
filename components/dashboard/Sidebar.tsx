@@ -24,6 +24,7 @@ export function Sidebar() {
     const menuItems = [
         { icon: <LayoutDashboard size={20} />, label: "Overview", href: "/teacher-dashboard" },
         { icon: <Sparkles size={20} />, label: "Paper Generator", href: "/teacher-dashboard/smart-generate", show: true },
+        { icon: <BookOpen size={20} />, label: "Notes Generator", href: "/teacher-dashboard/notes-generator", show: true },
         { icon: <FileText size={20} />, label: "Custom Generator", href: "/teacher-dashboard/question-generator", show: isTeacher },
         { icon: <FolderOpen size={20} />, label: "Paper Repository", href: "/teacher-dashboard/repository" },
         { icon: <Bot size={20} />, label: "AI Tutor", href: "/teacher-dashboard/ai-tutor" },
