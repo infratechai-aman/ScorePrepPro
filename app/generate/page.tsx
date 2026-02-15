@@ -68,7 +68,81 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
     const [error, setError] = useState("");
     const [flippingIdx, setFlippingIdx] = useState<number | null>(null);
 
-    const contentRef = useRef<HTMLDivElement>(null);
+    // Flip Feature State
+    const [flipQuestionNum, setFlipQuestionNum] = useState("");
+    const [isFlipping, setIsFlipping] = useState(false);
+
+    const handleFlipQuestion = async () => {
+        if (!flipQuestionNum || !generatedPaper) return;
+        setIsFlipping(true);
+        setError(""); // Clear previous errors
+
+        try {
+            // 1. Identify the question block in the markdown
+            // Matches **1.** or 1. followed by text, until next number pattern or end
+            // Note: This regex is tricky. We'll try to find the specific number.
+            const qNumRegex = new RegExp(`(?:\\*\\*|\\b)${flipQuestionNum}\\.(?:\\*\\*|\\b)[\\s\\S]*?(?=(?:\\n\\s*(?:\\*\\*|\\b)\\d+\\.|\\n#|\\n---|$))`, "i");
+
+            const match = generatedPaper.match(qNumRegex);
+
+            if (!match) {
+                alert(`Question "${flipQuestionNum}" not found. Please check the number format (e.g. 1, 2).`);
+                setIsFlipping(false);
+                return;
+            }
+
+            const oldQuestionText = match[0];
+            console.log("Flipping Question:", oldQuestionText);
+
+            // 2. Call API to flip
+            const response = await fetch("/api/flip-question", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    subject,
+                    unit: selectedChapters.join(", "),
+                    oldQuestion: { text: oldQuestionText },
+                    marks: "unknown", // We let AI infer or keep same
+                    type: "mixed"
+                }),
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            const { newQuestion } = data; // Expecting { text, answer, ... }
+
+            // 3. Replace Question in Paper
+            // Construct replacement text preserving the numbering style if possible, or just standard "**N.** "
+            const newQuestionBlock = `**${flipQuestionNum}.** ${newQuestion.text}`;
+            const newPaper = generatedPaper.replace(oldQuestionText, newQuestionBlock);
+            setGeneratedPaper(newPaper);
+
+            // 4. Replace Answer in Solution (if exists)
+            if (generatedSolution && newQuestion.answer) {
+                // Try to find the answer block. Usually matches "1." or "**1.**" in the answer key section.
+                const aNumRegex = new RegExp(`(?:\\*\\*|\\b)${flipQuestionNum}\\.(?:\\*\\*|\\b)[\\s\\S]*?(?=(?:\\n\\s*(?:\\*\\*|\\b)\\d+\\.|\\n#|\\n---|$))`, "i");
+                const solMatch = generatedSolution.match(aNumRegex);
+
+                if (solMatch) {
+                    const oldAnswerText = solMatch[0];
+                    const newAnswerBlock = `**${flipQuestionNum}.** ${newQuestion.answer}`;
+                    const newSolution = generatedSolution.replace(oldAnswerText, newAnswerBlock);
+                    setGeneratedSolution(newSolution);
+                }
+            }
+
+            // Success feedback
+            setFlipQuestionNum("");
+            alert(`Question ${flipQuestionNum} flipped successfully!`);
+
+        } catch (err) {
+            console.error(err);
+            alert("Failed to flip question. Try again.");
+        } finally {
+            setIsFlipping(false);
+        }
+    };
 
     // Free Preview Check
     useEffect(() => {
@@ -586,23 +660,33 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                 </div>
 
                                 {/* Flip Question Feature for Premium/Teacher users */}
-                                {(userData?.plan === 'premium' || userData?.plan === 'teacher') && generatedPaper && (
+                                {(userData?.plan === 'premium' || userData?.plan === 'teacher' || userData?.plan === 'coaching') && generatedPaper && (
                                     <div className="mt-6 pt-6 border-t border-slate-200">
                                         <div className="flex items-center gap-2 mb-3">
-                                            <RefreshCw className="h-4 w-4 text-amber-500" />
-                                            <span className="text-sm font-semibold text-slate-700">Flip Question Feature</span>
-                                            <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">PREMIUM</span>
+                                            <RefreshCw className="h-4 w-4 text-amber-600" />
+                                            <span className="text-sm font-semibold text-slate-800">Flip a Question</span>
+                                            <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-200">PREMIUM</span>
                                         </div>
-                                        <p className="text-xs text-slate-500 mb-3">Click below to regenerate the entire paper with fresh questions of the same pattern.</p>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="text-amber-600 border-amber-200 hover:bg-amber-50"
-                                            onClick={handleGenerate}
-                                            isLoading={loading}
-                                        >
-                                            <RefreshCw className="h-4 w-4 mr-2" /> Flip All Questions
-                                        </Button>
+                                        <div className="flex items-center gap-2 bg-amber-50/50 p-3 rounded-xl border border-amber-100 max-w-md">
+                                            <Input
+                                                placeholder="Q. No (e.g. 5)"
+                                                value={flipQuestionNum}
+                                                onChange={(e) => setFlipQuestionNum(e.target.value)}
+                                                className="w-32 bg-white h-9 text-sm"
+                                            />
+                                            <Button
+                                                size="sm"
+                                                onClick={handleFlipQuestion}
+                                                isLoading={isFlipping}
+                                                disabled={!flipQuestionNum}
+                                                className="bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm"
+                                            >
+                                                Flip Question
+                                            </Button>
+                                        </div>
+                                        <p className="text-[11px] text-slate-500 mt-2 pl-1">
+                                            * Enter the question number exactly as it appears (e.g. "1" or "5"). The AI will generate a new similar question and update the answer key.
+                                        </p>
                                     </div>
                                 )}
 

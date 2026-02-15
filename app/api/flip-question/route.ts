@@ -23,8 +23,9 @@ export async function POST(req: Request) {
 
         **Requirement**:
         1. Return a single JSON object for the new question.
-        2. Format: { "text": "New question text...", "marks": ${marks}, "type": "${type}" }
+        2. Format: { "text": "New question text...", "marks": ${marks}, "type": "${type}", "answer": "Brief answer or solution steps..." }
         3. Ensure it is NOT the same as the old question.
+        4. Make sure the question style matches the subject/unit.
         `;
 
         const completion = await openai.chat.completions.create({
