@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 180;
 
 export async function POST(req: Request) {
     try {
@@ -187,13 +187,17 @@ YOUR output must match this level of specificity and detail.
 ## ABSOLUTE RULES:
 1. Write EVERY question from the exercise — Q1, Q2, Q3, Q4, Q5 with ALL sub-parts (a through g)
 2. Use the REAL question text from the ${textbookName} textbook — do NOT rephrase or invent
-3. For Q1 type (tables/matching), reproduce the ACTUAL table content
-4. For Q2 type, include ALL sub-parts a, b, c, d, e (typically 5+ parts)
-5. For Q5 numericals, include ALL sub-parts with the textbook's printed answer
+3. For Q1 type (tables/matching), reproduce the ACTUAL table with all rows and columns using markdown table syntax
+4. For Q2 type, include ALL sub-parts a, b, c, d, e (typically 5+ parts) — DO NOT stop at just a and b
+5. For Q5 numericals, include ALL sub-parts a, b, c, d, e, f, g with the textbook's printed answer
 6. Include in-text questions ("Can you tell?", "Use your brain power", etc.)
 7. DO NOT stop early. DO NOT skip any question. DO NOT summarize.
 8. If unsure about exact wording, write the closest accurate version you can recall
 9. This response should contain 20-40+ question-answer pairs
+10. **NEVER write a concluding paragraph** like "These notes are crafted to provide..." or "This covers the chapter..." — just end after the last question-answer pair
+11. **NEVER skip from Q2 to Q5** — you MUST include Q3 and Q4 as well
+12. After writing Q2a and Q2b, you MUST continue writing Q2c, Q2d, Q2e — do NOT stop at just 2 sub-parts
+13. After writing Q5a, you MUST continue writing Q5b, Q5c, Q5d, Q5e, Q5f, Q5g — do NOT stop at just 1 numerical
         `;
 
         // Run BOTH calls in parallel for speed
@@ -201,20 +205,20 @@ YOUR output must match this level of specificity and detail.
             openai.chat.completions.create({
                 model: "gpt-4o",
                 messages: [
-                    { role: "system", content: `You are a premium educational content creator for ${boardName} Board. Create beautifully formatted study notes. Do NOT include exercise questions — only conceptual notes.` },
+                    { role: "system", content: `You are a premium educational content creator for ${boardName} Board. Create beautifully formatted study notes. Do NOT include exercise questions — only conceptual notes. Keep it concise but thorough.` },
                     { role: "user", content: notesPrompt }
                 ],
                 temperature: 0.7,
-                max_tokens: 8000,
+                max_tokens: 5000,
             }),
             openai.chat.completions.create({
                 model: "gpt-4o",
                 messages: [
-                    { role: "system", content: `You are a ${boardName} Board teacher who has memorized every exercise question from the ${textbookName} textbook. Your ONLY job is to write out the COMPLETE end-of-chapter exercise with ALL questions and ALL sub-parts, exactly as they appear in the textbook. You recall these from educational sites like shaalaa.com, learncbse.in, and maharashtrastudy.com. Never skip questions. Never invent questions. Write the REAL textbook exercises.` },
+                    { role: "system", content: `You are a ${boardName} Board teacher with the ${textbookName} textbook open in front of you. Your ONLY task is to write EVERY exercise question with answers from this chapter. You MUST include Q1, Q2 (all sub-parts a-e), Q3, Q4, Q5 (all sub-parts a-g). NEVER skip from Q2 to Q5. NEVER stop after writing just 2 sub-parts. NEVER write a conclusion paragraph. After the last answer, just STOP — do not write any summary or closing statement. You recall these questions from shaalaa.com and maharashtrastudy.com.` },
                     { role: "user", content: exercisePrompt }
                 ],
                 temperature: 0.2,
-                max_tokens: 10000,
+                max_tokens: 16000,
             })
         ]);
 
