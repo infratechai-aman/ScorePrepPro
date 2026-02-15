@@ -45,7 +45,7 @@ export function DashboardHeader({ title = "Overview" }: { title?: string }) {
                     <Button
                         size="sm"
                         className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 ml-2"
-                        onClick={() => router.push("/teacher-dashboard/question-generator")}
+                        onClick={() => router.push(userData?.plan === 'teacher' ? "/teacher-dashboard/question-generator" : "/generate")}
                     >
                         Quick Generate
                     </Button>

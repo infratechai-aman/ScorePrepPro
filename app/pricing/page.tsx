@@ -75,11 +75,12 @@ export default function PricingPage() {
             amount: billingCycle === "half-yearly" ? 3500 : 6000,
             features: [
                 "Unlimited Papers",
-                "Classes 7th - 12th",
+                "Classes 1st - 12th",
                 "Answer Key Generation",
                 "Diagram Support",
                 "Blueprint Control",
-                "Priority Support"
+                "Priority Support",
+                "Flip Question Feature"
             ],
             missing: ["Teacher Mode"],
             color: "amber",

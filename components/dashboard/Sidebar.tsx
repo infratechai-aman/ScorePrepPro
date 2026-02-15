@@ -8,7 +8,8 @@ import {
     Settings,
     HelpCircle,
     LogOut,
-    BookOpen
+    BookOpen,
+    Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,16 +17,19 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export function Sidebar() {
     const pathname = usePathname();
-    const { logout } = useAuth();
+    const { logout, userData } = useAuth();
+
+    const isTeacher = userData?.plan === 'teacher';
 
     const menuItems = [
         { icon: <LayoutDashboard size={20} />, label: "Overview", href: "/teacher-dashboard" },
-        { icon: <FileText size={20} />, label: "Paper Generator", href: "/teacher-dashboard/question-generator" },
+        { icon: <Sparkles size={20} />, label: "Generate Paper", href: "/generate", show: true },
+        { icon: <FileText size={20} />, label: "Custom Generator", href: "/teacher-dashboard/question-generator", show: isTeacher },
         { icon: <FolderOpen size={20} />, label: "Paper Repository", href: "/teacher-dashboard/repository" },
         { icon: <Bot size={20} />, label: "AI Tutor", href: "/teacher-dashboard/ai-tutor" },
         { icon: <Settings size={20} />, label: "Settings", href: "/teacher-dashboard/settings" },
         { icon: <HelpCircle size={20} />, label: "Help & Support", href: "/teacher-dashboard/support" },
-    ];
+    ].filter(item => item.show !== false);
 
     return (
         <aside className="fixed left-0 top-0 h-screen w-64 bg-[#0f172a] text-white flex flex-col border-r border-slate-800 z-50">
@@ -35,8 +39,8 @@ export function Sidebar() {
                     <BookOpen className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                    <h1 className="font-bold text-lg font-serif tracking-tight">EduBharat</h1>
-                    <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">SaaS Platform</p>
+                    <h1 className="font-bold text-lg font-serif tracking-tight">ScorePrepPro</h1>
+                    <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">{isTeacher ? 'Teacher Mode' : 'Premium'}</p>
                 </div>
             </div>
 
@@ -50,8 +54,8 @@ export function Sidebar() {
                             key={item.href}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${isActive
-                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50'
-                                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50'
+                                : 'text-slate-400 hover:bg-white/5 hover:text-white'
                                 }`}
                         >
                             <span className={`${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}>

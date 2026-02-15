@@ -19,7 +19,7 @@ export function RightSidebar() {
                     </div>
                     <div>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Plan Status</p>
-                        <h3 className="font-bold text-slate-900">{userData?.plan === 'teacher' ? 'Teacher Pro' : 'Free Plan'}</h3>
+                        <h3 className="font-bold text-slate-900">{userData?.plan === 'teacher' ? 'Teacher Pro' : userData?.plan === 'premium' ? 'Premium Plan' : 'Free Plan'}</h3>
                     </div>
                 </div>
                 <p className="text-sm text-slate-500 mb-4">Your subscription is active until Dec 2026.</p>

@@ -6,7 +6,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft, Lock, Crown } from "lucide-react";
+import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft, Lock, Crown, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -66,6 +66,7 @@ export default function GeneratorPage() {
     const [generatedPaper, setGeneratedPaper] = useState("");
     const [generatedSolution, setGeneratedSolution] = useState("");
     const [error, setError] = useState("");
+    const [flippingIdx, setFlippingIdx] = useState<number | null>(null);
 
     const contentRef = useRef<HTMLDivElement>(null);
 
@@ -292,10 +293,23 @@ export default function GeneratorPage() {
                                         <Select label="Class" value={grade} onChange={(e) => setGrade(e.target.value)} options={[
                                             { value: "10", label: "Class 10" },
                                             { value: "9", label: "Class 9" },
-                                            // Gated Options for Basic Plan (Hidden)
-                                            ...(userData?.plan === 'premium' ? [
-                                                { value: "11", label: "Class 11 (Premium)" },
-                                                { value: "12", label: "Class 12 (Premium)" }
+                                            // Gated Options for Premium Plan
+                                            ...(userData?.plan === 'premium' || userData?.plan === 'teacher' ? [
+                                                { value: "1", label: "Class 1" },
+                                                { value: "2", label: "Class 2" },
+                                                { value: "3", label: "Class 3" },
+                                                { value: "4", label: "Class 4" },
+                                                { value: "5", label: "Class 5" },
+                                                { value: "6", label: "Class 6" },
+                                                { value: "7", label: "Class 7" },
+                                                { value: "8", label: "Class 8" },
+                                                { value: "11", label: "Class 11" },
+                                                { value: "12", label: "Class 12" }
+                                            ] : []),
+                                            // Basic plan only gets 7-10
+                                            ...(userData?.plan === 'basic' ? [
+                                                { value: "7", label: "Class 7" },
+                                                { value: "8", label: "Class 8" },
                                             ] : [])
                                         ]} />
                                         <Select label="Total Marks" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} options={[
@@ -323,7 +337,7 @@ export default function GeneratorPage() {
 
                                     {userData && userData.plan === 'basic' && (
                                         <div className="text-xs text-slate-500 flex items-center gap-1">
-                                            <Lock className="h-3 w-3" /> Class 11 & 12 are available in Premium Plan
+                                            <Lock className="h-3 w-3" /> Classes 1-8 & 11-12 are available in Premium Plan
                                         </div>
                                     )}
 
@@ -519,7 +533,14 @@ export default function GeneratorPage() {
                                 <div className="prose prose-slate max-w-none relative z-10">
                                     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={{
                                         h1: ({ node, ...props }) => <h1 style={{ borderBottom: "2px solid #0f172a", textAlign: "center", marginBottom: "20px", paddingBottom: "10px", textTransform: "uppercase" }} className="text-3xl font-bold" {...props} />,
-                                        h2: ({ node, ...props }) => <h2 style={{ backgroundColor: "#f8fafc", borderLeft: "4px solid #1e293b", padding: "10px", marginTop: "30px", marginBottom: "15px", textTransform: "uppercase" }} className="text-xl font-bold" {...props} />,
+                                        h2: ({ node, children, ...props }) => {
+                                            const sectionText = typeof children === 'string' ? children : '';
+                                            return (
+                                                <div className="relative group">
+                                                    <h2 style={{ backgroundColor: "#f8fafc", borderLeft: "4px solid #1e293b", padding: "10px", marginTop: "30px", marginBottom: "15px", textTransform: "uppercase" }} className="text-xl font-bold" {...props}>{children}</h2>
+                                                </div>
+                                            );
+                                        },
                                         table: ({ node, ...props }) => <div className="overflow-x-auto my-6"><table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #e2e8f0" }} {...props} /></div>,
                                         thead: ({ node, ...props }) => <thead style={{ backgroundColor: "#f8fafc" }} {...props} />,
                                         tbody: ({ node, ...props }) => <tbody {...props} />,
@@ -563,6 +584,27 @@ export default function GeneratorPage() {
                                         {generatedPaper}
                                     </ReactMarkdown>
                                 </div>
+
+                                {/* Flip Question Feature for Premium/Teacher users */}
+                                {(userData?.plan === 'premium' || userData?.plan === 'teacher') && generatedPaper && (
+                                    <div className="mt-6 pt-6 border-t border-slate-200">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <RefreshCw className="h-4 w-4 text-amber-500" />
+                                            <span className="text-sm font-semibold text-slate-700">Flip Question Feature</span>
+                                            <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">PREMIUM</span>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mb-3">Click below to regenerate the entire paper with fresh questions of the same pattern.</p>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                                            onClick={handleGenerate}
+                                            isLoading={loading}
+                                        >
+                                            <RefreshCw className="h-4 w-4 mr-2" /> Flip All Questions
+                                        </Button>
+                                    </div>
+                                )}
 
                                 {generatedSolution && (
                                     <div style={{ backgroundColor: "rgba(240, 253, 244, 0.5)", borderTop: "4px dotted #cbd5e1", padding: "24px", marginTop: "30px", borderRadius: "12px", position: "relative" }}>

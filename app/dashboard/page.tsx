@@ -23,6 +23,8 @@ export default function DashboardPage() {
     useEffect(() => {
         if (!loading && !user) {
             router.push("/login");
+        } else if (!loading && userData && userData.plan === 'premium') {
+            router.push("/teacher-dashboard");
         } else if (user) {
             // Fetch History
             const fetchHistory = async () => {

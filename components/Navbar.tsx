@@ -41,8 +41,8 @@ export function Navbar() {
                                 key={link.name}
                                 href={link.href}
                                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${pathname === link.href
-                                        ? 'bg-white text-primary shadow-sm'
-                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
+                                    ? 'bg-white text-primary shadow-sm'
+                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
                                     }`}
                             >
                                 {link.name}
@@ -54,10 +54,10 @@ export function Navbar() {
                     <div className="hidden md:flex items-center gap-4">
                         {!loading && (
                             user ? (
-                                <Link href={userData?.plan === 'teacher' ? "/teacher-dashboard" : "/dashboard"}>
+                                <Link href={(userData?.plan === 'teacher' || userData?.plan === 'premium') ? "/teacher-dashboard" : "/dashboard"}>
                                     <Button size="lg" className="rounded-full px-6 bg-slate-900 text-white hover:bg-slate-800 shadow-md shadow-slate-900/10 gap-2">
                                         <UserCircle className="h-4 w-4" />
-                                        {userData?.plan === 'teacher' ? 'Teacher Panel' : 'Dashboard'}
+                                        {userData?.plan === 'teacher' ? 'Teacher Panel' : userData?.plan === 'premium' ? 'Premium Panel' : 'Dashboard'}
                                     </Button>
                                 </Link>
                             ) : (

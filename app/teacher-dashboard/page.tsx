@@ -6,22 +6,25 @@ import { SubjectProgress } from "@/components/dashboard/SubjectProgress";
 import { RecentPapers } from "@/components/dashboard/RecentPapers";
 import { ActivityGraph } from "@/components/dashboard/ActivityGraph";
 import { RightSidebar } from "@/components/dashboard/RightSidebar";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function TeacherDashboardPage() {
+    const { userData } = useAuth();
+    const isTeacher = userData?.plan === 'teacher';
+
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             <DashboardHeader title="Overview" />
 
             <div className="flex flex-1">
                 <main className="flex-1 p-8 space-y-8 overflow-y-auto h-[calc(100vh-80px)]">
-                    {/* Welcome Section */}
-                    {/* Note: Welcome message is inside Header or can be added here if needed. 
-                        Header has breadcrumbs style title, so we can add a persistent welcome here 
-                        or minimal header. I'll stick to a clean layout. 
-                    */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-slate-900 font-serif mb-2">Welcome, Teacher!</h1>
-                        <p className="text-slate-500">Here is what's happening with your classes today.</p>
+                        <h1 className="text-3xl font-bold text-slate-900 font-serif mb-2">
+                            {isTeacher ? 'Welcome, Teacher!' : `Welcome back, ${userData?.name || 'User'}!`}
+                        </h1>
+                        <p className="text-slate-500">
+                            {isTeacher ? "Here is what's happening with your classes today." : "Here's your premium dashboard overview."}
+                        </p>
                     </div>
 
                     <StatsCards />
