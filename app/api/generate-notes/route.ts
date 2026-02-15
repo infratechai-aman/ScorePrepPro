@@ -52,22 +52,22 @@ A 3-4 line overview that hooks the student.
 
 Use ## for the topic heading, then cover these sections (use ### for each):
 
-### 🔑 Key Definition (in blockquote)
+### Key Definition (in blockquote)
 > **Definition**: Clear, concise definition from the ${textbookName} textbook.
 
-### 📝 Explanation 
+### Explanation 
 Write 4-6 bullet points explaining the concept. Use bold for key terms.
 
-### 📊 Comparison Table (when applicable)
+### Comparison Table (when applicable)
 Use markdown tables with clear headers.
 
-### ⚡ Key Formulas / Laws (when applicable)
+### Key Formulas / Laws (when applicable)
 Present formulas clearly. Include the formula name, equation, and variable meanings.
 
-### 🔬 Diagram Description (when applicable)
+### Diagram Description (when applicable)
 Describe what a student should draw/visualize.
 
-### 📌 Important Points to Remember
+### Important Points to Remember
 Use a bulleted list with **bold** keywords.
 
 **4. QUICK REVISION BOX**
@@ -134,7 +134,7 @@ Write Exercise 1A and 1B:
 
 ## OUTPUT FORMAT:
 
-## 📝 Chapter Exercises – Solved
+## Chapter Exercises – Solved
 
 **1. [Full question text including table instructions]**
 
@@ -273,7 +273,7 @@ Write Exercise 2A and 2B:
 
 ---
 
-## 💡 In-Chapter Thinking Questions
+## In-Chapter Thinking Questions
 
 **Can you tell?**
 [Question] → **Answer:** [Answer]
