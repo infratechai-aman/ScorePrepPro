@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120; // longer timeout for comprehensive notes + Q&A
 
 export async function POST(req: Request) {
     try {
@@ -48,34 +48,48 @@ A 3-4 line overview that hooks the student. What will they learn? Why is it impo
 
 **3. FOR EACH MAJOR CONCEPT/TOPIC**:
 
-Use ## for the topic heading, then cover:
+Use ## for the topic heading, then cover these sections (use ### for each):
 
-**a) 🔑 Key Definition** (in blockquote)
+### 🔑 Key Definition (in blockquote)
 > **Definition**: Clear, concise definition from the ${textbookName} textbook.
 
-**b) 📝 Explanation** 
+### 📝 Explanation 
 Write 4-6 bullet points explaining the concept. Use bold for key terms. Make it conversational but informative. Use analogies when helpful.
 
-**c) 📊 Comparison Table** (when applicable)
+### 📊 Comparison Table (when applicable)
 Use markdown tables with clear headers. Compare related concepts side by side.
 
-**d) ⚡ Key Formulas / Laws** (when applicable)
+### ⚡ Key Formulas / Laws (when applicable)
 Present in code blocks for clarity. Include the formula name, the equation, and where each variable stands.
 
-**e) 🔬 Diagram Description** (when applicable)
+### 🔬 Diagram Description (when applicable)
 Describe what a student should draw/visualize using a clear text blueprint:
 \`\`\`
 [Input] → [Process] → [Output]
 \`\`\`
 
-**f) 📌 Important Points to Remember**
+### 📌 Important Points to Remember
 Use a bulleted list with **bold** keywords. These are exam-critical points.
 
-**4. QUICK REVISION BOX** (at the end)
+**4. QUICK REVISION BOX**
 > **Quick Revision**:
 > - **Key Terms**: List 5-8 essential keywords
 > - **Remember**: One-line takeaway for each major concept
 > - **Common Mistakes**: 2-3 mistakes students typically make
+
+**5. TEXTBOOK EXERCISE – SOLVED** (MANDATORY – DO NOT SKIP)
+This section is CRITICAL. Include ALL important textbook exercise questions from the ${textbookName} textbook for this chapter with complete, step-by-step answers.
+
+Format each as:
+### Q1. [Full question text]
+**Answer:**
+[Complete, detailed answer with steps/explanations]
+
+Include at minimum:
+- 8-12 important questions covering all types (short answer, long answer, reasoning, numerical if applicable)
+- Cover all major concepts of the chapter
+- Include "Give reasons", "Differentiate between", "Define", "Explain", and "Solve" type questions
+- Answers should be exam-ready — concise but complete
 
 ---
 
@@ -95,6 +109,7 @@ Use a bulleted list with **bold** keywords. These are exam-critical points.
 12. Keep language simple but authoritative – like a top teacher explaining.
 13. Add **"Did You Know?"** boxes (in blockquotes) for interesting facts.
 14. Make content SPECIFIC to the ${textbookName} ${boardName} Class ${grade} syllabus.
+15. **DO NOT use a), b), c), d) style labels** for section headers. Use ### headings only.
         `;
 
         const completion = await openai.chat.completions.create({
