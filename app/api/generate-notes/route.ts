@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 
 export const runtime = "nodejs";
-export const maxDuration = 120; // longer timeout for comprehensive notes + Q&A
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
     try {
@@ -18,7 +18,10 @@ export async function POST(req: Request) {
         const boardName = board === 'maharashtra' ? 'Maharashtra SSC' : board === 'cbse' ? 'CBSE' : board === 'icse' ? 'ICSE' : 'Standard';
         const textbookName = textbook || 'Standard textbook';
 
-        const prompt = `
+        // ============================================================
+        // CALL 1: Generate study notes (concepts only, NO exercises)
+        // ============================================================
+        const notesPrompt = `
 You are an expert ${boardName} Board educator creating premium study notes for Class ${grade || ''} students.
 
 **BOARD**: ${boardName}
@@ -36,15 +39,14 @@ ${topicList}
 
 ## STYLE GUIDELINES – MAKE THESE NOTES BEAUTIFUL & UNIQUE
 
-You are NOT writing generic Wikipedia-style notes. These are **premium, textbook-quality study notes** that a student would love to read. Follow these strict formatting rules:
+You are NOT writing generic Wikipedia-style notes. These are **premium, textbook-quality study notes**.
 
 ### STRUCTURE (Follow this order):
 
 **1. CHAPTER TITLE** (use # heading)
-Start with the full chapter title.
 
 **2. CHAPTER SNAPSHOT** (use > blockquote)
-A 3-4 line overview that hooks the student. What will they learn? Why is it important?
+A 3-4 line overview that hooks the student.
 
 **3. FOR EACH MAJOR CONCEPT/TOPIC**:
 
@@ -54,22 +56,19 @@ Use ## for the topic heading, then cover these sections (use ### for each):
 > **Definition**: Clear, concise definition from the ${textbookName} textbook.
 
 ### 📝 Explanation 
-Write 4-6 bullet points explaining the concept. Use bold for key terms. Make it conversational but informative. Use analogies when helpful.
+Write 4-6 bullet points explaining the concept. Use bold for key terms.
 
 ### 📊 Comparison Table (when applicable)
-Use markdown tables with clear headers. Compare related concepts side by side.
+Use markdown tables with clear headers.
 
 ### ⚡ Key Formulas / Laws (when applicable)
-Present in code blocks for clarity. Include the formula name, the equation, and where each variable stands.
+Present formulas clearly. Include the formula name, equation, and variable meanings.
 
 ### 🔬 Diagram Description (when applicable)
-Describe what a student should draw/visualize using a clear text blueprint:
-\`\`\`
-[Input] → [Process] → [Output]
-\`\`\`
+Describe what a student should draw/visualize.
 
 ### 📌 Important Points to Remember
-Use a bulleted list with **bold** keywords. These are exam-critical points.
+Use a bulleted list with **bold** keywords.
 
 **4. QUICK REVISION BOX**
 > **Quick Revision**:
@@ -77,118 +76,153 @@ Use a bulleted list with **bold** keywords. These are exam-critical points.
 > - **Remember**: One-line takeaway for each major concept
 > - **Common Mistakes**: 2-3 mistakes students typically make
 
-**5. TEXTBOOK EXERCISE – SOLVED** (MANDATORY – MOST IMPORTANT SECTION)
+### FORMATTING RULES:
+1. **USE BOLD LIBERALLY** for all key terms and important phrases.
+2. Use *italics* for scientific names, examples, and emphasis.
+3. Use > blockquotes for definitions and important notes.
+4. Use --- horizontal rules to separate major sections.
+5. Use markdown tables for ALL comparisons (minimum 3-4 rows).
+6. Use code blocks for formulas and equations.
+7. **NO generic filler**. Every sentence must add value.
+8. Add **"Did You Know?"** boxes for interesting facts.
+9. Make content SPECIFIC to the ${textbookName} ${boardName} Class ${grade} syllabus.
+10. **DO NOT include any exercise questions in this section.** Exercises will be added separately.
+        `;
 
-## ⚠️ CRITICAL: USE REAL TEXTBOOK QUESTIONS ONLY
+        // ============================================================
+        // CALL 2: Generate ONLY exercise questions with answers
+        // ============================================================
+        const exercisePrompt = `
+You are a ${boardName} Board teacher who has the ${textbookName} textbook physically open in front of you right now.
 
-You MUST recall and reproduce the ACTUAL end-of-chapter exercise questions from the **${textbookName}** textbook for **${boardName} Board Class ${grade}**, chapter: **${unit}**.
+**BOARD**: ${boardName}
+**CLASS**: ${grade || 'Not specified'}
+**TEXTBOOK**: ${textbookName}
+**SUBJECT**: ${subject}
+**CHAPTER**: ${unit}
 
-These questions are publicly available on educational websites like shaalaa.com, learncbse.in, maharashtrastudy.com, byjus.com, and topperlearning.com. You have been trained on this data. Recall the EXACT questions from these sources.
+YOUR ONLY TASK: Write out EVERY SINGLE exercise question from the end-of-chapter exercises of this specific chapter in the ${textbookName} textbook, along with complete answers.
 
-**❌ WRONG (DO NOT DO THIS — these are INVENTED generic questions):**
-- "Define the Universal Law of Gravitation."
-- "Calculate the force between two masses of 10 kg and 20 kg..."
-- "What is the significance of the gravitational constant?"
-These are GENERIC questions that YOU made up. The textbook does NOT contain these exact questions.
+These exercise questions are publicly documented on shaalaa.com, learncbse.in, maharashtrastudy.com, byjus.com, and topperlearning.com. You have been trained on content from these sites. Recall the EXACT questions.
 
-**✅ CORRECT (These are REAL Balbharati textbook questions for Gravitation):**
-- "1. Study the entries in the following table and rewrite them putting the connected items in a single row."
-- "2. Answer the following questions: a. What is the difference between mass and weight of an object?"
-- "5. Solve the following examples: a. An object takes 5 s to reach the ground from a height of 5 m on a planet. What is the value of g on the planet? Ans: 0.4 m/s²"
-
-You MUST follow the CORRECT pattern above. The exercise questions in ${textbookName} textbooks:
 ${board === 'maharashtra' ? `
-- Are organized as Question 1, 2, 3, 4, 5 (NOT as separate "sections")
-- Q1 is usually a table/rewrite/match type
-- Q2 says "Answer the following questions" followed by a, b, c, d, e sub-parts
-- Q3 is usually "Explain" or reasoning type
-- Q4 is usually a derivation/proof
-- Q5 says "Solve the following examples" with sub-parts a through g, each with given numerical data and a printed answer like "Ans: 0.4 m/s²"
-- In-chapter boxes include "Can you tell?", "Use your brain power", "Think about it", "Always remember"
+## BALBHARATI EXERCISE FORMAT (follow this EXACTLY):
+
+The Balbharati textbook exercises for this chapter have this structure:
+- **Question 1**: Table/matching/rewrite/fill-in-the-blanks type (includes a table with columns I, II, III that students must rearrange)
+- **Question 2**: "Answer the following questions." followed by sub-parts a, b, c, d, e (5+ sub-parts, each is a conceptual/theory question)
+- **Question 3**: "Explain why..." or reasoning questions
+- **Question 4**: "Let..." or prove/derive type questions  
+- **Question 5**: "Solve the following examples." followed by sub-parts a, b, c, d, e, f, g (each is a numerical problem with given data and a printed answer like "Ans: 0.4 m/s²")
+
+Additionally include any in-chapter activity questions like "Can you tell?", "Use your brain power", "Think about it", "Do you know?" boxes.
+
+EXAMPLE OF WHAT REAL BALBHARATI QUESTIONS LOOK LIKE (from Gravitation chapter):
+- "1. Study the entries in the following table and rewrite them putting the connected items in a single row." [followed by actual table with Mass/Weight/Acceleration due to gravity/Gravitational constant in column I, units in column II, properties in column III]
+- "2. Answer the following questions. a. What is the difference between mass and weight of an object. Will the mass and weight of an object on the earth be same as their values on Mars? Why?"
+- "2b. What are (i) free fall, (ii) acceleration due to gravity (iii) escape velocity (iv) centripetal force?"
+- "2c. Write the three laws given by Kepler. How did they help Newton to arrive at the inverse square law of gravity?"
+- "5a. An object takes 5 s to reach the ground from a height of 5 m on a planet. What is the value of g on the planet? Ans: 0.4 m/s²"
+- "5f. The masses of the earth and moon are 6 x 10²⁴ kg and 7.4x10²² kg, respectively. The distance between them is 3.84 x 10⁵ km. Calculate the gravitational force of attraction between the two? Use G = 6.7 x 10⁻¹¹ N m² kg⁻². Ans: 2 x 10²⁰ N"
+
+YOUR output must match this level of specificity and detail.
 ` : board === 'cbse' ? `
-- Are from NCERT textbook exercises at the end of each chapter
-- Numbered sequentially 1, 2, 3... (up to 20-30 questions)
-- Include "In-text Questions" that appear within the chapter
-- Mix of MCQ, short answer, long answer, numericals, HOTS
-- Questions reference specific examples and experiments from the chapter
+## NCERT EXERCISE FORMAT:
+- Questions numbered 1, 2, 3, 4... sequentially (typically 15-30 questions)
+- Include "In-text Questions" from within the chapter
+- Mix of MCQ, short answer, long answer, numerical, HOTS
+- Questions reference specific experiments and examples from the chapter
 ` : `
-- Are from Selina/Frank textbook exercises 
-- Organized as Exercise 1A, 1B, 2A, etc.
-- Include objective (MCQ, fill blanks, true/false, match) and subjective sections
-- Numerical problems include worked answers
+## SELINA/FRANK EXERCISE FORMAT:
+- Multiple exercises per chapter (Exercise 1A, 1B, 2A, etc.)
+- Objective section: MCQ, fill blanks, true/false, match columns
+- Subjective section: Short answer, long answer, reasoning
+- Numerical problems with printed answers
 `}
 
-## Format for exercises:
-
-## 📝 Textbook Exercises – Solved
-
-**1. [EXACT question text from the real ${textbookName} textbook]**
-
-[If has sub-parts:]
-
-**a.** [Exact sub-part text]
-**Answer:** [Complete answer]
-
-**b.** [Exact sub-part text]  
-**Answer:** [Complete answer]
-
-**2. [EXACT next question from textbook]**
-**Answer:** [Complete answer]
-
-[Continue all questions with all sub-parts]
-
-For numericals:
-- **Given:** [values]
-- **To Find:** [what]
-- **Formula:** [formula]
-- **Solution:** [steps]
-- **Answer:** [answer with units, matching printed textbook answer]
-
-**ABSOLUTE RULES:**
-- Every question must be a REAL question from the ${textbookName} textbook chapter "${unit}"
-- DO NOT rephrase — use the exact wording from the textbook
-- DO NOT invent — if you cannot recall a question, it is better to write fewer real questions than many fake ones
-- Include ALL questions and ALL sub-parts
-- This must be the LONGEST section of the notes
+## OUTPUT FORMAT:
 
 ---
 
-### FORMATTING RULES (STRICT):
+## 📝 Textbook Exercises – Solved
 
-1. **USE BOLD LIBERALLY** for all key terms, definitions, and important phrases – like a real highlighted textbook.
-2. Use *italics* for scientific names, examples, and emphasis.
-3. Use > blockquotes for definitions, important notes, and revision boxes.
-4. Use --- horizontal rules to separate major sections.
-5. Use markdown tables for ALL comparisons (minimum 3-4 rows).
-6. Use numbered lists (1. 2. 3.) for sequential processes/steps.
-7. Use bullet lists (- or *) for non-sequential points.
-8. Use code blocks (\`\`\`) for formulas, equations, and diagrams.
-9. **NO generic filler text**. Every sentence must add value.
-10. **NO "Exam Weightage" sections**. Do not estimate marks.
-11. **NO emojis in the actual notes content** (only in section label headers as shown above).
-12. Keep language simple but authoritative – like a top teacher explaining.
-13. Add **"Did You Know?"** boxes (in blockquotes) for interesting facts.
-14. Make content SPECIFIC to the ${textbookName} ${boardName} Class ${grade} syllabus.
-15. **DO NOT use a), b), c), d) style labels** for section headers. Use ### headings only.
+**1. [EXACT full question text from the ${textbookName} textbook]**
+
+[Include any tables, data, or context that is part of the question]
+
+**a.** [Exact sub-part text if applicable]
+**Answer:** [Complete, detailed answer]
+
+**b.** [Exact sub-part text]
+**Answer:** [Complete, detailed answer]
+
+[...continue ALL sub-parts]
+
+**2. [EXACT next question from textbook]**
+
+**a.** [Sub-part]
+**Answer:** [Complete answer]
+
+[...continue ALL sub-parts]
+
+**3. [EXACT next question]**
+**Answer:** [Complete answer]
+
+**4. [EXACT next question]**
+**Answer:** [Complete answer with derivation/proof if needed]
+
+**5. [EXACT next question - typically "Solve the following examples"]**
+
+**a.** [Numerical problem with exact given data from textbook]
+- **Given:** [all given values]
+- **To Find:** [what to calculate]  
+- **Formula:** [relevant formula]
+- **Solution:** [step-by-step calculation]
+- **Answer:** [final answer with units] *(Textbook Ans: [printed answer])*
+
+[...continue b, c, d, e, f, g with ALL numerical sub-parts]
+
+---
+
+## ABSOLUTE RULES:
+1. Write EVERY question from the exercise — Q1, Q2, Q3, Q4, Q5 with ALL sub-parts (a through g)
+2. Use the REAL question text from the ${textbookName} textbook — do NOT rephrase or invent
+3. For Q1 type (tables/matching), reproduce the ACTUAL table content
+4. For Q2 type, include ALL sub-parts a, b, c, d, e (typically 5+ parts)
+5. For Q5 numericals, include ALL sub-parts with the textbook's printed answer
+6. Include in-text questions ("Can you tell?", "Use your brain power", etc.)
+7. DO NOT stop early. DO NOT skip any question. DO NOT summarize.
+8. If unsure about exact wording, write the closest accurate version you can recall
+9. This response should contain 20-40+ question-answer pairs
         `;
 
-        const systemMessage = board === 'maharashtra'
-            ? `You are a Maharashtra SSC Board teacher who has the Balbharati textbook physically in front of you. You have taught this exact textbook for 15 years. You know every single exercise question from every chapter by heart. When asked to write exercise questions, you reproduce the EXACT questions from the Balbharati textbook — not your own invented questions. Your exercise questions are sourced from shaalaa.com and maharashtrastudy.com question banks for Balbharati textbooks. You create premium, beautifully formatted study notes. Never cut short or summarize. Write the complete response.`
-            : board === 'cbse'
-                ? `You are a CBSE Board teacher who has the NCERT textbook physically in front of you. You have taught this exact textbook for 15 years. You know every single exercise question from every chapter by heart. When asked to write exercise questions, you reproduce the EXACT questions from the NCERT textbook — not your own invented questions. Your exercise questions are sourced from learncbse.in and ncert.nic.in. You create premium, beautifully formatted study notes. Never cut short or summarize. Write the complete response.`
-                : `You are an ICSE Board teacher who has the Selina/Frank textbook physically in front of you. You have taught this exact textbook for 15 years. You know every single exercise question from every chapter by heart. When asked to write exercise questions, you reproduce the EXACT questions from the Selina/Frank textbook — not your own invented questions. You create premium, beautifully formatted study notes. Never cut short or summarize. Write the complete response.`;
+        // Run BOTH calls in parallel for speed
+        const [notesCompletion, exerciseCompletion] = await Promise.all([
+            openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [
+                    { role: "system", content: `You are a premium educational content creator for ${boardName} Board. Create beautifully formatted study notes. Do NOT include exercise questions — only conceptual notes.` },
+                    { role: "user", content: notesPrompt }
+                ],
+                temperature: 0.7,
+                max_tokens: 8000,
+            }),
+            openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [
+                    { role: "system", content: `You are a ${boardName} Board teacher who has memorized every exercise question from the ${textbookName} textbook. Your ONLY job is to write out the COMPLETE end-of-chapter exercise with ALL questions and ALL sub-parts, exactly as they appear in the textbook. You recall these from educational sites like shaalaa.com, learncbse.in, and maharashtrastudy.com. Never skip questions. Never invent questions. Write the REAL textbook exercises.` },
+                    { role: "user", content: exercisePrompt }
+                ],
+                temperature: 0.2,
+                max_tokens: 10000,
+            })
+        ]);
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                { role: "system", content: systemMessage },
-                { role: "user", content: prompt }
-            ],
-            temperature: 0.3,
-            max_tokens: 16000,
-        });
+        const notesContent = notesCompletion.choices[0].message.content || '';
+        const exerciseContent = exerciseCompletion.choices[0].message.content || '';
 
-        const content = completion.choices[0].message.content;
+        // Combine: notes first, then exercises
+        const content = notesContent + '\n\n---\n\n' + exerciseContent;
 
         return NextResponse.json({ content });
 
