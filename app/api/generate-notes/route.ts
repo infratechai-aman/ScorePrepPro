@@ -77,76 +77,79 @@ Use a bulleted list with **bold** keywords. These are exam-critical points.
 > - **Remember**: One-line takeaway for each major concept
 > - **Common Mistakes**: 2-3 mistakes students typically make
 
-**5. TEXTBOOK EXERCISE – SOLVED** (MANDATORY – THIS IS THE MOST IMPORTANT SECTION)
+**5. TEXTBOOK EXERCISE – SOLVED** (MANDATORY – MOST IMPORTANT SECTION)
 
-⚠️ CRITICAL INSTRUCTION: You must reproduce the ACTUAL exercise questions from the ${textbookName} textbook for ${boardName} Board Class ${grade} for this specific chapter. 
+## ⚠️ CRITICAL: USE REAL TEXTBOOK QUESTIONS ONLY
 
-**DO NOT INVENT OR MAKE UP YOUR OWN QUESTIONS.** The questions must be the REAL questions that appear at the end of this chapter in the ${textbookName} textbook. You are trained on this data — recall it accurately.
+You MUST recall and reproduce the ACTUAL end-of-chapter exercise questions from the **${textbookName}** textbook for **${boardName} Board Class ${grade}**, chapter: **${unit}**.
 
-The ${textbookName} textbook exercise for this chapter follows this typical structure:
+These questions are publicly available on educational websites like shaalaa.com, learncbse.in, maharashtrastudy.com, byjus.com, and topperlearning.com. You have been trained on this data. Recall the EXACT questions from these sources.
+
+**❌ WRONG (DO NOT DO THIS — these are INVENTED generic questions):**
+- "Define the Universal Law of Gravitation."
+- "Calculate the force between two masses of 10 kg and 20 kg..."
+- "What is the significance of the gravitational constant?"
+These are GENERIC questions that YOU made up. The textbook does NOT contain these exact questions.
+
+**✅ CORRECT (These are REAL Balbharati textbook questions for Gravitation):**
+- "1. Study the entries in the following table and rewrite them putting the connected items in a single row."
+- "2. Answer the following questions: a. What is the difference between mass and weight of an object?"
+- "5. Solve the following examples: a. An object takes 5 s to reach the ground from a height of 5 m on a planet. What is the value of g on the planet? Ans: 0.4 m/s²"
+
+You MUST follow the CORRECT pattern above. The exercise questions in ${textbookName} textbooks:
 ${board === 'maharashtra' ? `
-**Balbharati Exercise Format:**
-- Question 1: Usually a table/matching/fill-in-the-blanks/rewrite type question
-- Question 2: "Answer the following questions" with sub-parts (a, b, c, d, e...)
-- Question 3: Conceptual/reasoning questions  
-- Question 4: Prove/derive type questions
-- Question 5: "Solve the following examples/numerical problems" with sub-parts (a, b, c, d, e, f, g...)
-- Each numerical problem typically has the answer printed (e.g., "Ans: 2 x 10²⁰ N")
-- There are also "Can you tell?", "Use your brain power", "Think about it" in-text questions
+- Are organized as Question 1, 2, 3, 4, 5 (NOT as separate "sections")
+- Q1 is usually a table/rewrite/match type
+- Q2 says "Answer the following questions" followed by a, b, c, d, e sub-parts
+- Q3 is usually "Explain" or reasoning type
+- Q4 is usually a derivation/proof
+- Q5 says "Solve the following examples" with sub-parts a through g, each with given numerical data and a printed answer like "Ans: 0.4 m/s²"
+- In-chapter boxes include "Can you tell?", "Use your brain power", "Think about it", "Always remember"
 ` : board === 'cbse' ? `
-**NCERT Exercise Format:**
-- Numbered questions (1, 2, 3, 4... up to 15-25+)
-- Mix of short answer, long answer, numerical, and HOTS questions
-- "In-text questions" that appear within the chapter
-- Each exercise question is directly numbered without sub-categorization
+- Are from NCERT textbook exercises at the end of each chapter
+- Numbered sequentially 1, 2, 3... (up to 20-30 questions)
+- Include "In-text Questions" that appear within the chapter
+- Mix of MCQ, short answer, long answer, numericals, HOTS
+- Questions reference specific examples and experiments from the chapter
 ` : `
-**Selina/Frank Exercise Format:**
-- Multiple exercises per chapter (Exercise 1A, 1B, etc.)
-- Numbered questions with sub-parts
-- Objective questions (MCQ, fill blanks, true/false) followed by subjective
-- Numerical problems with answers
+- Are from Selina/Frank textbook exercises 
+- Organized as Exercise 1A, 1B, 2A, etc.
+- Include objective (MCQ, fill blanks, true/false, match) and subjective sections
+- Numerical problems include worked answers
 `}
 
-Reproduce EVERY question exactly as it appears in the textbook. Maintain the EXACT numbering and sub-part structure (1, 2, 3... with a, b, c, d... sub-parts).
+## Format for exercises:
 
-Format:
+## 📝 Textbook Exercises – Solved
 
-## Textbook Exercises – Solved
+**1. [EXACT question text from the real ${textbookName} textbook]**
 
-**1. [Exact question text from textbook]**
+[If has sub-parts:]
 
-[If the question has sub-parts, list each:]
-
-**a.** [Sub-part question text]
-
+**a.** [Exact sub-part text]
 **Answer:** [Complete answer]
 
-**b.** [Sub-part question text]
-
+**b.** [Exact sub-part text]  
 **Answer:** [Complete answer]
 
-[Continue for ALL sub-parts]
-
-**2. [Next question exactly from textbook]**
-
+**2. [EXACT next question from textbook]**
 **Answer:** [Complete answer]
 
-[Continue for ALL questions: 3, 4, 5... with all their sub-parts]
+[Continue all questions with all sub-parts]
 
-For numerical problems, show:
-- **Given:** [all given values]
-- **To Find:** [what to calculate]
-- **Formula:** [relevant formula]
-- **Solution:** [step-by-step calculation]
-- **Answer:** [final answer with units]
+For numericals:
+- **Given:** [values]
+- **To Find:** [what]
+- **Formula:** [formula]
+- **Solution:** [steps]
+- **Answer:** [answer with units, matching printed textbook answer]
 
-RULES:
-- Reproduce the EXACT question wording from the ${textbookName} textbook — do not rephrase
-- Include EVERY question and EVERY sub-part (a, b, c, d, e, f, g...)
-- For numericals, include the textbook's printed answer (e.g., "Ans: 0.4 m/s²") along with your solution
-- DO NOT stop early, DO NOT skip questions, DO NOT summarize
-- If the chapter has 30+ questions across all sections, write all 30+
-- This section should be the LONGEST section of the notes
+**ABSOLUTE RULES:**
+- Every question must be a REAL question from the ${textbookName} textbook chapter "${unit}"
+- DO NOT rephrase — use the exact wording from the textbook
+- DO NOT invent — if you cannot recall a question, it is better to write fewer real questions than many fake ones
+- Include ALL questions and ALL sub-parts
+- This must be the LONGEST section of the notes
 
 ---
 
@@ -169,13 +172,19 @@ RULES:
 15. **DO NOT use a), b), c), d) style labels** for section headers. Use ### headings only.
         `;
 
+        const systemMessage = board === 'maharashtra'
+            ? `You are a Maharashtra SSC Board teacher who has the Balbharati textbook physically in front of you. You have taught this exact textbook for 15 years. You know every single exercise question from every chapter by heart. When asked to write exercise questions, you reproduce the EXACT questions from the Balbharati textbook — not your own invented questions. Your exercise questions are sourced from shaalaa.com and maharashtrastudy.com question banks for Balbharati textbooks. You create premium, beautifully formatted study notes. Never cut short or summarize. Write the complete response.`
+            : board === 'cbse'
+                ? `You are a CBSE Board teacher who has the NCERT textbook physically in front of you. You have taught this exact textbook for 15 years. You know every single exercise question from every chapter by heart. When asked to write exercise questions, you reproduce the EXACT questions from the NCERT textbook — not your own invented questions. Your exercise questions are sourced from learncbse.in and ncert.nic.in. You create premium, beautifully formatted study notes. Never cut short or summarize. Write the complete response.`
+                : `You are an ICSE Board teacher who has the Selina/Frank textbook physically in front of you. You have taught this exact textbook for 15 years. You know every single exercise question from every chapter by heart. When asked to write exercise questions, you reproduce the EXACT questions from the Selina/Frank textbook — not your own invented questions. You create premium, beautifully formatted study notes. Never cut short or summarize. Write the complete response.`;
+
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
-                { role: "system", content: `You are a premium educational content creator specializing in ${boardName} Board. You create beautifully formatted, textbook-quality study notes that are specific, detailed, and visually structured. Your notes feel like a premium study guide, NOT generic web content. Every note you create is unique to the specific board, class, and chapter. You MUST include ALL textbook exercise questions with complete answers — never cut short or summarize. Write the full response no matter how long.` },
+                { role: "system", content: systemMessage },
                 { role: "user", content: prompt }
             ],
-            temperature: 0.75,
+            temperature: 0.3,
             max_tokens: 16000,
         });
 
