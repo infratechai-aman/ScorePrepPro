@@ -21,6 +21,12 @@ export async function POST(req: Request) {
         **Difficulty**: ${difficulty}
         **Question Types**: ${type} (Mixed = MCQ + Short + Long)
 
+        **Question Sourcing**:
+        - Questions MUST primarily come from textbook chapter exercises for the selected units
+        - Use end-of-chapter exercise questions, including matching tables, conceptual questions, and numericals
+        - For numericals, use the given data and values from textbook exercise problems
+        - Minimize inventing original questions — textbook exercises should be the primary source
+
         **Instructions**:
         1. create a balanced question paper covering all selected units.
         2. Strictly follow the marks distribution to equal exactly ${marks} marks.

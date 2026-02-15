@@ -145,6 +145,30 @@ export function constructPrompt(
       `;
   }
 
+  // Textbook Question Sourcing Logic (grade-aware)
+  const gradeNum = parseInt(grade, 10) || 0;
+  let textbookSourcingInstruction = '';
+  if (gradeNum >= 1 && gradeNum <= 9) {
+    textbookSourcingInstruction = `
+      === TEXTBOOK QUESTION SOURCING (MANDATORY FOR CLASS ${grade}) ===
+      For Class ${grade}, ALL questions in this paper MUST come from the textbook exercises.
+      - Use ONLY end-of-chapter exercise questions from the ${board.toUpperCase()} Board textbook
+      - Include table/matching, short answer, long answer, and numerical questions exactly as they appear in the textbook exercises
+      - DO NOT create original questions — every question must be sourced from the textbook chapter exercises
+      - For numericals, use the exact given data and values from textbook exercise problems
+      - Rephrase minimally if needed for formatting, but keep the core question identical
+    `;
+  } else {
+    textbookSourcingInstruction = `
+      === TEXTBOOK QUESTION SOURCING ===
+      At least 70% of the questions MUST come from the textbook chapter exercises.
+      - Prioritize end-of-chapter exercise questions from the ${board.toUpperCase()} Board textbook
+      - For numericals, prefer using data and values from textbook exercise problems
+      - Remaining 30% can be application-based or conceptual questions that test deeper understanding
+      - DO NOT invent questions that have no connection to the textbook content
+    `;
+  }
+
   // Weightage Logic
   let weightageInstruction = "";
   if (options.chapterWeights) {
@@ -182,10 +206,12 @@ export function constructPrompt(
     === NON-NEGOTIABLE GOLDEN RULES ===
     1. **CHAPTER LOCK**: Questions must come ONLY from: "${chapters}". REJECT any concept outside this scope.
     2. **STRICT COUNTS**: usage of the blueprint above is MANDATORY. Do not ask more or fewer questions.
-    3. **TEXTBOOK FIRST**: numericals and questions must resemble standard textbook exercises.
+    3. **TEXTBOOK FIRST**: Questions must come from standard textbook exercises. For numericals, use data/values from the textbook exercise problems.
     4. **TONE ENFORCEMENT**: ${toneInstruction}
     5. **DIFFICULTY**: ${difficultyInstruction}
     6. **WEIGHTAGE**: ${options.chapterWeights ? weightageInstruction : "Balanced distribution."}
+
+    ${textbookSourcingInstruction}
 
     === MANDATORY INCLUSIONS (Crucial) ===
     - **MATCH THE FOLLOWING**: You MUST include at least ONE "Match the Following" question set (e.g., Column A vs Column B) worth 2-4 marks.

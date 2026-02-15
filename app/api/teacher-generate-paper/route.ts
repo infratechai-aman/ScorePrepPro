@@ -38,7 +38,8 @@ export async function POST(req: Request) {
         2. **Numbering**: Use strictly 1. 2. 3. ... across sections (or restart if typical for this subject, but be consistent).
         3. **Formatting**: Center the College Name and Title if possible (use HTML <center> tags or markdown centering).
         4. **Scope**: Questions must be ONLY from the listed units.
-        ${includeAnswerKey ? "5. **Answer Key**: After the question paper, provide a brief 'Answer Key' section." : "5. **No Answers**: Do NOT provide answers/solutions."}
+        5. **Question Sourcing**: Questions should primarily come from textbook chapter exercises. Use end-of-chapter exercise questions including matching tables, conceptual questions, and numericals with actual textbook data/values. Minimize inventing original questions.
+        ${includeAnswerKey ? "6. **Answer Key**: After the question paper, provide a brief 'Answer Key' section." : "6. **No Answers**: Do NOT provide answers/solutions."}
 
         **Output Format**:
         
