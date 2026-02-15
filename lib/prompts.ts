@@ -132,6 +132,17 @@ export function constructPrompt(
       - "Assertion (A): ... Reason (R): ..."
       - "Justify your answer"
       `;
+  } else if (board === "icse") {
+    toneInstruction = `
+      USE ICSE TONE (Selina/Frank textbook style):
+      - "Give reasons for the following"
+      - "Name the following"
+      - "Differentiate between"
+      - "Draw a neat labelled diagram of"
+      - "Define the term"
+      - "State the law"
+      - Questions should follow ICSE Council exam format
+      `;
   }
 
   // Weightage Logic

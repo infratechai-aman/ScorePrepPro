@@ -7,7 +7,7 @@ export const maxDuration = 60; // 60 seconds timeout
 
 export async function POST(req: Request) {
     try {
-        const { subject, unit, topics } = await req.json();
+        const { subject, unit, topics, board, grade, textbook } = await req.json();
 
         if (!subject || !unit || !topics) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -15,9 +15,18 @@ export async function POST(req: Request) {
 
         const topicList = topics.map((t: any) => `- ${t.name} ${t.isImp ? '(IMPORTANT)' : ''}`).join("\n");
 
+        const boardContext = board ? `
+        BOARD: ${board === 'maharashtra' ? 'Maharashtra SSC' : board === 'cbse' ? 'CBSE' : 'ICSE'}
+        CLASS: ${grade || 'Not specified'}
+        TEXTBOOK: ${textbook || 'Standard textbook'}
+        IMPORTANT: Generate notes STRICTLY based on the ${textbook || 'standard'} textbook syllabus for ${board === 'maharashtra' ? 'Maharashtra SSC' : board === 'cbse' ? 'CBSE' : 'ICSE'} Board.
+        Do NOT include content from other boards or syllabi.
+        ` : '';
+
         const prompt = `
         You are an expert educational content creator. Create comprehensive, study-friendly notes for the following unit.
 
+        ${boardContext}
         Subject: ${subject}
         Unit: ${unit}
         

@@ -17,7 +17,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 import { Switch } from "@/components/ui/Switch";
-import { SYLLABUS_DB } from "@/lib/syllabus";
+import { SYLLABUS_DB, getSubjects, getChapters } from "@/lib/syllabus";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsage } from "@/hooks/useUsage";
 import { useRouter } from "next/navigation";
@@ -81,17 +81,21 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
         }
     }, [authLoading, user]);
 
+    // Reset subject when board or grade changes
+    useEffect(() => {
+        setSubject("");
+        setAvailableChapters([]);
+        setSelectedChapters([]);
+        setChapterWeights({});
+    }, [board, grade]);
+
     // Effect to load chapters when subject changes
     useEffect(() => {
         if (board && grade && subject) {
-            const boardData = SYLLABUS_DB[board];
-            if (boardData && boardData[grade] && boardData[grade][subject]) {
-                setAvailableChapters(boardData[grade][subject]);
-                setSelectedChapters([]); // Reset selections
-                setChapterWeights({});
-            } else {
-                setAvailableChapters([]);
-            }
+            const chapters = getChapters(board, grade, subject);
+            setAvailableChapters(chapters);
+            setSelectedChapters([]); // Reset selections
+            setChapterWeights({});
         }
     }, [board, grade, subject]);
 
@@ -328,18 +332,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                     </div>
 
                                     <Select label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} options={
-                                        board === 'maharashtra' ? [
-                                            { value: "Mathematics Part-I (Algebra)", label: "Maths 1 (Algebra)" },
-                                            { value: "Mathematics Part-II (Geometry)", label: "Maths 2 (Geometry)" },
-                                            { value: "Science and Technology Part-1", label: "Science 1" },
-                                            { value: "Science and Technology Part-2", label: "Science 2" },
-                                            { value: "History and Political Science", label: "History" },
-                                            { value: "Geography", label: "Geography" },
-                                        ] : [
-                                            { value: "Mathematics", label: "Mathematics" },
-                                            { value: "Science", label: "Science" },
-                                            { value: "Social Science", label: "Social Science" },
-                                        ]
+                                        getSubjects(board, grade).map(s => ({ value: s, label: s }))
                                     } />
 
                                     {userData && userData.plan === 'basic' && (

@@ -4,7 +4,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Select } from "@/components/ui/Select";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Sparkles, Download, BookOpen, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -12,6 +12,7 @@ import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import jsPDF from "jspdf";
 import { useAuth } from "@/contexts/AuthContext";
+import { getSubjects, getChapters, getClasses, BOARD_INFO } from "@/lib/syllabus";
 
 export default function NotesGeneratorPage() {
     const { userData } = useAuth();
@@ -27,6 +28,21 @@ export default function NotesGeneratorPage() {
 
     const isPremium = userData?.plan === 'premium' || userData?.plan === 'teacher';
 
+    // Dynamic data from syllabus DB
+    const availableClasses = getClasses(board);
+    const availableSubjects = getSubjects(board, grade);
+    const availableChapters = getChapters(board, grade, subject);
+
+    // Reset downstream when board/grade/subject changes
+    useEffect(() => {
+        setSubject("");
+        setChapter("");
+    }, [board, grade]);
+
+    useEffect(() => {
+        setChapter("");
+    }, [subject]);
+
     const handleGenerate = async () => {
         if (!subject || !chapter) {
             setError("Please select a subject and chapter.");
@@ -37,6 +53,8 @@ export default function NotesGeneratorPage() {
         setError("");
         setGeneratedNotes("");
 
+        const boardInfo = BOARD_INFO[board];
+
         try {
             const response = await fetch("/api/generate-notes", {
                 method: "POST",
@@ -44,6 +62,9 @@ export default function NotesGeneratorPage() {
                 body: JSON.stringify({
                     subject: subject,
                     unit: chapter,
+                    board: board,
+                    grade: grade,
+                    textbook: boardInfo?.textbook || "",
                     topics: [{ name: chapter, isImp: true }]
                 })
             });
@@ -81,6 +102,16 @@ export default function NotesGeneratorPage() {
         doc.save(`${subject}-${chapter}-notes.pdf`);
     };
 
+    // Class options based on plan
+    const classOptions = availableClasses
+        .filter(cls => {
+            const num = parseInt(cls);
+            if (isPremium) return true;
+            if (userData?.plan === 'basic') return num >= 7 && num <= 10;
+            return num >= 9 && num <= 10; // free
+        })
+        .map(cls => ({ value: cls, label: `Class ${cls}` }));
+
     return (
         <>
             <DashboardHeader title="Notes Generator" />
@@ -105,53 +136,33 @@ export default function NotesGeneratorPage() {
                             { value: "maharashtra", label: "Maharashtra SSC" }
                         ]} />
 
-                        <Select label="Class" value={grade} onChange={(e) => setGrade(e.target.value)} options={[
-                            ...(isPremium ? [
-                                { value: "1", label: "Class 1" },
-                                { value: "2", label: "Class 2" },
-                                { value: "3", label: "Class 3" },
-                                { value: "4", label: "Class 4" },
-                                { value: "5", label: "Class 5" },
-                                { value: "6", label: "Class 6" },
-                                { value: "7", label: "Class 7" },
-                                { value: "8", label: "Class 8" },
-                                { value: "9", label: "Class 9" },
-                                { value: "10", label: "Class 10" },
-                                { value: "11", label: "Class 11" },
-                                { value: "12", label: "Class 12" },
-                            ] : [
-                                { value: "9", label: "Class 9" },
-                                { value: "10", label: "Class 10" },
-                            ])
-                        ]} />
+                        <Select label="Class" value={grade} onChange={(e) => setGrade(e.target.value)} options={classOptions} />
 
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Subject</label>
-                            <input
-                                type="text"
-                                className="w-full p-3 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                placeholder="e.g. Mathematics, Science..."
-                                value={subject}
-                                onChange={(e) => setSubject(e.target.value)}
-                            />
-                        </div>
+                        <Select
+                            label="Subject"
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            options={[
+                                { value: "", label: "-- Select Subject --" },
+                                ...availableSubjects.map(s => ({ value: s, label: s }))
+                            ]}
+                        />
 
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Chapter / Topic</label>
-                            <input
-                                type="text"
-                                className="w-full p-3 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                placeholder="e.g. Quadratic Equations, Photosynthesis..."
-                                value={chapter}
-                                onChange={(e) => setChapter(e.target.value)}
-                            />
-                        </div>
+                        <Select
+                            label="Chapter"
+                            value={chapter}
+                            onChange={(e) => setChapter(e.target.value)}
+                            options={[
+                                { value: "", label: subject ? "-- Select Chapter --" : "-- Select Subject First --" },
+                                ...availableChapters.map(c => ({ value: c, label: c }))
+                            ]}
+                        />
 
                         {error && (
                             <p className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">{error}</p>
                         )}
 
-                        <Button className="w-full" size="lg" onClick={handleGenerate} isLoading={loading}>
+                        <Button className="w-full" size="lg" onClick={handleGenerate} isLoading={loading} disabled={!subject || !chapter}>
                             <Sparkles className="mr-2 h-4 w-4" /> Generate Notes
                         </Button>
                     </GlassCard>
@@ -192,8 +203,8 @@ export default function NotesGeneratorPage() {
                             ) : (
                                 <div className="h-full flex flex-col items-center justify-center text-slate-400">
                                     <BookOpen className="h-12 w-12 mb-4 opacity-20" />
-                                    <p className="text-lg font-medium">Enter a subject and chapter to generate notes</p>
-                                    <p className="text-sm mt-1">AI will create comprehensive, exam-ready study material</p>
+                                    <p className="text-lg font-medium">Select a board, subject, and chapter to generate notes</p>
+                                    <p className="text-sm mt-1">AI will create comprehensive, exam-ready study material from {BOARD_INFO[board]?.textbook || "textbook"} syllabus</p>
                                 </div>
                             )}
                         </div>
