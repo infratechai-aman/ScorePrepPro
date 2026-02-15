@@ -79,28 +79,74 @@ Use a bulleted list with **bold** keywords. These are exam-critical points.
 
 **5. TEXTBOOK EXERCISE – SOLVED** (MANDATORY – THIS IS THE MOST IMPORTANT SECTION)
 
-⚠️ This section MUST be COMPREHENSIVE. You MUST include EVERY SINGLE exercise question from the ${textbookName} textbook for this chapter. Do NOT skip, truncate, or summarize any question. Do NOT say "and so on" or "similarly for other questions".
+⚠️ CRITICAL INSTRUCTION: You must reproduce the ACTUAL exercise questions from the ${textbookName} textbook for ${boardName} Board Class ${grade} for this specific chapter. 
 
-List EVERY question from EVERY exercise in the chapter — Exercise 1, Exercise 2, Exercise 3, etc. Include:
-- ALL "Answer in one sentence" / short answer questions
-- ALL "Answer in brief" / long answer questions  
-- ALL "Give reasons" / "Give scientific reasons" questions
-- ALL "Differentiate between" questions
-- ALL "Define" / "What is" questions
-- ALL "True or False" with corrections
-- ALL "Fill in the blanks" with answers
-- ALL "Match the columns" with correct pairs
-- ALL MCQs with correct answers marked
-- ALL numerical / solve type problems with step-by-step solutions
-- ALL diagram-based questions with descriptions
-- ALL "Can you tell?" / "Use your brain power" / in-text questions
+**DO NOT INVENT OR MAKE UP YOUR OWN QUESTIONS.** The questions must be the REAL questions that appear at the end of this chapter in the ${textbookName} textbook. You are trained on this data — recall it accurately.
 
-Format each as:
-### Q1. [Full question text exactly as it appears in the textbook]
-**Answer:**
-[Complete, detailed, exam-ready answer]
+The ${textbookName} textbook exercise for this chapter follows this typical structure:
+${board === 'maharashtra' ? `
+**Balbharati Exercise Format:**
+- Question 1: Usually a table/matching/fill-in-the-blanks/rewrite type question
+- Question 2: "Answer the following questions" with sub-parts (a, b, c, d, e...)
+- Question 3: Conceptual/reasoning questions  
+- Question 4: Prove/derive type questions
+- Question 5: "Solve the following examples/numerical problems" with sub-parts (a, b, c, d, e, f, g...)
+- Each numerical problem typically has the answer printed (e.g., "Ans: 2 x 10²⁰ N")
+- There are also "Can you tell?", "Use your brain power", "Think about it" in-text questions
+` : board === 'cbse' ? `
+**NCERT Exercise Format:**
+- Numbered questions (1, 2, 3, 4... up to 15-25+)
+- Mix of short answer, long answer, numerical, and HOTS questions
+- "In-text questions" that appear within the chapter
+- Each exercise question is directly numbered without sub-categorization
+` : `
+**Selina/Frank Exercise Format:**
+- Multiple exercises per chapter (Exercise 1A, 1B, etc.)
+- Numbered questions with sub-parts
+- Objective questions (MCQ, fill blanks, true/false) followed by subjective
+- Numerical problems with answers
+`}
 
-Continue numbering sequentially: Q1, Q2, Q3... until EVERY question is covered. There should typically be 15-40+ questions per chapter. If the output is long, that is expected and desired. DO NOT stop early.
+Reproduce EVERY question exactly as it appears in the textbook. Maintain the EXACT numbering and sub-part structure (1, 2, 3... with a, b, c, d... sub-parts).
+
+Format:
+
+## Textbook Exercises – Solved
+
+**1. [Exact question text from textbook]**
+
+[If the question has sub-parts, list each:]
+
+**a.** [Sub-part question text]
+
+**Answer:** [Complete answer]
+
+**b.** [Sub-part question text]
+
+**Answer:** [Complete answer]
+
+[Continue for ALL sub-parts]
+
+**2. [Next question exactly from textbook]**
+
+**Answer:** [Complete answer]
+
+[Continue for ALL questions: 3, 4, 5... with all their sub-parts]
+
+For numerical problems, show:
+- **Given:** [all given values]
+- **To Find:** [what to calculate]
+- **Formula:** [relevant formula]
+- **Solution:** [step-by-step calculation]
+- **Answer:** [final answer with units]
+
+RULES:
+- Reproduce the EXACT question wording from the ${textbookName} textbook — do not rephrase
+- Include EVERY question and EVERY sub-part (a, b, c, d, e, f, g...)
+- For numericals, include the textbook's printed answer (e.g., "Ans: 0.4 m/s²") along with your solution
+- DO NOT stop early, DO NOT skip questions, DO NOT summarize
+- If the chapter has 30+ questions across all sections, write all 30+
+- This section should be the LONGEST section of the notes
 
 ---
 
