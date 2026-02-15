@@ -1,6 +1,8 @@
 
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
+import { db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export const runtime = "nodejs";
 export const maxDuration = 180;
@@ -13,10 +15,27 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        const topicList = topics.map((t: any) => `- ${t.name} ${t.isImp ? '(IMPORTANT)' : ''}`).join("\n");
-
         const boardName = board === 'maharashtra' ? 'Maharashtra SSC' : board === 'cbse' ? 'CBSE' : board === 'icse' ? 'ICSE' : 'Standard';
         const textbookName = textbook || 'Standard textbook';
+
+        // ============================================================
+        // CACHE CHECK: Return cached notes if this chapter was generated before
+        // ============================================================
+        const cacheKey = `${(board || 'standard').toLowerCase()}_${(grade || '').toString().toLowerCase()}_${subject.toLowerCase().replace(/\s+/g, '_')}_${unit.toLowerCase().replace(/\s+/g, '_')}`;
+
+        try {
+            const cachedDoc = await getDoc(doc(db, 'notesCache', cacheKey));
+            if (cachedDoc.exists()) {
+                const cached = cachedDoc.data();
+                console.log(`Cache HIT for notes: ${cacheKey}`);
+                return NextResponse.json({ content: cached.content, cached: true });
+            }
+            console.log(`Cache MISS for notes: ${cacheKey}`);
+        } catch (cacheError) {
+            console.warn('Cache lookup failed, generating fresh:', cacheError);
+        }
+
+        const topicList = topics.map((t: any) => `- ${t.name} ${t.isImp ? '(IMPORTANT)' : ''}`).join("\n");
 
         // ============================================================
         // CALL 1: Generate study notes (concepts only, NO exercises)
@@ -331,6 +350,24 @@ RULES:
 
         // Combine: notes + exercise part A (Q1-Q3) + exercise part B (Q4-Q5)
         const content = notesContent + '\n\n---\n\n' + exerciseA + '\n\n' + exerciseB;
+
+        // ============================================================
+        // SAVE TO CACHE for future users
+        // ============================================================
+        try {
+            await setDoc(doc(db, 'notesCache', cacheKey), {
+                content,
+                board: board || 'standard',
+                grade: grade || '',
+                subject,
+                chapter: unit,
+                textbook: textbookName,
+                createdAt: new Date().toISOString(),
+            });
+            console.log(`Cached notes for: ${cacheKey}`);
+        } catch (saveError) {
+            console.warn('Failed to cache notes:', saveError);
+        }
 
         return NextResponse.json({ content });
 
