@@ -86,8 +86,8 @@ Format each as:
 [Complete, detailed answer with steps/explanations]
 
 Include at minimum:
-- 8-12 important questions covering all types (short answer, long answer, reasoning, numerical if applicable)
-- Cover all major concepts of the chapter
+- ALL exercise questions from the ${textbookName} textbook for this chapter — do not skip any
+- Cover every question type (short answer, long answer, reasoning, numerical, MCQ, fill in the blanks, true/false, match the columns)
 - Include "Give reasons", "Differentiate between", "Define", "Explain", and "Solve" type questions
 - Answers should be exam-ready — concise but complete
 
