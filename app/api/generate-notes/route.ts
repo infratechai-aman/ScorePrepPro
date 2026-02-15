@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 
 export const runtime = "nodejs";
-export const maxDuration = 60; // 60 seconds timeout
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
     try {
@@ -15,97 +15,95 @@ export async function POST(req: Request) {
 
         const topicList = topics.map((t: any) => `- ${t.name} ${t.isImp ? '(IMPORTANT)' : ''}`).join("\n");
 
-        const boardContext = board ? `
-        BOARD: ${board === 'maharashtra' ? 'Maharashtra SSC' : board === 'cbse' ? 'CBSE' : 'ICSE'}
-        CLASS: ${grade || 'Not specified'}
-        TEXTBOOK: ${textbook || 'Standard textbook'}
-        IMPORTANT: Generate notes STRICTLY based on the ${textbook || 'standard'} textbook syllabus for ${board === 'maharashtra' ? 'Maharashtra SSC' : board === 'cbse' ? 'CBSE' : 'ICSE'} Board.
-        Do NOT include content from other boards or syllabi.
-        ` : '';
+        const boardName = board === 'maharashtra' ? 'Maharashtra SSC' : board === 'cbse' ? 'CBSE' : board === 'icse' ? 'ICSE' : 'Standard';
+        const textbookName = textbook || 'Standard textbook';
 
         const prompt = `
-        You are an expert educational content creator. Create comprehensive, study-friendly notes for the following unit.
+You are an expert ${boardName} Board educator creating premium study notes for Class ${grade || ''} students.
 
-        ${boardContext}
-        Subject: ${subject}
-        Unit: ${unit}
-        
-        Topics to Cover:
-        ${topicList}
+**BOARD**: ${boardName}
+**CLASS**: ${grade || 'Not specified'}  
+**TEXTBOOK**: ${textbookName}
+**SUBJECT**: ${subject}
+**CHAPTER**: ${unit}
 
-        Guidelines:
-        1. **Structure Order**:
-           - **First**: Write a "## Unit Overview" section (Brief introduction to the whole unit in 4-5 lines).
-           - **Then**: Generate notes for **EACH** topic listed above using the "UNIVERSAL NOTES TEMPLATE".
-        2. **Exclusions**:
-           - **ABSOLUTELY NO "Exam Weightage" section**. Do not estimate marks.
-           - OMIT sections like "Working/Process" if irrelevant to the topic.
-        3. **Content Depth**: 
-           - **Advantages/Disadvantages**: List at least 4-5 points each.
-           - **Tables**: MUST have a blank line between every row to render correctly in Markdown.
-           - **Diagrams**: Use the text-based blueprint style for processes.
+**CRITICAL**: Generate notes STRICTLY based on the ${textbookName} textbook for ${boardName} Board Class ${grade}. Do NOT mix content from other boards.
 
-        📘 **UNIVERSAL NOTES TEMPLATE (For Each Topic)**
-        
-        # [Topic Name]
-        
-        ### 1. Definition
-        > **Definition**: [Short, direct explanation]
-        
-        ### 2. Core Concept
-        *   [Point 1]
-        *   [Point 2]
-        *   [Point 3]
-        *   [Point 4]
-        *   [Point 5]
-        
-        ### 3. Diagram / Blueprint (If Applicable)
-        > **Blueprint**:
-        > \`\`\`text
-        > [Input]  --->  [Process]  --->  [Output]
-        > \`\`\`
-        
-        ### 4. Working / Process (OMIT IF IRRELEVANT)
-        1. [Step 1]
-        2. [Step 2]
-        
-        ### 5. Key Components (OMIT IF IRRELEVANT)
-        *   **[Component]**: [Desc]
-        
-        ### 6. Advantages & Disadvantages (Required for comparison topics)
-        *   ✅ **Advantages**: [Point 1], [Point 2], [Point 3], [Point 4]
-        *   ❌ **Disadvantages**: [Point 1], [Point 2], [Point 3], [Point 4]
-        
-        ### 7. Comparison (If Applicable)
-        | Feature | Topic A | Topic B |
-        | :--- | :--- | :--- |
-        | Point 1 | Val A | Val B |
-        
-        | Point 2 | Val A | Val B |
-        *(Add blank lines between rows)*
+Topics to Cover:
+${topicList}
 
-        ### 8. Real-World Examples
-        *   [Example 1]
-        *   [Example 2]
-        
-        ### 9. Quick Revision
-        > **Quick Revision**:
-        > *   **Keywords**: [Keywords...]
-        > *   **Takeaway**: [One line summary]
+---
 
-        **Format Rules**:
-        - **NO EMOJIS** (Except checks/crosses in Adv/Disadv).
-        - **NO Exam Weightage**.
-        - Blockquotes for Definitions/Revision.
+## STYLE GUIDELINES – MAKE THESE NOTES BEAUTIFUL & UNIQUE
+
+You are NOT writing generic Wikipedia-style notes. These are **premium, textbook-quality study notes** that a student would love to read. Follow these strict formatting rules:
+
+### STRUCTURE (Follow this order):
+
+**1. CHAPTER TITLE** (use # heading)
+Start with the full chapter title.
+
+**2. CHAPTER SNAPSHOT** (use > blockquote)
+A 3-4 line overview that hooks the student. What will they learn? Why is it important?
+
+**3. FOR EACH MAJOR CONCEPT/TOPIC**:
+
+Use ## for the topic heading, then cover:
+
+**a) 🔑 Key Definition** (in blockquote)
+> **Definition**: Clear, concise definition from the ${textbookName} textbook.
+
+**b) 📝 Explanation** 
+Write 4-6 bullet points explaining the concept. Use bold for key terms. Make it conversational but informative. Use analogies when helpful.
+
+**c) 📊 Comparison Table** (when applicable)
+Use markdown tables with clear headers. Compare related concepts side by side.
+
+**d) ⚡ Key Formulas / Laws** (when applicable)
+Present in code blocks for clarity. Include the formula name, the equation, and where each variable stands.
+
+**e) 🔬 Diagram Description** (when applicable)
+Describe what a student should draw/visualize using a clear text blueprint:
+\`\`\`
+[Input] → [Process] → [Output]
+\`\`\`
+
+**f) 📌 Important Points to Remember**
+Use a bulleted list with **bold** keywords. These are exam-critical points.
+
+**4. QUICK REVISION BOX** (at the end)
+> **Quick Revision**:
+> - **Key Terms**: List 5-8 essential keywords
+> - **Remember**: One-line takeaway for each major concept
+> - **Common Mistakes**: 2-3 mistakes students typically make
+
+---
+
+### FORMATTING RULES (STRICT):
+
+1. **USE BOLD LIBERALLY** for all key terms, definitions, and important phrases – like a real highlighted textbook.
+2. Use *italics* for scientific names, examples, and emphasis.
+3. Use > blockquotes for definitions, important notes, and revision boxes.
+4. Use --- horizontal rules to separate major sections.
+5. Use markdown tables for ALL comparisons (minimum 3-4 rows).
+6. Use numbered lists (1. 2. 3.) for sequential processes/steps.
+7. Use bullet lists (- or *) for non-sequential points.
+8. Use code blocks (\`\`\`) for formulas, equations, and diagrams.
+9. **NO generic filler text**. Every sentence must add value.
+10. **NO "Exam Weightage" sections**. Do not estimate marks.
+11. **NO emojis in the actual notes content** (only in section label headers as shown above).
+12. Keep language simple but authoritative – like a top teacher explaining.
+13. Add **"Did You Know?"** boxes (in blockquotes) for interesting facts.
+14. Make content SPECIFIC to the ${textbookName} ${boardName} Class ${grade} syllabus.
         `;
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
-                { role: "system", content: "You are a helpful and knowledgeable AI tutor." },
+                { role: "system", content: `You are a premium educational content creator specializing in ${boardName} Board. You create beautifully formatted, textbook-quality study notes that are specific, detailed, and visually structured. Your notes feel like a premium study guide, NOT generic web content. Every note you create is unique to the specific board, class, and chapter.` },
                 { role: "user", content: prompt }
             ],
-            temperature: 0.7,
+            temperature: 0.75,
         });
 
         const content = completion.choices[0].message.content;

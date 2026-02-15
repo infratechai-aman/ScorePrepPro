@@ -26,7 +26,7 @@ export function Sidebar() {
         { icon: <Sparkles size={20} />, label: "Paper Generator", href: "/teacher-dashboard/smart-generate", show: true },
         { icon: <BookOpen size={20} />, label: "Notes Generator", href: "/teacher-dashboard/notes-generator", show: true },
         { icon: <FileText size={20} />, label: "Custom Generator", href: "/teacher-dashboard/question-generator", show: isTeacher },
-        { icon: <FolderOpen size={20} />, label: "Paper Repository", href: "/teacher-dashboard/repository" },
+        { icon: <FolderOpen size={20} />, label: "My Repository", href: "/teacher-dashboard/repository" },
         { icon: <Bot size={20} />, label: "AI Tutor", href: "/teacher-dashboard/ai-tutor" },
         { icon: <Settings size={20} />, label: "Settings", href: "/teacher-dashboard/settings" },
         { icon: <HelpCircle size={20} />, label: "Help & Support", href: "/teacher-dashboard/support" },
