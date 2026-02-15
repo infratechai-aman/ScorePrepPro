@@ -34,7 +34,7 @@ const saveBlob = (blob: Blob, filename: string) => {
     window.URL.revokeObjectURL(url);
 };
 
-export default function GeneratorPage() {
+export default function GeneratorPage({ embedded = false }: { embedded?: boolean }) {
     // Wizard State
     const [step, setStep] = useState(1);
 
@@ -259,8 +259,8 @@ export default function GeneratorPage() {
     const prevStep = () => setStep(prev => prev - 1);
 
     return (
-        <main className="min-h-screen pb-20 pt-24 px-4 md:px-6 bg-slate-50">
-            <Navbar />
+        <main className={`min-h-screen pb-20 px-4 md:px-6 bg-slate-50 ${embedded ? 'pt-6' : 'pt-24'}`}>
+            {!embedded && <Navbar />}
 
             <section className="max-w-5xl mx-auto space-y-8">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-2">
