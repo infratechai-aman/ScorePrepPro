@@ -79,9 +79,23 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
         try {
             // 1. Identify the question block in the markdown
-            // Matches **1.** or 1. followed by text, until next number pattern or end
-            // Note: This regex is tricky. We'll try to find the specific number.
-            const qNumRegex = new RegExp(`(?:\\*\\*|\\b)${flipQuestionNum}\\.(?:\\*\\*|\\b)[\\s\\S]*?(?=(?:\\n\\s*(?:\\*\\*|\\b)\\d+\\.|\\n#|\\n---|$))`, "i");
+            // Matches **1.**, 1., Q.1., **Q.1.** followed by text
+
+            // Allow optional "Q." or "Q" prefix before the number
+            const prefixPattern = "(?:Q\\.|Q|)";
+            const numberPattern = `${flipQuestionNum}`;
+
+            // Regex to find start of question: 
+            // - (?:^|\n) -> Start of line (or file start)
+            // - (?:\\*\\*|\\b) -> Optional bold start or word boundary
+            // - ${prefixPattern}\\s* -> Optional Q. prefix with optional space
+            // - ${numberPattern}\\. -> The number and dot
+            // - (?:\\*\\*|\\b) -> Optional bold end or boundary
+
+            // Lookahead for next question or section end
+            const lookaheadPattern = `(?=(?:\\n\\s*(?:\\*\\*|\\b)${prefixPattern}\\s*\\d+\\.|\\n#|\\n---|$))`;
+
+            const qNumRegex = new RegExp(`(?:\\*\\*|\\b)${prefixPattern}\\s*${numberPattern}\\.(?:\\*\\*|\\b)[\\s\\S]*?${lookaheadPattern}`, "i");
 
             const match = generatedPaper.match(qNumRegex);
 
@@ -120,12 +134,14 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
             // 4. Replace Answer in Solution (if exists)
             if (generatedSolution && newQuestion.answer) {
-                // Try to find the answer block. Usually matches "1." or "**1.**" in the answer key section.
-                const aNumRegex = new RegExp(`(?:\\*\\*|\\b)${flipQuestionNum}\\.(?:\\*\\*|\\b)[\\s\\S]*?(?=(?:\\n\\s*(?:\\*\\*|\\b)\\d+\\.|\\n#|\\n---|$))`, "i");
-                const solMatch = generatedSolution.match(aNumRegex);
+                // Reuse the robust regex pattern for the solution
+                const solRegex = new RegExp(`(?:\\*\\*|\\b)${prefixPattern}\\s*${numberPattern}\\.(?:\\*\\*|\\b)[\\s\\S]*?${lookaheadPattern}`, "i");
+
+                const solMatch = generatedSolution.match(solRegex);
 
                 if (solMatch) {
                     const oldAnswerText = solMatch[0];
+                    // Preserve formatting if possible, or use standard
                     const newAnswerBlock = `**${flipQuestionNum}.** ${newQuestion.answer}`;
                     const newSolution = generatedSolution.replace(oldAnswerText, newAnswerBlock);
                     setGeneratedSolution(newSolution);
