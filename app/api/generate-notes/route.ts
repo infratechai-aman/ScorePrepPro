@@ -93,7 +93,7 @@ Use a bulleted list with **bold** keywords.
         // CALL 2: Generate ONLY exercise questions with answers
         // ============================================================
         const exercisePrompt = `
-You are a ${boardName} Board teacher who has the ${textbookName} textbook physically open in front of you right now.
+You are an expert ${boardName} Board teacher creating a comprehensive exercise set for Class ${grade || ''} students.
 
 **BOARD**: ${boardName}
 **CLASS**: ${grade || 'Not specified'}
@@ -101,103 +101,139 @@ You are a ${boardName} Board teacher who has the ${textbookName} textbook physic
 **SUBJECT**: ${subject}
 **CHAPTER**: ${unit}
 
-YOUR ONLY TASK: Write out EVERY SINGLE exercise question from the end-of-chapter exercises of this specific chapter in the ${textbookName} textbook, along with complete answers.
-
-These exercise questions are publicly documented on shaalaa.com, learncbse.in, maharashtrastudy.com, byjus.com, and topperlearning.com. You have been trained on content from these sites. Recall the EXACT questions.
+Create a COMPLETE set of practice exercises covering ALL concepts from this chapter. These exercises should follow the standard ${boardName} Board exam pattern and cover every topic thoroughly.
 
 ${board === 'maharashtra' ? `
-## BALBHARATI EXERCISE FORMAT (follow this EXACTLY):
+## EXERCISE FORMAT (Maharashtra SSC Board Pattern):
 
-The Balbharati textbook exercises for this chapter have this structure:
-- **Question 1**: Table/matching/rewrite/fill-in-the-blanks type (includes a table with columns I, II, III that students must rearrange)
-- **Question 2**: "Answer the following questions." followed by sub-parts a, b, c, d, e (5+ sub-parts, each is a conceptual/theory question)
-- **Question 3**: "Explain why..." or reasoning questions
-- **Question 4**: "Let..." or prove/derive type questions  
-- **Question 5**: "Solve the following examples." followed by sub-parts a, b, c, d, e, f, g (each is a numerical problem with given data and a printed answer like "Ans: 0.4 m/s²")
+Structure the exercises exactly like a standard Balbharati chapter-end exercise:
 
-Additionally include any in-chapter activity questions like "Can you tell?", "Use your brain power", "Think about it", "Do you know?" boxes.
+**Question 1**: A table-based matching exercise. Create a table with 3 columns (I, II, III) where Column I has concepts (e.g., Mass, Weight, Acceleration due to gravity, Gravitational constant), Column II has units/values, and Column III has properties/characteristics. Students need to rearrange and match correctly. Include the SOLVED rearranged table as the answer.
 
-EXAMPLE OF WHAT REAL BALBHARATI QUESTIONS LOOK LIKE (from Gravitation chapter):
-- "1. Study the entries in the following table and rewrite them putting the connected items in a single row." [followed by actual table with Mass/Weight/Acceleration due to gravity/Gravitational constant in column I, units in column II, properties in column III]
-- "2. Answer the following questions. a. What is the difference between mass and weight of an object. Will the mass and weight of an object on the earth be same as their values on Mars? Why?"
-- "2b. What are (i) free fall, (ii) acceleration due to gravity (iii) escape velocity (iv) centripetal force?"
-- "2c. Write the three laws given by Kepler. How did they help Newton to arrive at the inverse square law of gravity?"
-- "5a. An object takes 5 s to reach the ground from a height of 5 m on a planet. What is the value of g on the planet? Ans: 0.4 m/s²"
-- "5f. The masses of the earth and moon are 6 x 10²⁴ kg and 7.4x10²² kg, respectively. The distance between them is 3.84 x 10⁵ km. Calculate the gravitational force of attraction between the two? Use G = 6.7 x 10⁻¹¹ N m² kg⁻². Ans: 2 x 10²⁰ N"
+**Question 2**: "Answer the following questions." — Write 5 sub-parts (a through e):
+- a: A comparison question (e.g., "What is the difference between mass and weight of an object. Will the mass and weight of an object on the earth be same as their values on Mars? Why?")
+- b: A definition-based question covering 3-4 key terms (e.g., "What are (i) free fall, (ii) acceleration due to gravity (iii) escape velocity (iv) centripetal force?")
+- c: A question about laws/principles (e.g., "Write the three laws given by Kepler. How did they help Newton to arrive at the inverse square law of gravity?")
+- d: A derivation/proof question (e.g., "A stone thrown vertically upwards with initial velocity u reaches a height 'h' before coming down. Show that the time taken to go up is same as the time taken to come down.")
+- e: A reasoning/application question (e.g., "If the value of g suddenly becomes twice its value, it will become two times more difficult to pull a heavy object along the floor. Why?")
 
-YOUR output must match this level of specificity and detail.
+**Question 3**: A conceptual explanation question (e.g., "Explain why the value of g is zero at the centre of the earth.")
+
+**Question 4**: A mathematical proof/derivation question (e.g., "Let the period of revolution of a planet at a distance R from a star be T. Prove that if it was at a distance of 2R from the star, its period of revolution will be √8 T.")
+
+**Question 5**: "Solve the following examples." — Write 7 numerical problems (a through g), each with:
+- Specific given data with realistic values
+- A printed answer (e.g., "Ans: 0.4 m/s²")
+- Full step-by-step solution
+
+The numerical problems should cover:
+- a: Finding acceleration due to gravity on another planet (e.g., "An object takes 5 s to reach the ground from a height of 5 m on a planet. What is the value of g on the planet? Ans: 0.4 m/s²")
+- b: Comparing masses using gravitational acceleration (e.g., finding mass of planet B given mass of planet A and ratio of g values, Ans: 2 MA)
+- c: Mass and weight on moon (e.g., "The mass and weight of an object on earth are 5 kg and 49 N respectively. What will be their values on the moon? Assume g on moon is 1/6th of earth. Ans: 5 kg and 8.17 N")
+- d: Projectile motion (e.g., "An object thrown vertically upwards reaches a height of 500 m. What was its initial velocity? How long will the object take to come back to earth? Assume g = 10 m/s². Ans: 100 m/s and 20 s")
+- e: Free fall calculation (e.g., "A ball falls off a table and reaches the ground in 1 s. Calculate its speed on reaching the ground and the height of the table. g = 10 m/s². Ans: 10 m/s and 5 m")
+- f: Gravitational force between celestial bodies (e.g., "The masses of the earth and moon are 6 x 10²⁴ kg and 7.4x10²² kg. The distance between them is 3.84 x 10⁵ km. Calculate the gravitational force. G = 6.7 x 10⁻¹¹ N m² kg⁻². Ans: 2 x 10²⁰ N")
+- g: Finding mass of celestial body (e.g., "The mass of the earth is 6 x 10²⁴ kg. Distance between earth and Sun is 1.5x10¹¹ m. If gravitational force is 3.5 x 10²² N, what is mass of Sun? G = 6.7 x 10⁻¹¹. Ans: 1.96 x 10³⁰ kg")
+
+Also include 3-5 in-chapter thinking questions like "Can you tell?", "Use your brain power" type boxes.
 ` : board === 'cbse' ? `
-## NCERT EXERCISE FORMAT:
-- Questions numbered 1, 2, 3, 4... sequentially (typically 15-30 questions)
-- Include "In-text Questions" from within the chapter
-- Mix of MCQ, short answer, long answer, numerical, HOTS
-- Questions reference specific experiments and examples from the chapter
+## EXERCISE FORMAT (NCERT Pattern):
+Create 20-30 questions following NCERT exercise format:
+- In-text questions (appear within the chapter)
+- End-of-chapter exercises numbered 1 through 20+
+- Mix of: MCQ, short answer (2-3 marks), long answer (5 marks), numerical problems, HOTS
+- Cover every concept from the chapter
+- Include specific experimental scenarios from the chapter
 ` : `
-## SELINA/FRANK EXERCISE FORMAT:
-- Multiple exercises per chapter (Exercise 1A, 1B, 2A, etc.)
-- Objective section: MCQ, fill blanks, true/false, match columns
-- Subjective section: Short answer, long answer, reasoning
-- Numerical problems with printed answers
+## EXERCISE FORMAT (ICSE Pattern):
+Create exercises following Selina/Frank pattern:
+- Exercise 1A: Objective (MCQ, fill blanks, true/false, match columns)
+- Exercise 1B: Short answer questions
+- Exercise 2A: Long answer and reasoning questions
+- Exercise 2B: Numerical problems with answers
 `}
 
 ## OUTPUT FORMAT:
 
 ---
 
-## 📝 Textbook Exercises – Solved
+## 📝 Chapter Exercises – Solved
 
-**1. [EXACT full question text from the ${textbookName} textbook]**
+**1. [Full question text]**
 
-[Include any tables, data, or context that is part of the question]
+[Include table if applicable using markdown table format]
 
-**a.** [Exact sub-part text if applicable]
-**Answer:** [Complete, detailed answer]
-
-**b.** [Exact sub-part text]
-**Answer:** [Complete, detailed answer]
-
-[...continue ALL sub-parts]
-
-**2. [EXACT next question from textbook]**
-
-**a.** [Sub-part]
-**Answer:** [Complete answer]
-
-[...continue ALL sub-parts]
-
-**3. [EXACT next question]**
-**Answer:** [Complete answer]
-
-**4. [EXACT next question]**
-**Answer:** [Complete answer with derivation/proof if needed]
-
-**5. [EXACT next question - typically "Solve the following examples"]**
-
-**a.** [Numerical problem with exact given data from textbook]
-- **Given:** [all given values]
-- **To Find:** [what to calculate]  
-- **Formula:** [relevant formula]
-- **Solution:** [step-by-step calculation]
-- **Answer:** [final answer with units] *(Textbook Ans: [printed answer])*
-
-[...continue b, c, d, e, f, g with ALL numerical sub-parts]
+**Answer:**
+[Complete solved answer with rearranged table if applicable]
 
 ---
 
-## ABSOLUTE RULES:
-1. Write EVERY question from the exercise — Q1, Q2, Q3, Q4, Q5 with ALL sub-parts (a through g)
-2. Use the REAL question text from the ${textbookName} textbook — do NOT rephrase or invent
-3. For Q1 type (tables/matching), reproduce the ACTUAL table with all rows and columns using markdown table syntax
-4. For Q2 type, include ALL sub-parts a, b, c, d, e (typically 5+ parts) — DO NOT stop at just a and b
-5. For Q5 numericals, include ALL sub-parts a, b, c, d, e, f, g with the textbook's printed answer
-6. Include in-text questions ("Can you tell?", "Use your brain power", etc.)
-7. DO NOT stop early. DO NOT skip any question. DO NOT summarize.
-8. If unsure about exact wording, write the closest accurate version you can recall
-9. This response should contain 20-40+ question-answer pairs
-10. **NEVER write a concluding paragraph** like "These notes are crafted to provide..." or "This covers the chapter..." — just end after the last question-answer pair
-11. **NEVER skip from Q2 to Q5** — you MUST include Q3 and Q4 as well
-12. After writing Q2a and Q2b, you MUST continue writing Q2c, Q2d, Q2e — do NOT stop at just 2 sub-parts
-13. After writing Q5a, you MUST continue writing Q5b, Q5c, Q5d, Q5e, Q5f, Q5g — do NOT stop at just 1 numerical
+**2. Answer the following questions.**
+
+**a.** [Question text]
+**Answer:** [Detailed answer]
+
+**b.** [Question text]
+**Answer:** [Detailed answer]
+
+**c.** [Question text]
+**Answer:** [Detailed answer]
+
+**d.** [Question text]
+**Answer:** [Detailed answer]
+
+**e.** [Question text]
+**Answer:** [Detailed answer]
+
+---
+
+**3. [Question text]**
+**Answer:** [Detailed answer]
+
+---
+
+**4. [Question text]**
+**Answer:** [Complete derivation/proof]
+
+---
+
+**5. Solve the following examples.**
+
+**a.** [Numerical problem with given data] Ans: [printed answer]
+- **Given:** [values]
+- **To Find:** [what]
+- **Formula:** [formula]
+- **Solution:** [step-by-step]
+- **Answer:** [final answer with units]
+
+**b.** [Next numerical] Ans: [printed answer]
+[...full solution...]
+
+**c.** [Next numerical] Ans: [printed answer]
+[...full solution...]
+
+**d.** [Next numerical] Ans: [printed answer]
+[...full solution...]
+
+**e.** [Next numerical] Ans: [printed answer]
+[...full solution...]
+
+**f.** [Next numerical] Ans: [printed answer]
+[...full solution...]
+
+**g.** [Next numerical] Ans: [printed answer]
+[...full solution...]
+
+---
+
+## CRITICAL RULES:
+1. Include ALL 5 questions (Q1 through Q5) — NEVER skip Q3 or Q4
+2. Q2 MUST have all 5 sub-parts (a, b, c, d, e) — NEVER stop at just a and b
+3. Q5 MUST have all 7 numerical sub-parts (a, b, c, d, e, f, g) — NEVER stop at just 1
+4. Every numerical must have Given, To Find, Formula, Solution, Answer
+5. NEVER write a concluding paragraph — just end after the last answer
+6. Make ALL questions specific to the chapter "${unit}" for ${boardName} Board Class ${grade}
+7. This should be a VERY LONG response — 20-40+ question-answer pairs minimum
         `;
 
         // Run BOTH calls in parallel for speed
@@ -214,7 +250,7 @@ YOUR output must match this level of specificity and detail.
             openai.chat.completions.create({
                 model: "gpt-4o",
                 messages: [
-                    { role: "system", content: `You are a ${boardName} Board teacher with the ${textbookName} textbook open in front of you. Your ONLY task is to write EVERY exercise question with answers from this chapter. You MUST include Q1, Q2 (all sub-parts a-e), Q3, Q4, Q5 (all sub-parts a-g). NEVER skip from Q2 to Q5. NEVER stop after writing just 2 sub-parts. NEVER write a conclusion paragraph. After the last answer, just STOP — do not write any summary or closing statement. You recall these questions from shaalaa.com and maharashtrastudy.com.` },
+                    { role: "system", content: `You are an expert ${boardName} Board question paper setter and educator. Your task is to create a COMPREHENSIVE exercise set for students. You MUST write Q1 (table/matching), Q2 (5 sub-parts a-e), Q3 (reasoning), Q4 (proof/derivation), Q5 (7 numerical problems a-g with step-by-step solutions). NEVER skip any question. NEVER stop after just 2 sub-parts. Write ALL 5 questions with ALL sub-parts. NEVER write a conclusion paragraph. After the last solved numerical, just STOP.` },
                     { role: "user", content: exercisePrompt }
                 ],
                 temperature: 0.2,
