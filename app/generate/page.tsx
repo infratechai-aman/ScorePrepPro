@@ -72,6 +72,8 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
     const [flipQuestionNum, setFlipQuestionNum] = useState("");
     const [isFlipping, setIsFlipping] = useState(false);
 
+    const contentRef = useRef<HTMLDivElement>(null);
+
     const handleFlipQuestion = async () => {
         if (!flipQuestionNum || !generatedPaper) return;
         setIsFlipping(true);
