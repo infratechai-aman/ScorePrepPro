@@ -115,8 +115,16 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
             const { newQuestion } = data;
 
+            // --- Fix Duplication & Formatting ---
+            let cleanText = newQuestion.text;
+            // 1. Strip leading number (e.g., "1. ", "Q.1. ", "**1.** ")
+            // Matches optional Q. or **, then number, then optional dot
+            cleanText = cleanText.replace(/^(?:\*\*|Q\.|Q)?\s*\d+\.?\s*/i, "");
+            // 2. Ensure options (a)-(d) are on new lines
+            cleanText = cleanText.replace(/\s+(\([a-d]\))/gi, "\n\n$1");
+
             // 3. Replace Question in Paper
-            const newQuestionBlock = `**${qNum}.** ${newQuestion.text}`;
+            const newQuestionBlock = `**${qNum}.** ${cleanText}`;
             const newPaper = generatedPaper.replace(oldQuestionText, newQuestionBlock);
             setGeneratedPaper(newPaper);
 
@@ -126,7 +134,8 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                 const solMatch = generatedSolution.match(solRegex);
                 if (solMatch) {
                     const oldAnswerText = solMatch[0];
-                    const newAnswerBlock = `**${qNum}.** ${newQuestion.answer}`;
+                    let cleanAnswer = newQuestion.answer.replace(/^(?:\*\*|Q\.|Q)?\s*\d+\.?\s*/i, "");
+                    const newAnswerBlock = `**${qNum}.** ${cleanAnswer}`;
                     const newSolution = generatedSolution.replace(oldAnswerText, newAnswerBlock);
                     setGeneratedSolution(newSolution);
                 }
