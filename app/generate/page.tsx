@@ -69,41 +69,28 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
     const [flippingIdx, setFlippingIdx] = useState<number | null>(null);
 
     // Flip Feature State
-    const [flipQuestionNum, setFlipQuestionNum] = useState("");
-    const [isFlipping, setIsFlipping] = useState(false);
+    const [flippingQNum, setFlippingQNum] = useState<string | null>(null);
 
     const contentRef = useRef<HTMLDivElement>(null);
 
-    const handleFlipQuestion = async () => {
-        if (!flipQuestionNum || !generatedPaper) return;
-        setIsFlipping(true);
-        setError(""); // Clear previous errors
+    const handleFlipQuestion = async (qNum: string) => {
+        if (!qNum || !generatedPaper) return;
+        setFlippingQNum(qNum);
+        setError("");
 
         try {
             // 1. Identify the question block in the markdown
-            // Matches **1.**, 1., Q.1., **Q.1.** followed by text
+            const prefixPattern = "(?:Q\\.|Q|)?";
+            const numberPattern = qNum;
 
-            // Allow optional "Q." or "Q" prefix before the number
-            const prefixPattern = "(?:Q\\.|Q|)";
-            const numberPattern = `${flipQuestionNum}`;
-
-            // Regex to find start of question: 
-            // - (?:^|\n) -> Start of line (or file start)
-            // - (?:\\*\\*|\\b) -> Optional bold start or word boundary
-            // - ${prefixPattern}\\s* -> Optional Q. prefix with optional space
-            // - ${numberPattern}\\. -> The number and dot
-            // - (?:\\*\\*|\\b) -> Optional bold end or boundary
-
-            // Lookahead for next question or section end
             const lookaheadPattern = `(?=(?:\\n\\s*(?:\\*\\*|\\b)${prefixPattern}\\s*\\d+\\.|\\n#|\\n---|$))`;
-
             const qNumRegex = new RegExp(`(?:\\*\\*|\\b)${prefixPattern}\\s*${numberPattern}\\.(?:\\*\\*|\\b)[\\s\\S]*?${lookaheadPattern}`, "i");
 
             const match = generatedPaper.match(qNumRegex);
 
             if (!match) {
-                alert(`Question "${flipQuestionNum}" not found. Please check the number format (e.g. 1, 2).`);
-                setIsFlipping(false);
+                alert(`Question "${qNum}" not found.`);
+                setFlippingQNum(null);
                 return;
             }
 
@@ -118,7 +105,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                     subject,
                     unit: selectedChapters.join(", "),
                     oldQuestion: { text: oldQuestionText },
-                    marks: "unknown", // We let AI infer or keep same
+                    marks: "unknown",
                     type: "mixed"
                 }),
             });
@@ -126,41 +113,129 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
             const data = await response.json();
             if (data.error) throw new Error(data.error);
 
-            const { newQuestion } = data; // Expecting { text, answer, ... }
+            const { newQuestion } = data;
 
             // 3. Replace Question in Paper
-            // Construct replacement text preserving the numbering style if possible, or just standard "**N.** "
-            const newQuestionBlock = `**${flipQuestionNum}.** ${newQuestion.text}`;
+            const newQuestionBlock = `**${qNum}.** ${newQuestion.text}`;
             const newPaper = generatedPaper.replace(oldQuestionText, newQuestionBlock);
             setGeneratedPaper(newPaper);
 
-            // 4. Replace Answer in Solution (if exists)
+            // 4. Replace Answer in Solution
             if (generatedSolution && newQuestion.answer) {
-                // Reuse the robust regex pattern for the solution
                 const solRegex = new RegExp(`(?:\\*\\*|\\b)${prefixPattern}\\s*${numberPattern}\\.(?:\\*\\*|\\b)[\\s\\S]*?${lookaheadPattern}`, "i");
-
                 const solMatch = generatedSolution.match(solRegex);
-
                 if (solMatch) {
                     const oldAnswerText = solMatch[0];
-                    // Preserve formatting if possible, or use standard
-                    const newAnswerBlock = `**${flipQuestionNum}.** ${newQuestion.answer}`;
+                    const newAnswerBlock = `**${qNum}.** ${newQuestion.answer}`;
                     const newSolution = generatedSolution.replace(oldAnswerText, newAnswerBlock);
                     setGeneratedSolution(newSolution);
                 }
             }
 
-            // Success feedback
-            setFlipQuestionNum("");
-            alert(`Question ${flipQuestionNum} flipped successfully!`);
-
         } catch (err) {
             console.error(err);
             alert("Failed to flip question. Try again.");
         } finally {
-            setIsFlipping(false);
+            setFlippingQNum(null);
         }
     };
+
+    const renderPaperContent = () => {
+        if (!generatedPaper) return null;
+
+        // Valid markdown components configuration
+        const markdownComponents: any = {
+            h1: ({ node, ...props }: any) => <h1 style={{ borderBottom: "2px solid #0f172a", textAlign: "center", marginBottom: "20px", paddingBottom: "10px", textTransform: "uppercase" }} className="text-3xl font-bold" {...props} />,
+            h2: ({ node, children, ...props }: any) => {
+                return (
+                    <div className="relative group">
+                        <h2 style={{ backgroundColor: "#f8fafc", borderLeft: "4px solid #1e293b", padding: "10px", marginTop: "30px", marginBottom: "15px", textTransform: "uppercase" }} className="text-xl font-bold" {...props}>{children}</h2>
+                    </div>
+                );
+            },
+            table: ({ node, ...props }: any) => <div className="overflow-x-auto my-6"><table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #e2e8f0" }} {...props} /></div>,
+            thead: ({ node, ...props }: any) => <thead style={{ backgroundColor: "#f8fafc" }} {...props} />,
+            tbody: ({ node, ...props }: any) => <tbody {...props} />,
+            tr: ({ node, ...props }: any) => <tr style={{ borderBottom: "1px solid #e2e8f0" }} {...props} />,
+            th: ({ node, ...props }: any) => <th style={{ padding: "12px", textAlign: "left", fontWeight: "600", color: "#1e293b", borderRight: "1px solid #e2e8f0" }} {...props} />,
+            td: ({ node, ...props }: any) => <td style={{ padding: "12px", color: "#475569", borderRight: "1px solid #e2e8f0" }} {...props} />,
+            img: ({ node, ...props }: any) => {
+                if (props.alt?.startsWith("DIAGRAM:")) {
+                    return (
+                        <div className="my-6 p-6 bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-center">
+                            <ImageIcon className="h-10 w-10 text-slate-400 mb-2" />
+                            <p className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Diagram Required</p>
+                            <p className="text-sm text-slate-500 italic mt-1">{props.alt.replace("DIAGRAM:", "").trim()}</p>
+                        </div>
+                    );
+                }
+                return <img {...props} className="rounded-lg shadow-md max-w-full my-4" />;
+            },
+            p: ({ node, ...props }: any) => <p style={{ marginBottom: "16px", lineHeight: "1.6", textAlign: "justify" }} {...props} />,
+            blockquote: ({ node, ...props }: any) => (
+                <blockquote style={{ backgroundColor: "#f1f5f9", borderLeft: "4px solid #334155", padding: "16px", margin: "24px 0", borderRadius: "0 8px 8px 0", fontStyle: "italic", textAlign: "center", fontWeight: "500", color: "#334155" }} {...props} />
+            ),
+            hr: ({ node, ...props }: any) => <hr style={{ margin: "30px 0", borderTop: "2px solid #cbd5e1" }} {...props} />,
+            ul: ({ node, ...props }: any) => <ul style={{ listStyleType: "disc", paddingLeft: "20px", marginBottom: "16px" }} {...props} />,
+            ol: ({ node, ...props }: any) => <ol style={{ listStyleType: "decimal", paddingLeft: "20px", marginBottom: "16px" }} {...props} />,
+            li: ({ node, ...props }: any) => <li style={{ marginBottom: "8px", paddingLeft: "5px" }} {...props} />
+        };
+
+        const qStartPattern = "(?:\\*\\*|\\b)(?:Q\\.|Q|)?\\s*\\d+\\.(?:\\*\\*|\\b)";
+        const regex = new RegExp(`(?:^|\\n)(${qStartPattern}[\\s\\S]*?)(?=(?:\\n\\s*${qStartPattern}|\\n#|\\n---|$))`, "gi");
+
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = regex.exec(generatedPaper)) !== null) {
+            const startIndex = match.index;
+            const questionContent = match[1];
+
+            // Text before
+            if (startIndex > lastIndex) {
+                const text = generatedPaper.slice(lastIndex, startIndex);
+                if (text.trim()) {
+                    parts.push(<ReactMarkdown key={`text-${lastIndex}`} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>{text}</ReactMarkdown>);
+                }
+            }
+
+            // Question Block
+            const numMatch = questionContent.match(/(?:Q\.|Q|)?\s*(\d+)\./i);
+            const qNumber = numMatch ? numMatch[1] : null;
+
+            parts.push(
+                <div key={`q-${startIndex}`} className="relative group hover:bg-slate-50 p-4 -mx-4 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-100">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>{questionContent}</ReactMarkdown>
+                    {(userData?.plan === 'premium' || userData?.plan === 'teacher' || userData?.plan === 'coaching') && qNumber && (
+                        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleFlipQuestion(qNumber)}
+                                isLoading={flippingQNum === qNumber}
+                                className="h-8 bg-white text-xs border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800 shadow-sm"
+                                title="Regenerate this question"
+                            >
+                                <RefreshCw className="h-3 w-3 mr-1" /> Flip
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            );
+
+            lastIndex = regex.lastIndex;
+        }
+
+        // Tail
+        if (lastIndex < generatedPaper.length) {
+            parts.push(<ReactMarkdown key="tail" remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>{generatedPaper.slice(lastIndex)}</ReactMarkdown>);
+        }
+
+        return <div className="space-y-4">{parts}</div>;
+    };
+
+
 
     // Free Preview Check
     useEffect(() => {
@@ -623,90 +698,11 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                 )}
 
                                 <div className="prose prose-slate max-w-none relative z-10">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={{
-                                        h1: ({ node, ...props }) => <h1 style={{ borderBottom: "2px solid #0f172a", textAlign: "center", marginBottom: "20px", paddingBottom: "10px", textTransform: "uppercase" }} className="text-3xl font-bold" {...props} />,
-                                        h2: ({ node, children, ...props }) => {
-                                            const sectionText = typeof children === 'string' ? children : '';
-                                            return (
-                                                <div className="relative group">
-                                                    <h2 style={{ backgroundColor: "#f8fafc", borderLeft: "4px solid #1e293b", padding: "10px", marginTop: "30px", marginBottom: "15px", textTransform: "uppercase" }} className="text-xl font-bold" {...props}>{children}</h2>
-                                                </div>
-                                            );
-                                        },
-                                        table: ({ node, ...props }) => <div className="overflow-x-auto my-6"><table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #e2e8f0" }} {...props} /></div>,
-                                        thead: ({ node, ...props }) => <thead style={{ backgroundColor: "#f8fafc" }} {...props} />,
-                                        tbody: ({ node, ...props }) => <tbody {...props} />,
-                                        tr: ({ node, ...props }) => <tr style={{ borderBottom: "1px solid #e2e8f0" }} {...props} />,
-                                        th: ({ node, ...props }) => <th style={{ padding: "12px", textAlign: "left", fontWeight: "600", color: "#1e293b", borderRight: "1px solid #e2e8f0" }} {...props} />,
-                                        td: ({ node, ...props }) => <td style={{ padding: "12px", color: "#475569", borderRight: "1px solid #e2e8f0" }} {...props} />,
-                                        img: ({ node, ...props }) => {
-                                            if (props.alt?.startsWith("DIAGRAM:")) {
-                                                return (
-                                                    <div className="my-6 p-6 bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-center">
-                                                        <ImageIcon className="h-10 w-10 text-slate-400 mb-2" />
-                                                        <p className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Diagram Required</p>
-                                                        <p className="text-sm text-slate-500 italic mt-1">{props.alt.replace("DIAGRAM:", "").trim()}</p>
-                                                    </div>
-                                                );
-                                            }
-                                            return <img {...props} className="rounded-lg shadow-md max-w-full my-4" />;
-                                        },
-                                        p: ({ node, ...props }) => <p style={{ marginBottom: "16px", lineHeight: "1.6", textAlign: "justify" }} {...props} />,
-                                        blockquote: ({ node, ...props }) => (
-                                            <blockquote
-                                                style={{
-                                                    backgroundColor: "#f1f5f9",
-                                                    borderLeft: "4px solid #334155",
-                                                    padding: "16px",
-                                                    margin: "24px 0",
-                                                    borderRadius: "0 8px 8px 0",
-                                                    fontStyle: "italic",
-                                                    textAlign: "center",
-                                                    fontWeight: "500",
-                                                    color: "#334155"
-                                                }}
-                                                {...props}
-                                            />
-                                        ),
-                                        hr: ({ node, ...props }) => <hr style={{ margin: "30px 0", borderTop: "2px solid #cbd5e1" }} {...props} />,
-                                        ul: ({ node, ...props }) => <ul style={{ listStyleType: "disc", paddingLeft: "20px", marginBottom: "16px" }} {...props} />,
-                                        ol: ({ node, ...props }) => <ol style={{ listStyleType: "decimal", paddingLeft: "20px", marginBottom: "16px" }} {...props} />,
-                                        li: ({ node, ...props }) => <li style={{ marginBottom: "8px", paddingLeft: "5px" }} {...props} />
-                                    }}>
-                                        {generatedPaper}
-                                    </ReactMarkdown>
+                                    {renderPaperContent()}
                                 </div>
 
                                 {/* Flip Question Feature for Premium/Teacher users */}
-                                {(userData?.plan === 'premium' || userData?.plan === 'teacher' || userData?.plan === 'coaching') && generatedPaper && (
-                                    <div className="mt-6 pt-6 border-t border-slate-200">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <RefreshCw className="h-4 w-4 text-amber-600" />
-                                            <span className="text-sm font-semibold text-slate-800">Flip a Question</span>
-                                            <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-200">PREMIUM</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 bg-amber-50/50 p-3 rounded-xl border border-amber-100 max-w-md">
-                                            <Input
-                                                placeholder="Q. No (e.g. 5)"
-                                                value={flipQuestionNum}
-                                                onChange={(e) => setFlipQuestionNum(e.target.value)}
-                                                className="w-32 bg-white h-9 text-sm"
-                                            />
-                                            <Button
-                                                size="sm"
-                                                onClick={handleFlipQuestion}
-                                                isLoading={isFlipping}
-                                                disabled={!flipQuestionNum}
-                                                className="bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm"
-                                            >
-                                                Flip Question
-                                            </Button>
-                                        </div>
-                                        <p className="text-[11px] text-slate-500 mt-2 pl-1">
-                                            * Enter the question number exactly as it appears (e.g. "1" or "5"). The AI will generate a new similar question and update the answer key.
-                                        </p>
-                                    </div>
-                                )}
+
 
                                 {generatedSolution && (
                                     <div style={{ backgroundColor: "rgba(240, 253, 244, 0.5)", borderTop: "4px dotted #cbd5e1", padding: "24px", marginTop: "30px", borderRadius: "12px", position: "relative" }}>
