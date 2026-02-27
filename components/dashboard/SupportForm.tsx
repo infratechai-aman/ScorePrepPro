@@ -11,19 +11,21 @@ export function SupportForm() {
     const { user } = useAuth();
     const [subject, setSubject] = useState("");
     const [message, setMessage] = useState("");
+    const [email, setEmail] = useState("");
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
     const [openFaq, setOpenFaq] = useState<number | null>(0);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!subject || !message || !user) return;
+        const contactEmail = user?.email || email;
+        if (!subject || !message || !contactEmail) return;
 
         setSending(true);
         try {
             await addDoc(collection(db, "support_requests"), {
-                userId: user.uid,
-                email: user.email,
+                userId: user?.uid || "anonymous",
+                email: contactEmail,
                 subject,
                 message,
                 status: "open",
@@ -69,6 +71,19 @@ export function SupportForm() {
                 </h3>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {!user && (
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
+                            <input
+                                type="email"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                placeholder="your@email.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                    )}
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Subject</label>
                         <input
