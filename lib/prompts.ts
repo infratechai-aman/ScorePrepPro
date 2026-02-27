@@ -222,31 +222,46 @@ export function constructPrompt(
 
     === OUTPUT FORMAT ===
     - Use Markdown for strict formatting.
-    - **PAPER HEADER**:
-      - LINE 1: Board Name in H1 (e.g., # CBSE BOARD EXAM).
-      - LINE 2: Use a Blockquote for metadata: \`> **Subject:** ${subject} | **Time:** ${duration} | **Marks:** ${totalMarks}\`.
-      - Use '---' horizontal rules to separate sections.
+    
+    <center>
+    <h1>${board.toUpperCase()} BOARD EXAM - CLASS ${grade}</h1>
+    <h3>${subject.toUpperCase()}</h3>
+    </center>
+    
+    **Subject**: ${subject} | **Time**: ${duration} | **Max Marks**: ${totalMarks}
+    
+    ---
+    
+    **General Instructions:**
+    1. All questions are compulsory.
+    2. Marks are indicated against each question.
+    
+    ---
     // FORCE_REFRESH_TIMESTAMP_${Date.now()}
-    - **SECTION HEADERS**: Use '## SECTION A' style (Bold and large).
+    
+    - **SECTION HEADERS**: Use '### SECTION A' style (Bold and large).
+    
     - **Questions**:
       - **CRITICAL**: EVERY single question must have a number.
       - Use 'Q.1', 'Q.2' for main questions.
-      - Use '1.', '2.', '3.' for sub-questions inside a main question.
-      - **SPACING**: Separated every question by TWO empty lines.
-      - Options for MCQs must be on new lines (a) ... (b) ...
+      - Use '(i)', '(ii)', '(iii)' for sub-questions inside a main question.
+      - **SPACING**: You MUST leave exactly ONE blank line between EVERY single question. Do not clump questions together.
+      - Options for MCQs must be on new lines (a) ... (b) ... (c) ... (d) ...
       - **Match Pairs**: ALWAYS use a valid Markdown Table.
         Example:
         | Column A | Column B |
         | :--- | :--- |
         | 1. Item | A. Match |
+        
     - **Math & Geometry**:
       - Use standard symbols: ∠ABC, 90°, π, ΔABC.
       - **STRICTLY NO DIAGRAMS**: Do NOT generate questions that rely on a figure/graph/map. All questions must be purely text-based and solvable without visual aids.
+      
     - **Styling**:
-      - Use Bold for numbers: '**1.**'.
-      - Marks at the end: '**[1 Mark each]**' (if multiple items) or '**[X Marks]**' (if single big question).
-      - Section Headers should clarify marks: "Q.1 Choose the Correct Option: **[1 Mark each]**"
-    - NO preamble. Just the paper.
+      - Use Bold for numbers: '**Q.1**'.
+      - Marks at the end of the question or section header: '**[X Mark(s)]**'.
+      
+    - NO preamble. Just the question paper.
   `;
 }
 

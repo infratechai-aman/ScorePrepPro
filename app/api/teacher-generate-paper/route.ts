@@ -16,7 +16,7 @@ export async function POST(req: Request) {
         ).join("\n");
 
         const prompt = `
-        You are an expert examiner for ${subject}. Create a professional question paper.
+        You are an expert examiner for ${subject}. Create a professional, flawless question paper.
 
         **College/Institute**: ${collegeName ? collegeName : "Your Institute Name"}
         
@@ -33,46 +33,48 @@ export async function POST(req: Request) {
         **Question Paper Pattern (STRICTLY FOLLOW THIS)**:
         ${patternList}
 
-        **Instructions**:
-        1. Create specific, high-quality academic questions.
-        2. **Numbering**: Use strictly 1. 2. 3. ... across sections (or restart if typical for this subject, but be consistent).
-        3. **Formatting**: Center the College Name and Title if possible (use HTML <center> tags or markdown centering).
-        4. **Scope**: Questions must be ONLY from the listed units.
-        5. **Question Sourcing**: Questions should primarily come from textbook chapter exercises. Use end-of-chapter exercise questions including matching tables, conceptual questions, and numericals with actual textbook data/values. Minimize inventing original questions.
-        ${includeAnswerKey ? "6. **Answer Key**: After the question paper, provide a brief 'Answer Key' section." : "6. **No Answers**: Do NOT provide answers/solutions."}
+        **MANDATORY GOLDEN RULES FOR FORMATTING (NON-NEGOTIABLE)**:
+        1. **Spacing**: You MUST leave exactly ONE blank line between EVERY single question. Do not clump questions together.
+        2. **Numbering**: 
+           - Use strictly **Q.1**, **Q.2**, **Q.3** for main questions. 
+           - Use **(i)**, **(ii)**, **(iii)** for sub-questions or options (like MCQs). 
+        3. **Marks Display**: Always display marks at the end of the question or section header in bold, e.g., **[1 Mark]** or **[1x5=5 Marks]**.
+        4. **Matching Questions**: If you generate a "Match the following" question, you MUST use a Markdown table.
+        5. **Layout**: Center the College Name and Title at the top using HTML center tags.
+        6. **Source**: Extract questions primarily from standard textbook chapter exercises.
+        ${includeAnswerKey ? "7. **Answer Key**: Add a clear 'Answer Key' section at the end, separated by a horizontal rule." : "7. **No Answers**: DO NOT include any answers or hints."}
 
-        **Output Format**:
+        **OUTPUT FORMAT TEMPLATE**:
         
         <center>
-        # ${collegeName ? collegeName : "EXAMINATION PAPER"}
-        ### ${title}
+        <h1>${collegeName ? collegeName : "EXAMINATION PAPER"}</h1>
+        <h3>${title}</h3>
         </center>
         
-        **Subject**: ${subject}  
-        **Time**: ${duration} Mins | **Max Marks**: ${totalMarks}
+        **Subject**: ${subject} | **Time**: ${duration} Mins | **Max Marks**: ${totalMarks}
         
         ---
         
-        ## General Instructions:
+        **General Instructions:**
         1. All questions are compulsory.
-        2. Figures to the right indicate full marks.
+        2. Marks are indicated against each question.
         
         ---
         
         ### [Section Name]
-        **[Question Type]** ([Marks] Marks each)
         
-        1. [Question]
-        2. [Question]
-        ...
+        **Q.1 [Question Text]** **[X Mark(s)]**
+        
+        (a) [Option 1]
+        (b) [Option 2]
+        (c) [Option 3]
+        (d) [Option 4]
 
-        ${includeAnswerKey ? `
-        ---
-        ## Answer Key
-        1. [Brief Answer]
-        2. [Brief Answer]
-        ...` : ""}
+        **Q.2 [Next Question Text]** **[X Mark(s)]**
+        
+        ...
         `;
+
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",

@@ -33,6 +33,138 @@ export const BOARD_PATTERNS: any = {
                 ]
             }
         },
+        class5: {
+            "Science": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "Objective / MCQ", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 6 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 7 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 3 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 }
+                ]
+            },
+            "Mathematics": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "MCQs", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 5 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 6 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 4 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 }
+                ]
+            },
+            "Social Science": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "MCQs", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 4 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 5 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 4 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 },
+                    { section: "SECTION F", type: "Map Based", marskPerQuestion: 1, count: 5 }
+                ]
+            }
+        },
+        class6: {
+            "Science": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "Objective / MCQ", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 6 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 7 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 3 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 }
+                ]
+            },
+            "Mathematics": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "MCQs", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 5 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 6 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 4 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 }
+                ]
+            },
+            "Social Science": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "MCQs", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 4 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 5 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 4 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 },
+                    { section: "SECTION F", type: "Map Based", marskPerQuestion: 1, count: 5 }
+                ]
+            }
+        },
+        class7: {
+            "Science": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "Objective / MCQ", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 6 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 7 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 3 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 }
+                ]
+            },
+            "Mathematics": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "MCQs", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 5 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 6 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 4 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 }
+                ]
+            },
+            "Social Science": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "MCQs", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 4 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 5 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 4 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 },
+                    { section: "SECTION F", type: "Map Based", marskPerQuestion: 1, count: 5 }
+                ]
+            }
+        },
+        class8: {
+            "Science": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "Objective / MCQ", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 6 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 7 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 3 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 }
+                ]
+            },
+            "Mathematics": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "MCQs", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 5 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 6 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 4 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 }
+                ]
+            },
+            "Social Science": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "MCQs", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Very Short Answer", marskPerQuestion: 2, count: 4 },
+                    { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 5 },
+                    { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 4 },
+                    { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 },
+                    { section: "SECTION F", type: "Map Based", marskPerQuestion: 1, count: 5 }
+                ]
+            }
+        },
         class9: {
             "Science": {
                 totalMarks: 80,
