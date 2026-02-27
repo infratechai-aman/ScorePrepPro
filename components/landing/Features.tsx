@@ -7,22 +7,22 @@ export function Features() {
         {
             icon: <RefreshCw className="w-6 h-6 text-blue-600" />,
             title: "Syllabus Synced",
-            desc: "Always updated with latest Board curriculum changes."
+            desc: "Stay effortlessly aligned with the ever-changing curriculum. Our system automatically updates in real-time with the latest CBSE, ICSE, and State Board guidelines, ensuring your question papers are always precise, relevant, and compliant without you having to double-check syllabus docs."
         },
         {
             icon: <Key className="w-6 h-6 text-purple-600" />,
             title: "Answer Keys",
-            desc: "Auto-generated detailed marking schemes."
+            desc: "Stop wasting hours writing out solutions. Along with your question paper, we instantly generate comprehensive, step-by-step marking schemes that follow official board patterns, making evaluation faster, fairer, and completely stress-free for educators."
         },
         {
             icon: <ImageIcon className="w-6 h-6 text-pink-600" />,
             title: "Custom Branding",
-            desc: "Add your School or Coaching Logo to every paper."
+            desc: "Deliver a premium, professional experience to your students and parents. Easily integrate your own school, institute, or coaching center's logo, adjust headers, and personalize the metadata on every single exam paper you generate with just a single click."
         },
         {
             icon: <Keyboard className="w-6 h-6 text-indigo-600" />,
             title: "No Typing Needed",
-            desc: "Stop manually finding questions. Just pick topics."
+            desc: "Say goodbye to formatting nightmares and massive Word documents. Our intelligent AI engine allows you to simply select your desired classes, choose specific subjects, pick your topics, set the difficulty, and generate a flawless PDF ready for printing in just 60 seconds."
         }
     ];
 
