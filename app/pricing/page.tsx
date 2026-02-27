@@ -2,6 +2,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { Navbar } from "@/components/Navbar";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Check, X, CreditCard } from "lucide-react";
@@ -201,6 +202,7 @@ export default function PricingPage() {
 
     return (
         <main className="min-h-screen bg-slate-50 pb-20 pt-24 px-4 md:px-6">
+            <Navbar />
             <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100 via-slate-50 to-white opacity-70"></div>
 
             <div className="max-w-5xl mx-auto space-y-12 text-center">
