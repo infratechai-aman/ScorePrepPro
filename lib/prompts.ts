@@ -10,16 +10,22 @@ interface GenerateOptions {
 }
 
 export function constructPrompt(
-  board: string,
+  boardInput: string,
   grade: string,
-  subject: string,
+  subjectInput: string,
   chapters: string,
   options: GenerateOptions = {}
 ) {
+  const board = boardInput.toLowerCase().trim();
+  const subject = subjectInput.trim();
+
   // @ts-ignore
   const pattern = BOARD_PATTERNS[board]?.[`class${grade}`]?.[subject];
 
-  if (!pattern) return null;
+  if (!pattern) {
+    console.error(`[constructPrompt] Pattern not found for Board: ${board}, Class: ${grade}, Subject: ${subject}`);
+    return null;
+  }
 
   // Calculate scaling factor
   const totalMarks = options.totalMarks || pattern.totalMarks || 40;

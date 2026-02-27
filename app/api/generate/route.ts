@@ -17,9 +17,10 @@ export async function POST(req: Request) {
         const systemPrompt = constructPrompt(board, grade, subject, chapters, { difficulty, chapterWeights, totalMarks: marks });
 
         if (!systemPrompt) {
-            console.error("System prompt generation failed for:", { board, grade, subject });
+            const errorMsg = `Pattern not found for ${board.toUpperCase()} Class ${grade} ${subject}. Please check if this combination is supported.`;
+            console.error(errorMsg);
             return NextResponse.json(
-                { error: "Invalid board/subject configuration" },
+                { error: errorMsg },
                 { status: 400 }
             );
         }
