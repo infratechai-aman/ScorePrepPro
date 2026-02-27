@@ -26,26 +26,16 @@ export function Workflow() {
 
     return (
         <section className="py-24 bg-white">
-            <div className="max-w-7xl mx-auto px-4 md:px-6">
-                <div className="text-center mb-16 space-y-4">
+            <div className="max-w-4xl mx-auto px-4 md:px-6">
+                <div className="text-center mb-12 space-y-4">
                     <p className="text-blue-600 font-bold tracking-wider text-sm uppercase">The Workflow</p>
                     <h2 className="text-4xl font-bold text-slate-900">How ScorePrepPro Works</h2>
-                    <p className="text-slate-500">Streamlined for busy teachers and coaching centers.</p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-12 relative">
-                    {/* Connecting Line (Desktop) */}
-                    <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-slate-100 -z-10"></div>
-
-                    {steps.map((step, idx) => (
-                        <div key={idx} className="relative flex flex-col items-start space-y-4 group">
-                            <div className={`w-20 h-20 rounded-2xl ${step.color} flex items-center justify-center shadow-lg shadow-slate-200 group-hover:-translate-y-2 transition-transform duration-300`}>
-                                {step.icon}
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900">{step.title}</h3>
-                            <p className="text-slate-500 text-sm leading-relaxed pr-8">{step.desc}</p>
-                        </div>
-                    ))}
+                <div className="bg-slate-50 p-8 md:p-12 rounded-3xl border border-slate-100 shadow-sm text-center">
+                    <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
+                        ScorePrepPro simplifies the entire examination creation process into a seamlessly integrated, intelligent workflow designed specifically for busy Indian educators. Instead of wrestling with multiple documents, searching for relevant questions, and struggling with formatting, our platform allows you to effortlessly select your specific Board (CBSE, ICSE, or State Boards), Class, and Subject in seconds. Once your curriculum is set, our advanced AI takes over—granting you the power to pinpoint specific chapters, adjust difficulty levels to match your students' needs, and choose between comprehensive mixed-topic tests or focused chapter-wise assessments. Finally, with a single click, your custom-tailored, watermark-free question paper along with its detailed, step-by-step marking scheme is instantly exported as a perfectly aligned, print-ready PDF. This completely eliminates manual typing and formatting, saving you countless hours of labor and letting you focus on what truly matters: teaching and student success.
+                    </p>
                 </div>
             </div>
         </section>
