@@ -326,31 +326,48 @@ export const SYLLABUS_DB: Record<string, any> = {
     }
 };
 
+/**
+ * Filter Subjects to show only CORE subjects
+ * Rules:
+ * 1. Blacklist minor languages and extracurriculars aggressively.
+ * 2. Whitelist core terms (math, science, social, etc.)
+ */
 function isCoreSubject(subject: string): boolean {
     const s = subject.toLowerCase();
 
-    // 1. Explicitly Exclude common non-core subjects that might match keywords
-    const excludeKeywords = ["home science", "painting", "music", "art", "physical education", "ncc", "work experience"];
-    if (excludeKeywords.some(ex => s.includes(ex))) return false;
-
-    // 2. Exact match for specific short codes to avoid substring matching (like "Thai" containing "ai")
-    if (s === "ai" || s === "artificial intelligence" || s === "ict") return true;
-
-    // 3. Robust keyword matching for core subjects
-    const coreKeywords = [
-        "mathematics", "maths", "algebra", "geometry", "statistics",
-        "science", "physics", "chemistry", "biology", "evs", "environmental",
-        "social science", "history", "geography", "civics", "economics", "political science",
-        "english", "hindi", "sanskrit"
+    // 1. Explicitly Exclude (Blacklist) - Using word boundaries (\b) to avoid partial matches
+    // This prevents "Part" from matching "art", etc.
+    const excludeKeywords = [
+        "arabic", "assamese", "bengali", "bhoti", "bhutia", "bodo", "french", "german", "gujarati", "gurung",
+        "japanese", "kannada", "kashmiri", "kokborok", "lepcha", "limboo", "malayalam", "manipuri", "marathi",
+        "mizo", "nepali", "odia", "persian", "punjabi", "rai", "russian", "sherpa", "sindhi", "spanish", "tamang",
+        "tamil", "tangkhul", "telugu", "thai", "tibetan", "urdu",
+        "art", "music", "painting", "home science", "physical education", "ncc", "work experience",
+        "book keeping", "business", "vocational", "accountancy", "typing", "shorthand"
     ];
 
-    // Check if any core keyword is present as a whole word or significant part
+    for (const ex of excludeKeywords) {
+        // \b matches a word boundary (start/end of word)
+        const regex = new RegExp(`\\b${ex}\\b`, "i");
+        if (regex.test(subject)) return false;
+    }
+
+    // 2. Whitelist Core Terms
+    const coreKeywords = [
+        "math", "algebra", "geometry", "statistics", "calculus",
+        "science", "physics", "chemistry", "biology", "evs", "environmental",
+        "history", "geography", "civics", "economics", "political science", "social",
+        "english", "hindi", "sanskrit",
+        "computer", "ai", "artificial intelligence", "ict", "it"
+    ];
+
     return coreKeywords.some(keyword => {
-        // Use a simple word boundary check for short keywords
-        if (keyword.length <= 3) {
+        // For very short keywords like AI or IT, use word boundaries
+        if (keyword.length <= 2) {
             const regex = new RegExp(`\\b${keyword}\\b`, "i");
             return regex.test(subject);
         }
+        // For others, use substring to catch "Mathematics", "Science and Tech", etc.
         return s.includes(keyword);
     });
 }
