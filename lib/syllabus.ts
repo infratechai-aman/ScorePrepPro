@@ -326,16 +326,33 @@ export const SYLLABUS_DB: Record<string, any> = {
     }
 };
 
-// Helper: Check if a subject is a "Core" subject
 function isCoreSubject(subject: string): boolean {
+    const s = subject.toLowerCase();
+
+    // 1. Explicitly Exclude common non-core subjects that might match keywords
+    const excludeKeywords = ["home science", "painting", "music", "art", "physical education", "ncc", "work experience"];
+    if (excludeKeywords.some(ex => s.includes(ex))) return false;
+
+    // 2. Exact match for specific short codes to avoid substring matching (like "Thai" containing "ai")
+    if (s === "ai" || s === "artificial intelligence" || s === "ict") return true;
+
+    // 3. Robust keyword matching for core subjects
     const coreKeywords = [
-        "Mathematics", "Maths", "Calculus", "Algebra", "Geometry", "Statistics",
-        "Science", "Physics", "Chemistry", "Biology", "General Science", "EVS", "Environmental",
-        "Social Science", "History", "Geography", "Civics", "Economics", "Political Science",
-        "English", "Hindi", "Sanskrit",
-        "Computer", "Information Technology", "AI", "Artificial Intelligence", "ICT"
+        "mathematics", "maths", "algebra", "geometry", "statistics",
+        "science", "physics", "chemistry", "biology", "evs", "environmental",
+        "social science", "history", "geography", "civics", "economics", "political science",
+        "english", "hindi", "sanskrit"
     ];
-    return coreKeywords.some(keyword => subject.toLowerCase().includes(keyword.toLowerCase()));
+
+    // Check if any core keyword is present as a whole word or significant part
+    return coreKeywords.some(keyword => {
+        // Use a simple word boundary check for short keywords
+        if (keyword.length <= 3) {
+            const regex = new RegExp(`\\b${keyword}\\b`, "i");
+            return regex.test(subject);
+        }
+        return s.includes(keyword);
+    });
 }
 
 // Helper: Get subjects for a board and class
