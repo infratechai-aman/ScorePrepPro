@@ -374,9 +374,13 @@ function isCoreSubject(subject: string): boolean {
 
 // Helper: Get subjects for a board and class
 export function getSubjects(board: string, grade: string): string[] {
-    const allSubjects = Object.keys(SYLLABUS_DB[board]?.[grade] || {});
-    // Filter to show only core subjects to avoid cluttering UI with minor languages/extracurriculars
-    return allSubjects.filter(isCoreSubject);
+    const boardData = SYLLABUS_DB[board]?.[grade] || {};
+    const allSubjects = Object.keys(boardData);
+    // Filter to show only core subjects AND only those that have chapters
+    // This removes empty placeholder subjects which clutter the CBSE list
+    return allSubjects.filter(subject =>
+        isCoreSubject(subject) && boardData[subject].length > 0
+    );
 }
 
 // Helper: Get chapters for a board, class, and subject
