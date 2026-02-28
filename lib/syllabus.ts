@@ -122,8 +122,7 @@ export const SYLLABUS_DB: Record<string, any> = {
         "5": {
             "Mathematics": ["The Fish Tale", "Shapes and Angles", "How Many Squares?", "Parts and Wholes", "Does It Look the Same?", "Be My Multiple, I'll Be Your Factor", "Can You See the Pattern?", "Mapping Your Way", "Boxes and Sketches", "Tenths and Hundredths", "Area and Its Boundary", "Smart Charts", "Ways to Multiply and Divide", "How Big? How Heavy?"],
             "English": ["Wonderful Waste!", "Flying Together", "Robinson Crusoe Discovers a Footprint", "My Shadow", "Rip Van Winkle", "The Talkative Barber", "Gulliver's Travels", "Topsy-turvy Land", "Around the World in Eighty Days", "Mowgli in the Jungle"],
-            "EVS": ["Super Senses", "A Snake Charmer's Story", "From Tasting to Digesting", "Mangoes Round the Year", "Seeds and Seeds", "Every Drop Counts", "Experiments with Water", "A Treat for Mosquitoes", "Up You Go!", "Walls Tell Stories"]
-,
+            "EVS": ["Super Senses", "A Snake Charmer's Story", "From Tasting to Digesting", "Mangoes Round the Year", "Seeds and Seeds", "Every Drop Counts", "Experiments with Water", "A Treat for Mosquitoes", "Up You Go!", "Walls Tell Stories"],
             "Science": [],
             "Social Science (History)": [],
             "Social Science (Geography)": [],
@@ -139,8 +138,7 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Social Science (History)": ["What, Where, How and When?", "From Hunting-Gathering to Growing Food", "In the Earliest Cities", "What Books and Burials Tell Us", "Kingdoms, Kings and an Early Republic", "New Questions and Ideas", "Ashoka, The Emperor Who Gave Up War", "Vital Villages, Thriving Towns", "Traders, Kings and Pilgrims", "New Empires and Kingdoms", "Buildings, Paintings and Books"],
             "Social Science (Geography)": ["The Earth in the Solar System", "Globe: Latitudes and Longitudes", "Motions of the Earth", "Maps", "Major Domains of the Earth", "Major Landforms of the Earth", "Our Country – India", "India: Climate, Vegetation and Wildlife"],
             "Social Science (Civics)": ["Understanding Diversity", "Diversity and Discrimination", "What is Government?", "Key Elements of a Democratic Government", "Panchayati Raj", "Rural Administration", "Urban Administration", "Rural Livelihoods", "Urban Livelihoods"],
-            "English": ["Who Did Patrick's Homework?", "How the Dog Found Himself a New Master!", "Taro's Reward", "An Indian – American Woman in Space: Kalpana Chawla", "A Different Kind of School", "Who I Am", "Fair Play", "The Banyan Tree"]
-,
+            "English": ["Who Did Patrick's Homework?", "How the Dog Found Himself a New Master!", "Taro's Reward", "An Indian – American Woman in Space: Kalpana Chawla", "A Different Kind of School", "Who I Am", "Fair Play", "The Banyan Tree"],
             "Hindi": [],
             "Sanskrit": [],
             "Computer Science": [],
@@ -152,8 +150,7 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Social Science (History)": ["Tracing Changes Through a Thousand Years", "New Kings and Kingdoms", "The Delhi Sultans", "The Mughal Empire", "Rulers and Buildings", "Towns, Traders and Craftspersons", "Tribes, Nomads and Settled Communities", "Devotional Paths to the Divine", "The Making of Regional Cultures", "Eighteenth-Century Political Formations"],
             "Social Science (Geography)": ["Environment", "Inside Our Earth", "Our Changing Earth", "Air", "Water", "Natural Vegetation and Wildlife", "Human Environment – Settlement, Transport and Communication", "Human-Environment Interactions – The Tropical and the Subtropical Region", "Life in the Deserts"],
             "Social Science (Civics)": ["On Equality", "Role of Government in Health", "How the State Government Works", "Growing Up as Boys and Girls", "Women Change the World", "Understanding Media", "Understanding Advertising", "Markets Around Us", "A Shirt in the Market"],
-            "English": ["Three Questions", "A Gift of Chappals", "Gopal and the Hilsa Fish", "The Ashes That Made Trees Bloom", "Quality", "Expert Detectives", "The Invention of Vita-Wonk", "A Homage to Our Brave Soldiers"]
-,
+            "English": ["Three Questions", "A Gift of Chappals", "Gopal and the Hilsa Fish", "The Ashes That Made Trees Bloom", "Quality", "Expert Detectives", "The Invention of Vita-Wonk", "A Homage to Our Brave Soldiers"],
             "Hindi": [],
             "Sanskrit": [],
             "Computer Science": [],
@@ -165,8 +162,7 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Social Science (History)": ["How, When and Where", "From Trade to Territory", "Ruling the Countryside", "Tribals, Dikus and the Vision of a Golden Age", "When People Rebel 1857 and After", "Civilising the 'Native', Educating the Nation", "Women, Caste and Reform", "The Making of the National Movement: 1870s-1947", "India After Independence"],
             "Social Science (Geography)": ["Resources", "Land, Soil, Water, Natural Vegetation and Wildlife Resources", "Mineral and Power Resources", "Agriculture", "Industries", "Human Resources"],
             "Social Science (Civics)": ["The Indian Constitution", "Understanding Secularism", "Why do we need a Parliament?", "Understanding Laws", "Judiciary", "Understanding Marginalisation", "Confronting Marginalisation", "Public Facilities"],
-            "English": ["The Best Christmas Present in the World", "The Tsunami", "Glimpses of the Past", "Bepin Choudhury's Lapse of Memory", "The Summit Within", "This is Jody's Fawn", "A Visit to Cambridge", "A Short Monsoon Diary"]
-,
+            "English": ["The Best Christmas Present in the World", "The Tsunami", "Glimpses of the Past", "Bepin Choudhury's Lapse of Memory", "The Summit Within", "This is Jody's Fawn", "A Visit to Cambridge", "A Short Monsoon Diary"],
             "Hindi": [],
             "Sanskrit": [],
             "Computer Science": [],
@@ -179,8 +175,7 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Social Science (Geography)": ["India – Size and Location", "Physical Features of India", "Drainage", "Climate", "Natural Vegetation and Wildlife", "Population"],
             "Social Science (Civics)": ["What is Democracy? Why Democracy?", "Constitutional Design", "Electoral Politics", "Working of Institutions", "Democratic Rights"],
             "Social Science (Economics)": ["The Story of Village Palampur", "People as Resource", "Poverty as a Challenge", "Food Security in India"],
-            "English": ["The Fun They Had", "The Sound of Music", "The Little Girl", "A Truly Beautiful Mind", "The Snake and the Mirror", "My Childhood", "Reach for the Top", "Kathmandu", "If I Were You"]
-,
+            "English": ["The Fun They Had", "The Sound of Music", "The Little Girl", "A Truly Beautiful Mind", "The Snake and the Mirror", "My Childhood", "Reach for the Top", "Kathmandu", "If I Were You"],
             "Arabic": [],
             "Art Education": [],
             "Assamese": [],
@@ -331,9 +326,23 @@ export const SYLLABUS_DB: Record<string, any> = {
     }
 };
 
+// Helper: Check if a subject is a "Core" subject
+function isCoreSubject(subject: string): boolean {
+    const coreKeywords = [
+        "Mathematics", "Maths", "Calculus", "Algebra", "Geometry", "Statistics",
+        "Science", "Physics", "Chemistry", "Biology", "General Science", "EVS", "Environmental",
+        "Social Science", "History", "Geography", "Civics", "Economics", "Political Science",
+        "English", "Hindi", "Sanskrit",
+        "Computer", "Information Technology", "AI", "Artificial Intelligence", "ICT"
+    ];
+    return coreKeywords.some(keyword => subject.toLowerCase().includes(keyword.toLowerCase()));
+}
+
 // Helper: Get subjects for a board and class
 export function getSubjects(board: string, grade: string): string[] {
-    return Object.keys(SYLLABUS_DB[board]?.[grade] || {});
+    const allSubjects = Object.keys(SYLLABUS_DB[board]?.[grade] || {});
+    // Filter to show only core subjects to avoid cluttering UI with minor languages/extracurriculars
+    return allSubjects.filter(isCoreSubject);
 }
 
 // Helper: Get chapters for a board, class, and subject
