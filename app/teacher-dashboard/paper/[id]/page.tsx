@@ -60,43 +60,57 @@ export default function PaperViewerPage() {
         }
     };
 
-    // ========== PDF DOWNLOAD (Screenshot-based for pixel-perfect output) ==========
-    const handleDownloadPDF = async () => {
+    // ========== PDF DOWNLOAD (Print-based for maximum CSS compatibility) ==========
+    const handleDownloadPDF = () => {
         if (!contentRef.current) return;
-        try {
-            const canvas = await html2canvas(contentRef.current, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                backgroundColor: "#ffffff",
-            });
-            const imgData = canvas.toDataURL("image/png");
-            const pdf = new jsPDF("p", "mm", "a4");
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfPageHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = pdfWidth;
-            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            // First page
-            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-            heightLeft -= pdfPageHeight;
-
-            // Additional pages if content is long
-            while (heightLeft > 0) {
-                position = position - pdfPageHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-                heightLeft -= pdfPageHeight;
-            }
-
-            pdf.save(`${paper?.subject || "paper"}-${id}.pdf`);
-        } catch (err) {
-            console.error("PDF Export failed", err);
-            alert("PDF export failed. Try printing instead (Ctrl+P).");
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert("Please allow popups to download PDF.");
+            return;
         }
+        const htmlContent = contentRef.current.innerHTML;
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${paper?.subject || "Question Paper"} - ${paper?.board || ""}</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        color: #1e293b;
+                        padding: 40px;
+                        line-height: 1.6;
+                        max-width: 800px;
+                        margin: 0 auto;
+                    }
+                    h1, h2, h3, h4 { margin-top: 20px; margin-bottom: 10px; }
+                    h1 { font-size: 24px; text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 10px; text-transform: uppercase; }
+                    h2 { font-size: 18px; background-color: #f8fafc; border-left: 4px solid #1e293b; padding: 10px; text-transform: uppercase; }
+                    h3 { font-size: 16px; background-color: #f8fafc; border-left: 4px solid #1e293b; padding: 8px; text-transform: uppercase; }
+                    p { margin-bottom: 10px; }
+                    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+                    th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+                    th { background-color: #f8fafc; font-weight: bold; }
+                    hr { margin: 24px 0; border-top: 2px solid #cbd5e1; }
+                    ul, ol { padding-left: 24px; margin-bottom: 12px; }
+                    li { margin-bottom: 4px; }
+                    strong { font-weight: bold; }
+                    em { font-style: italic; }
+                    blockquote { background: #f1f5f9; border-left: 4px solid #334155; padding: 12px; margin: 16px 0; font-style: italic; }
+                    @media print {
+                        body { padding: 20px; }
+                    }
+                </style>
+            </head>
+            <body>${htmlContent}</body>
+            </html>
+        `);
+        printWindow.document.close();
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
     };
 
     // ========== DOCX DOWNLOAD (Styled Word Export) ==========
