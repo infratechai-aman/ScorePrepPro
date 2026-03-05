@@ -6,25 +6,28 @@ import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, Download, FileText, Printer, Share2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 import { GlassCard } from "@/components/ui/GlassCard";
 
-export default function PaperViewerPage({ params }: { params: { id: string } }) {
+export default function PaperViewerPage() {
     const { user } = useAuth();
     const router = useRouter();
+    const params = useParams();
     const [paper, setPaper] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
+    const id = params?.id as string;
+
     useEffect(() => {
-        if (user && params.id) {
+        if (user && id) {
             fetchPaper();
         }
-    }, [user, params.id]);
+    }, [user, id]);
 
     const fetchPaper = async () => {
         try {
-            const docRef = doc(db, "users", user!.uid, "papers", params.id);
+            const docRef = doc(db, "users", user!.uid, "papers", id);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 setPaper(docSnap.data());
@@ -79,7 +82,7 @@ export default function PaperViewerPage({ params }: { params: { id: string } }) 
             yPos += splitText.length * 7 + 5;
         });
 
-        doc.save(`${paper.subject || 'paper'}-${params.id}.pdf`);
+        doc.save(`${paper.subject || 'paper'}-${id}.pdf`);
     };
 
     const handlePrint = () => {
