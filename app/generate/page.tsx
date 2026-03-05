@@ -718,7 +718,15 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                         <div style={{ position: "absolute", top: "0", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#dcfce7", padding: "4px 16px", borderRadius: "999px", color: "#166534", fontWeight: "bold", fontSize: "14px", border: "1px solid #bbf7d0" }}>ANSWER KEY</div>
                                         <div className="prose prose-green max-w-none" style={{ color: "#166534" }}>
                                             <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={{
-                                                h2: ({ node, ...props }) => <h2 style={{ color: "#14532d", borderBottom: "1px solid #bbf7d0", paddingBottom: "4px", marginTop: "20px", marginBottom: "8px" }} className="text-lg font-bold" {...props} />
+                                                h2: ({ node, ...props }) => <h2 style={{ color: "#14532d", borderBottom: "1px solid #bbf7d0", paddingBottom: "4px", marginTop: "24px", marginBottom: "12px" }} className="text-xl font-bold" {...props} />,
+                                                h3: ({ node, ...props }) => <h3 style={{ color: "#166534", marginTop: "20px", marginBottom: "10px" }} className="text-lg font-bold" {...props} />,
+                                                p: ({ node, ...props }) => <p style={{ marginBottom: "12px", lineHeight: "1.7" }} {...props} />,
+                                                ul: ({ node, ...props }) => <ul style={{ listStyleType: "disc", paddingLeft: "24px", marginBottom: "16px" }} {...props} />,
+                                                ol: ({ node, ...props }) => <ol style={{ listStyleType: "decimal", paddingLeft: "24px", marginBottom: "16px" }} {...props} />,
+                                                li: ({ node, ...props }) => <li style={{ marginBottom: "6px" }} {...props} />,
+                                                table: ({ node, ...props }) => <div className="overflow-x-auto my-6"><table className="w-full text-left border-collapse" {...props} /></div>,
+                                                th: ({ node, ...props }) => <th className="border-b-2 border-[#bbf7d0] p-3 text-[#14532d] font-bold bg-[#dcfce7]/50" {...props} />,
+                                                td: ({ node, ...props }) => <td className="border-b border-[#bbf7d0]/50 p-3" {...props} />
                                             }}>
                                                 {generatedSolution}
                                             </ReactMarkdown>
