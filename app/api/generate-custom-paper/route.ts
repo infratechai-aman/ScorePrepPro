@@ -40,6 +40,13 @@ export async function POST(req: Request) {
             ]
         }
         4. Do NOT wrap in markdown code blocks. Just raw JSON.
+        
+        **CRITICAL REQUIREMENTS FOR SECTIONS**:
+        1. **INTERNAL CHOICES**: For ANY subjective section (Short Answer, Long Answer, etc.) that requires multiple questions, you MUST provide internal choices.
+           - Generate MORE questions than required. 
+           - Prepend the text "Attempt any N of the following M questions." at the start of that section's questions. 
+           - Example: If you need 4 questions worth 3 marks each (12 marks total), generate 6 questions and add "Attempt any 4 of the following 6 questions." The math must remain perfect.
+        2. **CASE STUDY/PASSAGE LENGTH**: For any "Case Based", "Source Based", or "Passage" sections, you MUST provide a massive, highly detailed reading passage of AT LEAST 150-250 words total. Do NOT provide 1-2 sentence snippets.
         `;
 
         const completion = await openai.chat.completions.create({
