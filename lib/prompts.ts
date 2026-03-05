@@ -329,12 +329,14 @@ export function constructSolutionPrompt(paperContent: string, board: string) {
     4. **Diagrams**: Describe what the diagram should show if a diagram is required.
     
     STRICT OUTPUT FORMATTING:
+    - **CRITICAL**: DO NOT put the entire answer key or multiple questions inside a single giant Markdown table.
+    - **Standard Questions**: Answer standard questions using normal paragraphs and bullet points, NOT tables.
     - **Numbering**: COPY the question numbers EXACTLY from the paper (e.g. "Q.1", "1."). Do not invent new numbering.
-    - **Match Columns**: ALWAYS return as a valid Markdown Table.
+    - **Match Columns**: ONLY use Markdown tables for specific "Match the Following" type questions.
       | Pair | Answer |
       | :--- | :--- |
       | 1. Item A | B. Item B |
-    - **Spacing**: Separated EVERY solution with ONE empty line.
+    - **Spacing**: Separate EVERY solution and EVERY section header with exactly ONE empty line.
     
     OUTPUT:
     Start with "## ANSWER KEY / MARKING SCHEME".
