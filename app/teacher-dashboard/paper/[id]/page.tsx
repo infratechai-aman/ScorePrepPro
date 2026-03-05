@@ -60,7 +60,7 @@ export default function PaperViewerPage() {
         let yPos = 60;
         let currentSection = "";
 
-        paper.questions.forEach((q: any, i: number) => {
+        (paper.questions || []).forEach((q: any, i: number) => {
             if (q.section !== currentSection) {
                 yPos += 10;
                 doc.setFont("helvetica", "bold");
@@ -132,9 +132,9 @@ export default function PaperViewerPage() {
                     </div>
 
                     <div className="space-y-8">
-                        {paper.questions.map((q: any, i: number) => (
+                        {(paper?.questions || []).map((q: any, i: number, arr: any[]) => (
                             <div key={i}>
-                                {(i === 0 || paper.questions[i - 1].section !== q.section) && (
+                                {(i === 0 || arr[i - 1].section !== q.section) && (
                                     <div className="flex items-center gap-4 mb-4 mt-8">
                                         <h4 className="font-bold text-slate-900 text-lg uppercase tracking-wider">{q.section}</h4>
                                         <div className="h-px bg-slate-200 flex-1"></div>
