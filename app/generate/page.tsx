@@ -216,7 +216,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
             parts.push(
                 <div key={`q-${startIndex}`} className="relative group hover:bg-slate-50 p-4 -mx-4 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-100">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>{questionContent}</ReactMarkdown>
-                    {(userData?.plan === 'premium' || userData?.plan === 'teacher' || userData?.plan === 'coaching') && qNumber && (
+                    {(userData?.plan === 'premium' || userData?.plan === 'teacher' || userData?.role === 'coaching') && qNumber && (
                         <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
                             <Button
                                 size="sm"
@@ -717,7 +717,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                     <div style={{ backgroundColor: "rgba(240, 253, 244, 0.5)", borderTop: "4px dotted #cbd5e1", padding: "24px", marginTop: "30px", borderRadius: "12px", position: "relative" }}>
                                         <div style={{ position: "absolute", top: "0", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#dcfce7", padding: "4px 16px", borderRadius: "999px", color: "#166534", fontWeight: "bold", fontSize: "14px", border: "1px solid #bbf7d0" }}>ANSWER KEY</div>
                                         <div className="prose prose-green max-w-none" style={{ color: "#166534" }}>
-                                            <ReactMarkdown rehypePlugins={[rehypeRaw]} components={{
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={{
                                                 h2: ({ node, ...props }) => <h2 style={{ color: "#14532d", borderBottom: "1px solid #bbf7d0", paddingBottom: "4px", marginTop: "20px", marginBottom: "8px" }} className="text-lg font-bold" {...props} />
                                             }}>
                                                 {generatedSolution}
