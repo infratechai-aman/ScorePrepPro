@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
         **CRITICAL FORMATTING RULES**:
         1. For Sections with "questionsToGenerate" > "questionsToAttempt", you MUST generate the higher number of questions.
-        2. In those sections, add a dummy question text element at the start of the section like: "Attempt any ${"N"} of the following ${"M"} questions. Give scientific reasons where applicable."
+        2. In those sections, add a special field to the FIRST QUESTION of that section called "sectionInstruction": "Attempt any ${"N"} of the following ${"M"} questions. Give scientific reasons where applicable."
         3. **CASE STUDY/PASSAGE LENGTH**: For any "Case Based", "Source Based", or "Passage" sections, you MUST provide a massive, highly detailed reading passage of AT LEAST 150-250 words total. Do NOT provide 1-2 sentence snippets.
         4. **CASE STUDY SUB-QUESTIONS**: Every Case Based or Source Based question MUST be broken down into multiple distinctly numbered sub-questions (e.g., (i), (ii), (iii), (iv)) inside the general text.
 
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
             "title": "Subject: ${subject}...",
             "instructions": "General instructions...",
             "questions": [
-                { "id": 1, "section": "Section A: MCQs", "text": "Question text...", "marks": 1, "type": "MCQ" }
+                { "id": 1, "section": "Section A: MCQs", "sectionInstruction": "All questions compulsory", "text": "Question text...", "marks": 1, "type": "MCQ" }
             ]
         }
         `;

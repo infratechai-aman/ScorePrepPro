@@ -65,7 +65,17 @@ export default function PaperViewerPage() {
                 yPos += 10;
                 doc.setFont("helvetica", "bold");
                 doc.text(q.section, 10, yPos);
-                yPos += 10;
+                yPos += 8;
+
+                if (q.sectionInstruction) {
+                    doc.setFont("helvetica", "italic");
+                    doc.setFontSize(10);
+                    const instructionText = doc.splitTextToSize(q.sectionInstruction, 180);
+                    doc.text(instructionText, 10, yPos);
+                    yPos += instructionText.length * 5 + 4;
+                    doc.setFontSize(12);
+                }
+
                 currentSection = q.section;
                 doc.setFont("helvetica", "normal");
             }
@@ -135,9 +145,16 @@ export default function PaperViewerPage() {
                         {(paper?.questions || []).map((q: any, i: number, arr: any[]) => (
                             <div key={i}>
                                 {(i === 0 || arr[i - 1].section !== q.section) && (
-                                    <div className="flex items-center gap-4 mb-4 mt-8">
-                                        <h4 className="font-bold text-slate-900 text-lg uppercase tracking-wider">{q.section}</h4>
-                                        <div className="h-px bg-slate-200 flex-1"></div>
+                                    <div className="mb-4 mt-8">
+                                        <div className="flex items-center gap-4 mb-2">
+                                            <h4 className="font-bold text-slate-900 text-lg uppercase tracking-wider">{q.section}</h4>
+                                            <div className="h-px bg-slate-200 flex-1"></div>
+                                        </div>
+                                        {q.sectionInstruction && (
+                                            <p className="text-sm font-medium text-indigo-600 italic px-3 py-1.5 bg-indigo-50/50 rounded-md inline-block border border-indigo-100/50">
+                                                {q.sectionInstruction}
+                                            </p>
+                                        )}
                                     </div>
                                 )}
 

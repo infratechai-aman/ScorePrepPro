@@ -178,7 +178,17 @@ export default function CustomGeneratorPage() {
                 yPos += 10;
                 doc.setFont("helvetica", "bold");
                 doc.text(q.section, 10, yPos);
-                yPos += 10;
+                yPos += 8;
+
+                if (q.sectionInstruction) {
+                    doc.setFont("helvetica", "italic");
+                    doc.setFontSize(10);
+                    const instructionText = doc.splitTextToSize(q.sectionInstruction, 180);
+                    doc.text(instructionText, 10, yPos);
+                    yPos += instructionText.length * 5 + 4;
+                    doc.setFontSize(12);
+                }
+
                 currentSection = q.section;
                 doc.setFont("helvetica", "normal");
             }
@@ -329,7 +339,10 @@ export default function CustomGeneratorPage() {
                                                 </div>
 
                                                 {(i === 0 || paperData.questions[i - 1].section !== q.section) && (
-                                                    <h4 className="font-bold text-slate-800 mb-3 mt-6 border-b border-slate-100 pb-1">{q.section}</h4>
+                                                    <div className="mb-4 mt-6">
+                                                        <h4 className="font-bold text-slate-800 mb-1 border-b border-slate-100 pb-1">{q.section}</h4>
+                                                        {q.sectionInstruction && <p className="text-sm font-medium text-indigo-600 mb-2 italic px-2 py-1 bg-indigo-50/50 rounded inline-block">{q.sectionInstruction}</p>}
+                                                    </div>
                                                 )}
 
                                                 <div className="flex gap-2">
