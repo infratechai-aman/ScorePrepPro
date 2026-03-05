@@ -12,49 +12,71 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        const prompt = `
-        Create a custom question paper for the following subject and units.
-
+        const planningPrompt = `
+        You are an expert ${subject} examiner. Design a question paper blueprint.
+        
         **Subject**: ${subject}
         **Units Covered**: ${units.join(", ")}
         **Total Marks**: ${marks}
         **Difficulty**: ${difficulty}
-        **Question Types**: ${type} (Mixed = MCQ + Short + Long)
+        **Question Types**: ${type}
+        
+        **RULES**:
+        1. Distribute ${marks} marks logically.
+        2. For subjective sections (Short/Long Answer), you MUST include internal choices (e.g., "Attempt any 4 of 6 questions"). Specify this in the blueprint.
+        3. Make sure the total attemptable marks perfectly equals ${marks}.
+        
+        Return pure JSON:
+        {
+          "sections": [
+             { "name": "Section A: MCQs", "marksPerQuestion": 1, "questionsToAttempt": 10, "questionsToGenerate": 10, "instructions": "All questions compulsory" },
+             { "name": "Section B: Short Answer", "marksPerQuestion": 3, "questionsToAttempt": 4, "questionsToGenerate": 6, "instructions": "Attempt any 4 of the following 6. Give Scientific reasons." }
+          ]
+        }
+        `;
 
-        **Question Sourcing**:
-        - Questions MUST primarily come from textbook chapter exercises for the selected units
-        - Use end-of-chapter exercise questions, including matching tables, conceptual questions, and numericals
-        - For numericals, use the given data and values from textbook exercise problems
-        - Minimize inventing original questions — textbook exercises should be the primary source
-        - **NO IMAGES OR DIAGRAMS**: ABSOLUTELY DO NOT generate any question that requires a figure, diagram, graph, map, or image. All questions MUST be purely text-based.
+        const planCompletion = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [{ role: "system", content: "You output perfect JSON blueprints." }, { role: "user", content: planningPrompt }],
+            response_format: { type: "json_object" },
+            temperature: 0.2,
+        });
 
-        **Instructions**:
-        1. create a balanced question paper covering all selected units.
-        2. Strictly follow the marks distribution to equal exactly ${marks} marks.
-        3. Return the response as a valid JSON object with the following structure:
+        const blueprint = JSON.parse(planCompletion.choices[0].message.content || "{}");
+
+        const generationPrompt = `
+        Create the actual custom question paper based EXACLTY on this blueprint:
+        ${JSON.stringify(blueprint, null, 2)}
+        
+        **Subject**: ${subject}
+        **Units**: ${units.join(", ")}
+
+        **CRITICAL SOURCING RULES**:
+        - Questions MUST primarily come from textbook chapter exercises.
+        - Use end-of-chapter exercise questions, matching tables, and numericals.
+        - **NO IMAGES OR DIAGRAMS**: ABSOLUTELY DO NOT generate any question that requires a figure, diagram, graph, map, or image.
+
+        **CRITICAL FORMATTING RULES**:
+        1. For Sections with "questionsToGenerate" > "questionsToAttempt", you MUST generate the higher number of questions.
+        2. In those sections, add a dummy question text element at the start of the section like: "Attempt any ${"N"} of the following ${"M"} questions. Give scientific reasons where applicable."
+        3. **CASE STUDY/PASSAGE LENGTH**: For any "Case Based", "Source Based", or "Passage" sections, you MUST provide a massive, highly detailed reading passage of AT LEAST 150-250 words total. Do NOT provide 1-2 sentence snippets.
+        4. **CASE STUDY SUB-QUESTIONS**: Every Case Based or Source Based question MUST be broken down into multiple distinctly numbered sub-questions (e.g., (i), (ii), (iii), (iv)) inside the general text.
+
+        Return pure JSON:
         {
             "title": "Subject: ${subject}...",
             "instructions": "General instructions...",
             "questions": [
-                { "id": 1, "section": "Section A", "text": "Question text...", "marks": 1, "type": "MCQ" }
+                { "id": 1, "section": "Section A: MCQs", "text": "Question text...", "marks": 1, "type": "MCQ" }
             ]
         }
-        4. Do NOT wrap in markdown code blocks. Just raw JSON.
-        
-        **CRITICAL REQUIREMENTS FOR SECTIONS**:
-        1. **INTERNAL CHOICES**: For ANY subjective section (Short Answer, Long Answer, etc.) that requires multiple questions, you MUST provide internal choices.
-           - Generate MORE questions than required. 
-           - Prepend the text "Attempt any N of the following M questions." at the start of that section's questions. 
-           - Example: If you need 4 questions worth 3 marks each (12 marks total), generate 6 questions and add "Attempt any 4 of the following 6 questions." The math must remain perfect.
-        2. **CASE STUDY/PASSAGE LENGTH**: For any "Case Based", "Source Based", or "Passage" sections, you MUST provide a massive, highly detailed reading passage of AT LEAST 150-250 words total. Do NOT provide 1-2 sentence snippets.
-        3. **CASE STUDY SUB-QUESTIONS**: Every Case Based or Source Based question MUST be broken down into multiple distinctly numbered sub-questions (e.g., (i), (ii), (iii), (iv)) inside the general text. Do NOT ask just one broad question for a 4-mark Case Study.
         `;
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
-                { role: "system", content: "You are an expert examiner who outputs only valid JSON." },
-                { role: "user", content: prompt }
+                { role: "system", content: "You are an expert examiner who outputs only valid JSON representing the paper." },
+                { role: "user", content: generationPrompt }
             ],
             response_format: { type: "json_object" },
             temperature: 0.7,
