@@ -56,12 +56,13 @@ export async function POST(req: Request) {
         ---
         
         **General Instructions:**
-        1. All questions are compulsory.
+        1. All questions are compulsory unless specified otherwise.
         2. Marks are indicated against each question.
         
         ---
         
         ### [Section Name]
+        *(If the section requires internal choices, write the instruction here in italics, e.g., "Attempt any 4 of the following 6. Give scientific reasons where applicable.")*
         
         **Q.1 [Question Text]** **[X Mark(s)]**
         

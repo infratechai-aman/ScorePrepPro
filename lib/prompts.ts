@@ -121,12 +121,12 @@ export function constructPrompt(
       const match = s.choice.match(/from\s+(\d+)/i);
       if (match) {
         generateCount = parseInt(match[1], 10);
-        choiceInstruction = `Add instruction: 'Attempt any ${attemptCount} of the following ${generateCount} questions.'`;
+        choiceInstruction = `Add instruction in italics under section name: '*Attempt any ${attemptCount} of the following ${generateCount} questions. Give scientific reasons where applicable.*'`;
       }
     } else if (attemptCount >= 2 && s.marskPerQuestion >= 2 && !s.type.toLowerCase().includes("mcq") && !s.type.toLowerCase().includes("objective") && !s.type.toLowerCase().includes("assertion")) {
       // Auto-inject dynamic internal choices for subjective questions
       generateCount = attemptCount >= 4 ? attemptCount + 2 : attemptCount + 1;
-      choiceInstruction = `Add instruction: 'Attempt any ${attemptCount} of the following ${generateCount} questions.'`;
+      choiceInstruction = `Add instruction in italics under section name: '*Attempt any ${attemptCount} of the following ${generateCount} questions. Give scientific reasons where applicable.*'`;
     }
 
     if (choiceInstruction) {
