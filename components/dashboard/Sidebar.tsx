@@ -33,7 +33,7 @@ export function Sidebar() {
     ].filter(item => item.show !== false);
 
     return (
-        <aside className="fixed left-0 top-0 h-screen w-64 bg-[#0f172a] text-white flex flex-col border-r border-slate-800 z-50">
+        <aside className="fixed left-0 top-0 h-screen w-64 bg-[#0f172a] text-white flex flex-col border-r border-slate-800 z-50 print:hidden">
             {/* Logo */}
             <div className="h-20 flex items-center gap-3 px-6 border-b border-slate-800">
                 <div className="bg-indigo-600 p-2 rounded-lg">
