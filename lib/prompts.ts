@@ -261,7 +261,9 @@ export function constructPrompt(
 
     === MANDATORY INCLUSIONS (Crucial) ===
     - **MATCH THE FOLLOWING**: You MUST include at least ONE "Match the Following" question set (e.g., Column A vs Column B) worth 2-4 marks.
-    - **ACTIVITY/CASE**: If applicable to the board, include a case study or activity-based question.
+    - **ACTIVITY/CASE/SOURCE**: For any "Case Based", "Source Based", or "Passage" sections:
+      - You MUST provide a **long, detailed reading passage of AT LEAST 150-250 words**. 
+      - Do NOT provide 1-2 sentence snippets. The paragraph must be substantial enough for students to read and extract answers from.
     
     === PAPER PATTERN (Calculated for ${totalMarks} Marks) ===
     ${structureText}
