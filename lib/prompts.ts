@@ -112,11 +112,28 @@ export function constructPrompt(
 
   // Generate Scaled Pattern Text
   const structureText = newStructure.map((s: any) => {
-    // If we scaled the paper (factor != 1), we MUST remove the "Choice" instruction (e.g. "Any 2 from 3")
-    // because that forces the AI to generate extra questions ("from 3"), breaking our strict count.
-    const showChoice = scalingFactor === 1 ? (s.choice ? `(${s.choice})` : "") : "";
+    let attemptCount = s.count;
+    let generateCount = s.count;
+    let choiceInstruction = ``;
 
-    return `- **${s.section}**: ${s.type} | ${s.count} Questions | ${s.marskPerQuestion} Marks each. ${showChoice}`;
+    if (scalingFactor === 1 && s.choice) {
+      // Explicit choices defined in patterns (e.g., Any 2 from 3)
+      const match = s.choice.match(/from\s+(\d+)/i);
+      if (match) {
+        generateCount = parseInt(match[1], 10);
+        choiceInstruction = `Add instruction: 'Attempt any ${attemptCount} of the following ${generateCount} questions.'`;
+      }
+    } else if (attemptCount >= 2 && s.marskPerQuestion >= 2 && !s.type.toLowerCase().includes("mcq") && !s.type.toLowerCase().includes("objective") && !s.type.toLowerCase().includes("assertion")) {
+      // Auto-inject dynamic internal choices for subjective questions
+      generateCount = attemptCount >= 4 ? attemptCount + 2 : attemptCount + 1;
+      choiceInstruction = `Add instruction: 'Attempt any ${attemptCount} of the following ${generateCount} questions.'`;
+    }
+
+    if (choiceInstruction) {
+      return `- **${s.section}**: ${s.type} | GENERATE ${generateCount} QUESTIONS. (Students attempt ${attemptCount}) | ${s.marskPerQuestion} Marks each. | ${choiceInstruction}`;
+    }
+
+    return `- **${s.section}**: ${s.type} | GENERATE ${attemptCount} QUESTIONS. | ${s.marskPerQuestion} Marks each.`;
   }).join("\n");
 
   const diff = options.difficulty || "moderate";
