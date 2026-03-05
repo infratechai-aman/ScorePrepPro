@@ -29,7 +29,7 @@ export const BOARD_PATTERNS: any = {
                     { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 5 },
                     { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 4 },
                     { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 },
-                    { section: "SECTION F", type: "Map Based", marskPerQuestion: 1, count: 5 }
+                    { section: "SECTION F", type: "Source Based (Competency)", marskPerQuestion: 1, count: 5 }
                 ]
             }
         },
@@ -63,7 +63,7 @@ export const BOARD_PATTERNS: any = {
                         { section: "SECTION C", type: "Short Answer", marskPerQuestion: 3, count: 5 },
                         { section: "SECTION D", type: "Long Answer", marskPerQuestion: 5, count: 4 },
                         { section: "SECTION E", type: "Case Based", marskPerQuestion: 4, count: 3 },
-                        { section: "SECTION F", type: "Map Based", marskPerQuestion: 1, count: 5 }
+                        { section: "SECTION F", type: "Source Based (Competency)", marskPerQuestion: 1, count: 5 }
                     ]
                 }
             };
@@ -143,11 +143,11 @@ export const BOARD_PATTERNS: any = {
                     { section: "Q.1", type: "Choose Correct Option", marskPerQuestion: 1, count: 4 },
                     { section: "Q.2", type: "Match the Following", marskPerQuestion: 1, count: 4 },
                     { section: "Q.3", type: "One Sentence Answer", marskPerQuestion: 1, count: 4, choice: "Any 4 from 5" },
-                    { section: "Q.4 (A)", type: "Fill Map", marskPerQuestion: 4, count: 1, choice: "Any 4 from 6" },
-                    { section: "Q.4 (B)", type: "Read Map & Answer", marskPerQuestion: 4, count: 1, choice: "Any 4 from 5" },
+                    { section: "Q.4 (A)", type: "Source Based / Paragraph", marskPerQuestion: 4, count: 1, choice: "Any 4 from 6" },
+                    { section: "Q.4 (B)", type: "Application Based", marskPerQuestion: 4, count: 1, choice: "Any 4 from 5" },
                     { section: "Q.5", type: "Geographical Reasons", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
-                    { section: "Q.6 (A)", type: "Draw Graph", marskPerQuestion: 3, count: 1 },
-                    { section: "Q.6 (B)", type: "Read Graph", marskPerQuestion: 3, count: 1, choice: "Or Q.6(A)" },
+                    { section: "Q.6 (A)", type: "Detail Note", marskPerQuestion: 3, count: 1 },
+                    { section: "Q.6 (B)", type: "Source Analysis", marskPerQuestion: 3, count: 1, choice: "Or Q.6(A)" },
                     { section: "Q.7", type: "Detailed Answer", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" }
                 ]
             }
@@ -162,7 +162,7 @@ export const BOARD_PATTERNS: any = {
                         { section: "Q.2 (A)", type: "Give reasons", marskPerQuestion: 2, count: 2 },
                         { section: "Q.2 (B)", type: "Short answer", marskPerQuestion: 2, count: 5 },
                         { section: "Q.3", type: "Explain in detail", marskPerQuestion: 3, count: 4 },
-                        { section: "Q.4", type: "Long answer / Diagram", marskPerQuestion: 4, count: 1 }
+                        { section: "Q.4", type: "Long answer / Detail", marskPerQuestion: 4, count: 1 }
                     ]
                 },
                 "Mathematics": {
