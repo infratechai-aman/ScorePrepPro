@@ -19,12 +19,34 @@ export function constructPrompt(
   const board = boardInput.toLowerCase().trim();
   const subject = subjectInput.trim();
 
+  let subjectKey = subject;
+  if (subject.startsWith("Social Science")) subjectKey = "Social Science";
+  if (subject === "EVS") subjectKey = "Science";
+
   // @ts-ignore
-  const pattern = BOARD_PATTERNS[board]?.[`class${grade}`]?.[subject];
+  let pattern = BOARD_PATTERNS[board]?.[`class${grade}`]?.[subjectKey];
 
   if (!pattern) {
-    console.error(`[constructPrompt] Pattern not found for Board: ${board}, Class: ${grade}, Subject: ${subject}`);
-    return null;
+    console.warn(`[constructPrompt] Exact Pattern not found for Board: ${board}, Class: ${grade}, Subject: ${subject}. Using fallback.`);
+    if (["English", "Hindi", "Marathi", "Sanskrit"].includes(subject)) {
+      pattern = {
+        totalMarks: 40,
+        structure: [
+          { section: "SECTION A", type: "Reading / Grammar (Objective)", marskPerQuestion: 1, count: 10 },
+          { section: "SECTION B", type: "Short Answer (Literature)", marskPerQuestion: 2, count: 5 },
+          { section: "SECTION C", type: "Long Answer / Composition", marskPerQuestion: 5, count: 4 }
+        ]
+      };
+    } else {
+      pattern = {
+        totalMarks: 40,
+        structure: [
+          { section: "SECTION A", type: "Objective / MCQs", marskPerQuestion: 1, count: 10 },
+          { section: "SECTION B", type: "Short Answer", marskPerQuestion: 2, count: 5 },
+          { section: "SECTION C", type: "Long Answer", marskPerQuestion: 5, count: 4 }
+        ]
+      };
+    }
   }
 
   // Calculate scaling factor
