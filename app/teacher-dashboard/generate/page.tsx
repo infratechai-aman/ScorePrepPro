@@ -90,7 +90,29 @@ export default function CustomGeneratorPage() {
             const data = await response.json();
             if (data.paper) {
                 setPaperData(data.paper);
-                // Auto-save logic here
+
+                // Auto-save logic
+                if (user) {
+                    try {
+                        const paperDoc = {
+                            ...data.paper,
+                            board: "Custom",
+                            grade: "Custom",
+                            subject: subjectName,
+                            difficulty,
+                            totalMarks,
+                            questionType,
+                            units: unitNames,
+                            createdAt: serverTimestamp(),
+                            isCustom: true
+                        };
+                        const docRef = await addDoc(collection(db, "users", user.uid, "papers"), paperDoc);
+                        // Store the ID so it matches the repository view
+                        setPaperData({ ...paperDoc, id: docRef.id });
+                    } catch (saveError) {
+                        console.error("Failed to save paper to repository:", saveError);
+                    }
+                }
             } else {
                 alert("Generation failed.");
             }
