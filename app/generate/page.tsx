@@ -15,14 +15,14 @@ import { ImageIcon } from "lucide-react";
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
 import { Switch } from "@/components/ui/Switch";
 import { SYLLABUS_DB, getSubjects, getChapters } from "@/lib/syllabus";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsage } from "@/hooks/useUsage";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, doc, updateDoc } from "firebase/firestore";
 
 // Hack for file-saver if not installed
 const saveBlob = (blob: Blob, filename: string) => {
@@ -67,6 +67,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
     const [generatedSolution, setGeneratedSolution] = useState("");
     const [error, setError] = useState("");
     const [flippingIdx, setFlippingIdx] = useState<number | null>(null);
+    const [savedPaperId, setSavedPaperId] = useState<string | null>(null);
 
     // Flip Feature State
     const [flippingQNum, setFlippingQNum] = useState<string | null>(null);
@@ -331,7 +332,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
                 // SAVE PAPER TO FIREBASE HISTORY
                 try {
-                    await addDoc(collection(db, "users", user.uid, "papers"), {
+                    const docRef = await addDoc(collection(db, "users", user.uid, "papers"), {
                         board,
                         grade,
                         subject,
@@ -340,8 +341,9 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         difficulty,
                         content: data.content,
                         createdAt: serverTimestamp(),
-                        solution: null // Will be updated if generated later
+                        solution: null
                     });
+                    setSavedPaperId(docRef.id);
                 } catch (saveError) {
                     console.error("Failed to save paper to history:", saveError);
                     // Don't block the user, just log it
@@ -390,6 +392,16 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
             // INCREMENT USAGE
             await incrementUsage("key");
 
+            // SAVE SOLUTION TO FIREBASE (update the saved paper document)
+            if (user && savedPaperId) {
+                try {
+                    const paperRef = doc(db, "users", user.uid, "papers", savedPaperId);
+                    await updateDoc(paperRef, { solution: data.content });
+                } catch (updateErr) {
+                    console.error("Failed to save solution to history:", updateErr);
+                }
+            }
+
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -404,15 +416,38 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
         }
         if (!contentRef.current) return;
         try {
-            const canvas = await html2canvas(contentRef.current, { scale: 2 });
+            const canvas = await html2canvas(contentRef.current, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff",
+            });
             const imgData = canvas.toDataURL("image/png");
             const pdf = new jsPDF("p", "mm", "a4");
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+            const pdfPageHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = pdfWidth;
+            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            // First page
+            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+            heightLeft -= pdfPageHeight;
+
+            // Additional pages
+            while (heightLeft > 0) {
+                position = position - pdfPageHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfPageHeight;
+            }
+
             pdf.save(`${board}-${subject}-question-paper.pdf`);
         } catch (err) {
             console.error("PDF Export failed", err);
+            alert("PDF export failed. Try using Ctrl+P to print instead.");
         }
     };
 
@@ -421,17 +456,117 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
             setError("Download is available in Basic & Premium plans only.");
             return;
         }
-        const contentToExport = generatedPaper + (generatedSolution ? "\n\n" + generatedSolution : "");
+        const contentToExport = generatedPaper + (generatedSolution ? "\n\n---\n\nANSWER KEY / MARKING SCHEME\n\n" + generatedSolution : "");
         const lines = contentToExport.split("\n");
-        const children = lines.map(line => {
-            if (line.startsWith("# ")) return new Paragraph({ text: line.replace("# ", ""), heading: HeadingLevel.HEADING_1 });
-            if (line.startsWith("## ")) return new Paragraph({ text: line.replace("## ", ""), heading: HeadingLevel.HEADING_2 });
-            if (line.startsWith("**") && line.endsWith("**")) return new Paragraph({ children: [new TextRun({ text: line.replace(/\*\*/g, ""), bold: true })] });
-            return new Paragraph({ text: line });
+        const children: Paragraph[] = [];
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) {
+                children.push(new Paragraph({ text: "" }));
+                continue;
+            }
+
+            // HTML center tags
+            if (trimmed.startsWith("<center>") || trimmed.startsWith("</center>")) continue;
+            if (trimmed.startsWith("<h1>")) {
+                const text = trimmed.replace(/<\/?h1>/g, "");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text, bold: true, size: 32, font: "Calibri" })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 100 },
+                }));
+                continue;
+            }
+            if (trimmed.startsWith("<h3>")) {
+                const text = trimmed.replace(/<\/?h3>/g, "");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text, bold: true, size: 24, font: "Calibri" })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 200 },
+                }));
+                continue;
+            }
+
+            // Markdown headings
+            if (trimmed.startsWith("### ")) {
+                const text = trimmed.replace("### ", "").replace(/\*\*/g, "");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text, bold: true, size: 26, font: "Calibri" })],
+                    spacing: { before: 300, after: 100 },
+                    border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: "999999" } },
+                }));
+                continue;
+            }
+            if (trimmed.startsWith("## ")) {
+                const text = trimmed.replace("## ", "").replace(/\*\*/g, "");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text, bold: true, size: 28, font: "Calibri" })],
+                    spacing: { before: 400, after: 150 },
+                }));
+                continue;
+            }
+            if (trimmed.startsWith("# ")) {
+                const text = trimmed.replace("# ", "").replace(/\*\*/g, "");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text, bold: true, size: 32, font: "Calibri" })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 200 },
+                }));
+                continue;
+            }
+
+            // Horizontal rule
+            if (trimmed === "---" || trimmed === "***") {
+                children.push(new Paragraph({
+                    text: "",
+                    border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: "AAAAAA" } },
+                    spacing: { before: 200, after: 200 },
+                }));
+                continue;
+            }
+
+            // Bold lines
+            if (trimmed.startsWith("**") && trimmed.includes("**")) {
+                const plainText = trimmed.replace(/\*\*/g, "");
+                const isBoldEntire = trimmed.endsWith("**");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text: plainText, bold: isBoldEntire, size: 22, font: "Calibri" })],
+                    spacing: { before: 120, after: 80 },
+                }));
+                continue;
+            }
+
+            // MCQ options
+            if (/^\([a-d]\)/i.test(trimmed)) {
+                children.push(new Paragraph({
+                    children: [new TextRun({ text: trimmed, size: 22, font: "Calibri" })],
+                    indent: { left: 720 },
+                    spacing: { after: 40 },
+                }));
+                continue;
+            }
+
+            // Regular paragraph
+            const plainText = trimmed.replace(/\*\*/g, "").replace(/\*/g, "");
+            children.push(new Paragraph({
+                children: [new TextRun({ text: plainText, size: 22, font: "Calibri" })],
+                spacing: { after: 80 },
+            }));
+        }
+
+        const document = new Document({
+            sections: [{
+                properties: {
+                    page: {
+                        margin: { top: 720, right: 720, bottom: 720, left: 720 },
+                    },
+                },
+                children
+            }]
         });
 
-        const doc = new Document({ sections: [{ properties: {}, children: children }] });
-        const blob = await Packer.toBlob(doc);
+        const blob = await Packer.toBlob(document);
         saveBlob(blob, `${board}-${subject}-question-paper.docx`);
     };
 

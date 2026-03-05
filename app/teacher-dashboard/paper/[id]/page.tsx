@@ -3,12 +3,26 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Download, FileText, Printer, Share2 } from "lucide-react";
+import { ArrowLeft, Download, Printer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
 import { GlassCard } from "@/components/ui/GlassCard";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+
+const saveBlob = (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+};
 
 export default function PaperViewerPage() {
     const { user } = useAuth();
@@ -16,8 +30,12 @@ export default function PaperViewerPage() {
     const params = useParams();
     const [paper, setPaper] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const contentRef = useRef<HTMLDivElement>(null);
 
     const id = params?.id as string;
+
+    // Detect if this is a Markdown-based paper (Smart Generator) vs JSON-based (Custom Generator)
+    const isMarkdownPaper = paper?.content && typeof paper.content === "string";
 
     useEffect(() => {
         if (user && id) {
@@ -42,57 +60,187 @@ export default function PaperViewerPage() {
         }
     };
 
-    const handleDownloadPDF = () => {
+    // ========== PDF DOWNLOAD (Screenshot-based for pixel-perfect output) ==========
+    const handleDownloadPDF = async () => {
+        if (!contentRef.current) return;
+        try {
+            const canvas = await html2canvas(contentRef.current, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff",
+            });
+            const imgData = canvas.toDataURL("image/png");
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfPageHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = pdfWidth;
+            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            // First page
+            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+            heightLeft -= pdfPageHeight;
+
+            // Additional pages if content is long
+            while (heightLeft > 0) {
+                position = position - pdfPageHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfPageHeight;
+            }
+
+            pdf.save(`${paper?.subject || "paper"}-${id}.pdf`);
+        } catch (err) {
+            console.error("PDF Export failed", err);
+            alert("PDF export failed. Try printing instead (Ctrl+P).");
+        }
+    };
+
+    // ========== DOCX DOWNLOAD (Styled Word Export) ==========
+    const handleDownloadDOCX = () => {
         if (!paper) return;
-        const doc = new jsPDF();
 
-        doc.setFontSize(18);
-        doc.text(paper.title || "Question Paper", 10, 20);
+        const rawContent = isMarkdownPaper
+            ? paper.content + (paper.solution ? "\n\n---\n\nANSWER KEY\n\n" + paper.solution : "")
+            : buildTextFromJSON(paper);
 
-        doc.setFontSize(12);
-        doc.text(`Time: 1.5 Hours   Max Marks: ${paper.totalMarks || 'N/A'}`, 10, 30);
+        const lines = rawContent.split("\n");
+        const children: Paragraph[] = [];
 
-        if (paper.instructions) {
-            const instructions = doc.splitTextToSize(`Instructions: ${paper.instructions}`, 180);
-            doc.text(instructions, 10, 40);
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) {
+                children.push(new Paragraph({ text: "" }));
+                continue;
+            }
+
+            // HTML center tags → centered heading
+            if (trimmed.startsWith("<center>") || trimmed.startsWith("</center>")) continue;
+            if (trimmed.startsWith("<h1>")) {
+                const text = trimmed.replace(/<\/?h1>/g, "");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text, bold: true, size: 32, font: "Calibri" })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 100 },
+                }));
+                continue;
+            }
+            if (trimmed.startsWith("<h3>")) {
+                const text = trimmed.replace(/<\/?h3>/g, "");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text, bold: true, size: 24, font: "Calibri" })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 200 },
+                }));
+                continue;
+            }
+
+            // Markdown headings
+            if (trimmed.startsWith("### ")) {
+                const text = trimmed.replace("### ", "").replace(/\*\*/g, "");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text, bold: true, size: 26, font: "Calibri" })],
+                    spacing: { before: 300, after: 100 },
+                    border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: "999999" } },
+                }));
+                continue;
+            }
+            if (trimmed.startsWith("## ")) {
+                const text = trimmed.replace("## ", "").replace(/\*\*/g, "");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text, bold: true, size: 28, font: "Calibri" })],
+                    spacing: { before: 400, after: 150 },
+                }));
+                continue;
+            }
+            if (trimmed.startsWith("# ")) {
+                const text = trimmed.replace("# ", "").replace(/\*\*/g, "");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text, bold: true, size: 32, font: "Calibri" })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 200 },
+                }));
+                continue;
+            }
+
+            // Horizontal rule
+            if (trimmed === "---" || trimmed === "***") {
+                children.push(new Paragraph({
+                    text: "",
+                    border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: "AAAAAA" } },
+                    spacing: { before: 200, after: 200 },
+                }));
+                continue;
+            }
+
+            // Bold lines (e.g., **Q.1 ...**)
+            if (trimmed.startsWith("**") && trimmed.includes("**")) {
+                const plainText = trimmed.replace(/\*\*/g, "");
+                const isBoldEntire = trimmed.endsWith("**");
+                children.push(new Paragraph({
+                    children: [new TextRun({ text: plainText, bold: isBoldEntire, size: 22, font: "Calibri" })],
+                    spacing: { before: 120, after: 80 },
+                }));
+                continue;
+            }
+
+            // MCQ options like (a), (b), etc.
+            if (/^\([a-d]\)/i.test(trimmed)) {
+                children.push(new Paragraph({
+                    children: [new TextRun({ text: trimmed, size: 22, font: "Calibri" })],
+                    indent: { left: 720 }, // 0.5 inch indent
+                    spacing: { after: 40 },
+                }));
+                continue;
+            }
+
+            // Regular paragraph
+            const plainText = trimmed.replace(/\*\*/g, "").replace(/\*/g, "");
+            children.push(new Paragraph({
+                children: [new TextRun({ text: plainText, size: 22, font: "Calibri" })],
+                spacing: { after: 80 },
+            }));
         }
 
-        let yPos = 60;
-        let currentSection = "";
-
-        (paper.questions || []).forEach((q: any, i: number) => {
-            if (q.section !== currentSection) {
-                yPos += 10;
-                doc.setFont("helvetica", "bold");
-                doc.text(q.section, 10, yPos);
-                yPos += 8;
-
-                if (q.sectionInstruction) {
-                    doc.setFont("helvetica", "italic");
-                    doc.setFontSize(10);
-                    const instructionText = doc.splitTextToSize(q.sectionInstruction, 180);
-                    doc.text(instructionText, 10, yPos);
-                    yPos += instructionText.length * 5 + 4;
-                    doc.setFontSize(12);
-                }
-
-                currentSection = q.section;
-                doc.setFont("helvetica", "normal");
-            }
-
-            const questionText = `${i + 1}. ${q.text} (${q.marks})`;
-            const splitText = doc.splitTextToSize(questionText, 180);
-
-            if (yPos + splitText.length * 7 > 280) {
-                doc.addPage();
-                yPos = 20;
-            }
-
-            doc.text(splitText, 10, yPos);
-            yPos += splitText.length * 7 + 5;
+        const document = new Document({
+            sections: [{
+                properties: {
+                    page: {
+                        margin: { top: 720, right: 720, bottom: 720, left: 720 },
+                    },
+                },
+                children
+            }]
         });
 
-        doc.save(`${paper.subject || 'paper'}-${id}.pdf`);
+        Packer.toBlob(document).then(blob => {
+            saveBlob(blob, `${paper?.subject || "paper"}-${id}.docx`);
+        });
+    };
+
+    // Helper: Build plain text from JSON paper (for Custom Generator papers)
+    const buildTextFromJSON = (p: any): string => {
+        let text = `${p.title || p.subject || "Question Paper"}\n\n`;
+        text += `Max Marks: ${p.totalMarks || "N/A"} | Time: 1.5 Hours\n\n`;
+        if (p.instructions) text += `Instructions: ${p.instructions}\n\n---\n\n`;
+        let currentSection = "";
+        (p.questions || []).forEach((q: any, i: number) => {
+            if (q.section !== currentSection) {
+                text += `\n### ${q.section}\n`;
+                if (q.sectionInstruction) text += `*${q.sectionInstruction}*\n`;
+                currentSection = q.section;
+            }
+            text += `\n**Q.${i + 1}** ${q.text} **[${q.marks} Mark(s)]**\n`;
+            if (q.options) {
+                q.options.forEach((opt: string, idx: number) => {
+                    text += `(${String.fromCharCode(97 + idx)}) ${opt}\n`;
+                });
+            }
+        });
+        return text;
     };
 
     const handlePrint = () => {
@@ -101,6 +249,22 @@ export default function PaperViewerPage() {
 
     if (loading) return <div className="p-10 text-center">Loading paper...</div>;
     if (!paper) return <div className="p-10 text-center">Paper not found.</div>;
+
+    // Markdown components for beautiful rendering in the viewer
+    const markdownComponents: any = {
+        h1: ({ node, ...props }: any) => <h1 style={{ borderBottom: "2px solid #0f172a", textAlign: "center", marginBottom: "20px", paddingBottom: "10px", textTransform: "uppercase" }} className="text-3xl font-bold" {...props} />,
+        h2: ({ node, ...props }: any) => <h2 style={{ backgroundColor: "#f8fafc", borderLeft: "4px solid #1e293b", padding: "10px", marginTop: "30px", marginBottom: "15px", textTransform: "uppercase" }} className="text-xl font-bold" {...props} />,
+        h3: ({ node, ...props }: any) => <h3 style={{ backgroundColor: "#f8fafc", borderLeft: "4px solid #1e293b", padding: "10px", marginTop: "30px", marginBottom: "15px", textTransform: "uppercase" }} className="text-lg font-bold" {...props} />,
+        table: ({ node, ...props }: any) => <div className="overflow-x-auto my-6"><table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #e2e8f0" }} {...props} /></div>,
+        th: ({ node, ...props }: any) => <th style={{ padding: "12px", fontWeight: "bold", borderBottom: "2px solid #e2e8f0", backgroundColor: "#f8fafc", textAlign: "left" }} {...props} />,
+        td: ({ node, ...props }: any) => <td style={{ padding: "12px", color: "#475569", borderRight: "1px solid #e2e8f0", borderBottom: "1px solid #e2e8f0" }} {...props} />,
+        p: ({ node, ...props }: any) => <p style={{ marginBottom: "12px", lineHeight: "1.7", textAlign: "justify" }} {...props} />,
+        blockquote: ({ node, ...props }: any) => <blockquote style={{ backgroundColor: "#f1f5f9", borderLeft: "4px solid #334155", padding: "16px", margin: "24px 0", borderRadius: "0 8px 8px 0", fontStyle: "italic" }} {...props} />,
+        hr: ({ node, ...props }: any) => <hr style={{ margin: "30px 0", borderTop: "2px solid #cbd5e1" }} {...props} />,
+        ul: ({ node, ...props }: any) => <ul style={{ listStyleType: "disc", paddingLeft: "20px", marginBottom: "16px" }} {...props} />,
+        ol: ({ node, ...props }: any) => <ol style={{ listStyleType: "decimal", paddingLeft: "20px", marginBottom: "16px" }} {...props} />,
+        li: ({ node, ...props }: any) => <li style={{ marginBottom: "6px", paddingLeft: "5px" }} {...props} />,
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 p-8 pt-24 pb-20">
@@ -115,77 +279,107 @@ export default function PaperViewerPage() {
                         <Button variant="outline" size="sm" onClick={handlePrint}>
                             <Printer className="h-4 w-4 mr-2" /> Print
                         </Button>
+                        <Button variant="outline" size="sm" onClick={handleDownloadDOCX}>
+                            <Download className="h-4 w-4 mr-2" /> Word
+                        </Button>
                         <Button size="sm" onClick={handleDownloadPDF} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                            <Download className="h-4 w-4 mr-2" /> Download PDF
+                            <Download className="h-4 w-4 mr-2" /> PDF
                         </Button>
                     </div>
                 </div>
 
                 {/* Paper Content */}
-                <GlassCard className="p-12 print:shadow-none print:border-none print:p-0">
-                    <div className="text-center border-b border-slate-200 pb-6 mb-8">
-                        <div className="flex justify-between items-end mb-4">
-                            <div className="text-left">
-                                <h1 className="text-2xl font-bold text-slate-900 uppercase tracking-wide">{paper.title || paper.subject}</h1>
-                                <p className="text-slate-500 font-medium">Class {paper.grade} • {paper.difficulty} Level</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-sm font-bold text-slate-900">Max Marks: {paper.totalMarks}</p>
-                                <p className="text-sm text-slate-500">Time: 1.5 Hours</p>
-                            </div>
-                        </div>
-                        {paper.instructions && (
-                            <div className="bg-slate-50 p-4 rounded-xl text-left text-sm text-slate-600 italic border border-slate-100">
-                                <span className="font-bold not-italic">Instructions: </span> {paper.instructions}
-                            </div>
-                        )}
-                    </div>
+                <GlassCard className="p-12 print:shadow-none print:border-none print:p-4">
+                    <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "20px", color: "#1e293b" }}>
+                        {isMarkdownPaper ? (
+                            /* ===== MARKDOWN PAPER (Smart Generator) ===== */
+                            <div className="prose prose-slate max-w-none">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
+                                    {paper.content}
+                                </ReactMarkdown>
 
-                    <div className="space-y-8">
-                        {(paper?.questions || []).map((q: any, i: number, arr: any[]) => (
-                            <div key={i}>
-                                {(i === 0 || arr[i - 1].section !== q.section) && (
-                                    <div className="mb-4 mt-8">
-                                        <div className="flex items-center gap-4 mb-2">
-                                            <h4 className="font-bold text-slate-900 text-lg uppercase tracking-wider">{q.section}</h4>
-                                            <div className="h-px bg-slate-200 flex-1"></div>
+                                {paper.solution && (
+                                    <div style={{ backgroundColor: "rgba(240, 253, 244, 0.5)", borderTop: "4px dotted #cbd5e1", padding: "24px", marginTop: "30px", borderRadius: "12px", position: "relative" }}>
+                                        <div style={{ position: "absolute", top: "0", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#dcfce7", padding: "4px 16px", borderRadius: "999px", color: "#166534", fontWeight: "bold", fontSize: "14px", border: "1px solid #bbf7d0" }}>ANSWER KEY</div>
+                                        <div className="prose prose-green max-w-none" style={{ color: "#166534" }}>
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={{
+                                                ...markdownComponents,
+                                                h2: ({ node, ...props }: any) => <h2 style={{ color: "#14532d", borderBottom: "1px solid #bbf7d0", paddingBottom: "4px", marginTop: "24px", marginBottom: "12px" }} className="text-xl font-bold" {...props} />,
+                                            }}>
+                                                {paper.solution}
+                                            </ReactMarkdown>
                                         </div>
-                                        {q.sectionInstruction && (
-                                            <p className="text-sm font-medium text-indigo-600 italic px-3 py-1.5 bg-indigo-50/50 rounded-md inline-block border border-indigo-100/50">
-                                                {q.sectionInstruction}
-                                            </p>
-                                        )}
                                     </div>
                                 )}
-
-                                <div className="flex gap-4 group">
-                                    <span className="font-bold text-slate-700 w-6 shrink-0">{i + 1}.</span>
-                                    <div className="flex-1">
-                                        <p className="text-slate-800 leading-relaxed font-medium">{q.text}</p>
-                                        {/* If MCQ options exist, render them (assuming data structure has options) */}
-                                        {q.options && (
-                                            <div className="grid grid-cols-2 gap-2 mt-2 ml-2">
-                                                {q.options.map((opt: string, idx: number) => (
-                                                    <div key={idx} className="flex gap-2 items-center">
-                                                        <span className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center text-[10px] text-slate-500 font-bold">
-                                                            {String.fromCharCode(65 + idx)}
-                                                        </span>
-                                                        <span className="text-sm text-slate-600">{opt}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <span className="text-xs font-bold text-slate-400 whitespace-nowrap pt-1">
-                                        [{q.marks}]
-                                    </span>
-                                </div>
                             </div>
-                        ))}
-                    </div>
+                        ) : (
+                            /* ===== JSON PAPER (Custom Generator) ===== */
+                            <>
+                                <div className="text-center border-b border-slate-200 pb-6 mb-8">
+                                    <div className="flex justify-between items-end mb-4">
+                                        <div className="text-left">
+                                            <h1 className="text-2xl font-bold text-slate-900 uppercase tracking-wide">{paper.title || paper.subject}</h1>
+                                            <p className="text-slate-500 font-medium">Class {paper.grade} • {paper.difficulty} Level</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm font-bold text-slate-900">Max Marks: {paper.totalMarks}</p>
+                                            <p className="text-sm text-slate-500">Time: 1.5 Hours</p>
+                                        </div>
+                                    </div>
+                                    {paper.instructions && (
+                                        <div className="bg-slate-50 p-4 rounded-xl text-left text-sm text-slate-600 italic border border-slate-100">
+                                            <span className="font-bold not-italic">Instructions: </span> {paper.instructions}
+                                        </div>
+                                    )}
+                                </div>
 
-                    <div className="mt-12 pt-8 border-t border-slate-200 text-center text-xs text-slate-400">
-                        Generated via ScorePrepPro AI
+                                <div className="space-y-8">
+                                    {(paper?.questions || []).map((q: any, i: number, arr: any[]) => (
+                                        <div key={i}>
+                                            {(i === 0 || arr[i - 1].section !== q.section) && (
+                                                <div className="mb-4 mt-8">
+                                                    <div className="flex items-center gap-4 mb-2">
+                                                        <h4 className="font-bold text-slate-900 text-lg uppercase tracking-wider">{q.section}</h4>
+                                                        <div className="h-px bg-slate-200 flex-1"></div>
+                                                    </div>
+                                                    {q.sectionInstruction && (
+                                                        <p className="text-sm font-medium text-indigo-600 italic px-3 py-1.5 bg-indigo-50/50 rounded-md inline-block border border-indigo-100/50">
+                                                            {q.sectionInstruction}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className="flex gap-4 group">
+                                                <span className="font-bold text-slate-700 w-6 shrink-0">{i + 1}.</span>
+                                                <div className="flex-1">
+                                                    <p className="text-slate-800 leading-relaxed font-medium">{q.text}</p>
+                                                    {q.options && (
+                                                        <div className="grid grid-cols-2 gap-2 mt-2 ml-2">
+                                                            {q.options.map((opt: string, idx: number) => (
+                                                                <div key={idx} className="flex gap-2 items-center">
+                                                                    <span className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center text-[10px] text-slate-500 font-bold">
+                                                                        {String.fromCharCode(65 + idx)}
+                                                                    </span>
+                                                                    <span className="text-sm text-slate-600">{opt}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <span className="text-xs font-bold text-slate-400 whitespace-nowrap pt-1">
+                                                    [{q.marks}]
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+
+                        <div className="mt-12 pt-8 border-t border-slate-200 text-center text-xs text-slate-400">
+                            Generated via ScorePrepPro AI
+                        </div>
                     </div>
                 </GlassCard>
             </div>
