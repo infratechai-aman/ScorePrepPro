@@ -238,6 +238,7 @@ export function constructPrompt(
     4. **TONE ENFORCEMENT**: ${toneInstruction}
     5. **DIFFICULTY**: ${difficultyInstruction}
     6. **WEIGHTAGE**: ${options.chapterWeights ? weightageInstruction : "Balanced distribution."}
+    7. **NO IMAGES OR DIAGRAMS**: ABSOLUTELY DO NOT generate any question that requires a figure, diagram, graph, map, or image. All questions MUST be purely text-based and answerable without any visual aids. (e.g., Do NOT ask "Observe the given figure...").
 
     ${textbookSourcingInstruction}
 

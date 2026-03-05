@@ -26,6 +26,7 @@ export async function POST(req: Request) {
         - Use end-of-chapter exercise questions, including matching tables, conceptual questions, and numericals
         - For numericals, use the given data and values from textbook exercise problems
         - Minimize inventing original questions — textbook exercises should be the primary source
+        - **NO IMAGES OR DIAGRAMS**: ABSOLUTELY DO NOT generate any question that requires a figure, diagram, graph, map, or image. All questions MUST be purely text-based.
 
         **Instructions**:
         1. create a balanced question paper covering all selected units.
