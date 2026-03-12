@@ -6,7 +6,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft, Lock, Crown, RefreshCw } from "lucide-react";
+import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft, Lock, Crown, RefreshCw, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -71,6 +71,9 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
     // Flip Feature State
     const [flippingQNum, setFlippingQNum] = useState<string | null>(null);
+
+    // Watermark State
+    const [watermark, setWatermark] = useState<string | null>(null);
 
     const contentRef = useRef<HTMLDivElement>(null);
 
@@ -148,6 +151,32 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
         } finally {
             setFlippingQNum(null);
         }
+    };
+
+    const handleWatermarkUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return;
+
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Make it very light (10% opacity)
+                ctx.globalAlpha = 0.1;
+                ctx.drawImage(img, 0, 0);
+
+                setWatermark(canvas.toDataURL("image/png"));
+            };
+            img.src = event.target?.result as string;
+        };
+        reader.readAsDataURL(file);
     };
 
     const renderPaperContent = () => {
@@ -758,6 +787,34 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                     { value: "challenging", label: "Challenging" },
                                                 ]} />
                                                 <Switch label="Teacher Mode" checked={isTeacherMode} onCheckedChange={setIsTeacherMode} />
+                                                
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium text-slate-700 block">Paper Watermark (Optional)</label>
+                                                    <div className="flex items-center gap-2">
+                                                        <input 
+                                                            type="file" 
+                                                            accept="image/*" 
+                                                            onChange={handleWatermarkUpload}
+                                                            className="hidden" 
+                                                            id="watermark-upload" 
+                                                        />
+                                                        <label 
+                                                            htmlFor="watermark-upload"
+                                                            className="flex-1 cursor-pointer p-2 border-2 border-dashed border-slate-300 rounded-lg text-center text-xs text-slate-500 hover:border-primary hover:text-primary transition-all"
+                                                        >
+                                                            {watermark ? "Image Selected (Click to change)" : "Upload Logo/Watermark"}
+                                                        </label>
+                                                        {watermark && (
+                                                            <button 
+                                                                onClick={() => setWatermark(null)}
+                                                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                title="Remove Watermark"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
 
                                                 {/* Feature Gate: Diagrams */}
                                                 {userData?.plan === 'basic' && (
@@ -850,6 +907,25 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                 {!user && (
                                     <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%) rotate(-45deg)", fontSize: "80px", color: "rgba(0,0,0,0.05)", fontWeight: "bold", pointerEvents: "none", zIndex: 0 }}>
                                         FREE PREVIEW
+                                    </div>
+                                )}
+
+                                {/* User Custom Watermark */}
+                                {watermark && (
+                                    <div style={{ 
+                                        position: "absolute", 
+                                        top: "50%", 
+                                        left: "50%", 
+                                        transform: "translate(-50%, -50%)", 
+                                        opacity: 1, 
+                                        pointerEvents: "none", 
+                                        zIndex: 0,
+                                        width: "60%",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center"
+                                    }}>
+                                        <img src={watermark} alt="Watermark" style={{ maxWidth: "100%", maxHeight: "100%" }} />
                                     </div>
                                 )}
 

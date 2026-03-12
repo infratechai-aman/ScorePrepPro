@@ -5,7 +5,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Sparkles, FileText, Settings, Download, RefreshCw } from "lucide-react";
+import { ArrowLeft, Sparkles, FileText, Settings, Download, RefreshCw, Trash2 } from "lucide-react";
 import { collection, query, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import jsPDF from "jspdf";
@@ -28,6 +28,9 @@ export default function CustomGeneratorPage() {
     const [paperData, setPaperData] = useState<any>(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [flippingQuestionId, setFlippingQuestionId] = useState<number | null>(null);
+
+    // Watermark State
+    const [watermark, setWatermark] = useState<string | null>(null);
 
     useEffect(() => {
         if (!loading && !user) {
@@ -155,6 +158,32 @@ export default function CustomGeneratorPage() {
         }
     };
 
+    const handleWatermarkUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return;
+
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Make it very light (10% opacity)
+                ctx.globalAlpha = 0.1;
+                ctx.drawImage(img, 0, 0);
+
+                setWatermark(canvas.toDataURL("image/png"));
+            };
+            img.src = event.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleDownloadPDF = () => {
         if (!paperData) return;
         const doc = new jsPDF();
@@ -204,6 +233,20 @@ export default function CustomGeneratorPage() {
             doc.text(splitText, 10, yPos);
             yPos += splitText.length * 7 + 5;
         });
+
+        // Add Watermark to all pages if exists
+        if (watermark) {
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                // Center the watermark
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const w = 120;
+                const h = 120;
+                doc.addImage(watermark, 'PNG', (pageWidth - w) / 2, (pageHeight - h) / 2, w, h);
+            }
+        }
 
         doc.save("custom-paper.pdf");
     };
@@ -286,6 +329,33 @@ export default function CustomGeneratorPage() {
                                 </select>
                             </div>
 
+                            <div className="space-y-2 pb-2">
+                                <label className="text-sm font-medium text-slate-700 block">Paper Watermark (Optional)</label>
+                                <div className="flex items-center gap-2">
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={handleWatermarkUpload}
+                                        className="hidden" 
+                                        id="watermark-upload-custom" 
+                                    />
+                                    <label 
+                                        htmlFor="watermark-upload-custom"
+                                        className="flex-1 cursor-pointer p-2 border-2 border-dashed border-slate-300 rounded-lg text-center text-xs text-slate-500 hover:border-primary hover:text-primary transition-all"
+                                    >
+                                        {watermark ? "Image Selected" : "Upload Logo/Watermark"}
+                                    </label>
+                                    {watermark && (
+                                        <button 
+                                            onClick={() => setWatermark(null)}
+                                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
                             <Button className="w-full" size="lg" onClick={handleGenerate} isLoading={isGenerating} disabled={!selectedSubject || selectedUnits.length === 0}>
                                 <Sparkles className="mr-2 h-4 w-4" /> Generate Paper
                             </Button>
@@ -311,7 +381,24 @@ export default function CustomGeneratorPage() {
                                 )}
                             </div>
 
-                            <div className="flex-1 p-8 bg-white rounded-b-xl overflow-y-auto">
+                            <div className="flex-1 p-8 bg-white rounded-b-xl overflow-y-auto relative">
+                                {watermark && (
+                                    <div style={{ 
+                                        position: "absolute", 
+                                        top: "50%", 
+                                        left: "50%", 
+                                        transform: "translate(-50%, -50%)", 
+                                        opacity: 1, 
+                                        pointerEvents: "none", 
+                                        zIndex: 0,
+                                        width: "60%",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center"
+                                    }}>
+                                        <img src={watermark} alt="Watermark" style={{ maxWidth: "100%", maxHeight: "100%" }} />
+                                    </div>
+                                )}
                                 {paperData ? (
                                     <div className="space-y-8">
                                         <div className="text-center border-b pb-4 mb-4">

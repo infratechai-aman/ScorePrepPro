@@ -65,6 +65,9 @@ export default function TeacherQuestionGenerator() {
     const [generatedPaper, setGeneratedPaper] = useState("");
     const [error, setError] = useState("");
 
+    // Watermark State
+    const [watermark, setWatermark] = useState<string | null>(null);
+
     const contentRef = useRef<HTMLDivElement>(null);
 
     // Derived State
@@ -170,6 +173,32 @@ export default function TeacherQuestionGenerator() {
         }
     };
 
+    const handleWatermarkUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return;
+
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Make it very light (10% opacity)
+                ctx.globalAlpha = 0.1;
+                ctx.drawImage(img, 0, 0);
+
+                setWatermark(canvas.toDataURL("image/png"));
+            };
+            img.src = event.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+    };
+
     const downloadPDF = async () => {
         if (!contentRef.current) return;
         const canvas = await html2canvas(contentRef.current, { scale: 2 });
@@ -240,13 +269,40 @@ export default function TeacherQuestionGenerator() {
                                                 Include Answer Key in Output
                                             </label>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 gap-4">
                                             <Input
                                                 label="Duration (Minutes)"
                                                 type="number"
                                                 value={duration}
                                                 onChange={(e) => setDuration(e.target.value)}
                                             />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-slate-700 block">Paper Watermark (Optional)</label>
+                                            <div className="flex items-center gap-2">
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    onChange={handleWatermarkUpload}
+                                                    className="hidden" 
+                                                    id="watermark-upload-teacher" 
+                                                />
+                                                <label 
+                                                    htmlFor="watermark-upload-teacher"
+                                                    className="flex-1 cursor-pointer p-4 border-2 border-dashed border-slate-300 rounded-xl text-center text-sm text-slate-500 hover:border-indigo-500 hover:text-indigo-600 transition-all bg-white"
+                                                >
+                                                    {watermark ? "Image Selected" : "Upload Logo/Watermark"}
+                                                </label>
+                                                {watermark && (
+                                                    <button 
+                                                        onClick={() => setWatermark(null)}
+                                                        className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors border border-red-100"
+                                                    >
+                                                        <Trash2 className="h-5 w-5" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="pt-4 flex justify-end">
@@ -428,8 +484,25 @@ export default function TeacherQuestionGenerator() {
                                         </div>
                                     </div>
 
-                                    <GlassCard className="bg-white p-8 min-h-[800px] shadow-2xl">
-                                        <div ref={contentRef} className="prose max-w-none prose-slate">
+                                    <GlassCard className="bg-white p-8 min-h-[800px] shadow-2xl relative">
+                                        {watermark && (
+                                            <div style={{ 
+                                                position: "absolute", 
+                                                top: "50%", 
+                                                left: "50%", 
+                                                transform: "translate(-50%, -50%)", 
+                                                opacity: 1, 
+                                                pointerEvents: "none", 
+                                                zIndex: 0,
+                                                width: "60%",
+                                                display: "flex",
+                                                justifyContent: "center",
+                                                alignItems: "center"
+                                            }}>
+                                                <img src={watermark} alt="Watermark" style={{ maxWidth: "100%", maxHeight: "100%" }} />
+                                            </div>
+                                        )}
+                                        <div ref={contentRef} className="prose max-w-none prose-slate relative z-10">
                                             <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                                                 {generatedPaper}
                                             </ReactMarkdown>
