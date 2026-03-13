@@ -5,7 +5,7 @@ import { constructSolutionPrompt } from "@/lib/prompts";
 
 export async function POST(req: Request) {
     try {
-        const { paperContent, board } = await req.json();
+        const { paperContent, board, subject } = await req.json();
 
         if (!paperContent || !board) {
             return NextResponse.json(
@@ -31,13 +31,18 @@ export async function POST(req: Request) {
         const part2 = lines.slice(splitIndex).join('\n');
         const chunks = [part1, part2].filter(c => c.trim().length > 0);
 
+        const isMathSubject = subject && (subject.toLowerCase().includes("math") || subject.toLowerCase().includes("algebra") || subject.toLowerCase().includes("geometry"));
+
         const completions = await Promise.all(chunks.map((chunk, index) => {
-            const systemPrompt = constructSolutionPrompt(chunk, board);
+            const systemPrompt = constructSolutionPrompt(chunk, board, subject);
+            const userPrompt = isMathSubject 
+                ? `Generate the exhaustive Answer Key for this part of the paper (Part ${index + 1} of ${chunks.length}). Make sure your answers are EXTREMELY SHORT, directly showing the 2-3 essential mathematical steps. DO NOT write paragraphs.`
+                : `Generate the exhaustive Answer Key for this part of the paper (Part ${index + 1} of ${chunks.length}). Make sure your answers are extraordinarily detailed and long.`;
             return openai.chat.completions.create({
                 model: "gpt-4o-mini",
                 messages: [
                     { role: "system", content: systemPrompt },
-                    { role: "user", content: `Generate the exhaustive Answer Key for this part of the paper (Part ${index + 1} of ${chunks.length}). Make sure your answers are extraordinarily detailed and long.` },
+                    { role: "user", content: userPrompt },
                 ],
                 temperature: 0.3,
             });

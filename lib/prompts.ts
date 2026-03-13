@@ -124,8 +124,9 @@ export function constructPrompt(
         generateCount = parseInt(match[1], 10);
         choiceInstruction = `Add instruction in italics under section name: '*Attempt any ${attemptCount} of the following ${generateCount} questions. Give scientific reasons where applicable.*'`;
       }
-    } else if (attemptCount >= 2 && s.marskPerQuestion >= 2 && !s.type.toLowerCase().includes("mcq") && !s.type.toLowerCase().includes("objective") && !s.type.toLowerCase().includes("assertion")) {
-      // Auto-inject dynamic internal choices for subjective questions
+    } else if (board !== "maharashtra" && attemptCount >= 2 && s.marskPerQuestion >= 2 && !s.type.toLowerCase().includes("mcq") && !s.type.toLowerCase().includes("objective") && !s.type.toLowerCase().includes("assertion")) {
+      // Auto-inject dynamic internal choices for subjective questions ONLY IF NOT MAHARASHTRA BOARD
+      // Maharashtra board expects very strict pre-defined choice counts from the pattern
       generateCount = attemptCount >= 4 ? attemptCount + 2 : attemptCount + 1;
       choiceInstruction = `Add instruction in italics under section name: '*Attempt any ${attemptCount} of the following ${generateCount} questions. Give scientific reasons where applicable.*'`;
     }
@@ -246,21 +247,30 @@ export function constructPrompt(
   
   let boardSpecificInstructions = '';
   if (board === "maharashtra" && isMathSubject) {
+    let mathSyllabusFirewall = "";
+    if (subject.includes("Algebra") || subject.includes("Part-I")) {
+      mathSyllabusFirewall = "STRICTLY ALGEBRA ONLY. NO GEOMETRY. Do not use geometric shapes, areas, perimeters, angles, or shape properties. Focus on linear equations, quadratic equations, arithmetic progression, probability, statistics, etc.";
+    } else if (subject.includes("Geometry") || subject.includes("Part-II")) {
+      mathSyllabusFirewall = "STRICTLY GEOMETRY ONLY. Focus on shapes, angles, triangles, circles, coordinate geometry, trigonometry, and proofs.";
+    }
+
     boardSpecificInstructions = `
       === SSC MAHARASHTRA MATHS — ABSOLUTE RULES ===
       THIS IS A MAHARASHTRA SSC MATHS PAPER. It is ENTIRELY different from CBSE.
       
+      ${mathSyllabusFirewall}
+
       **FORBIDDEN (NEVER generate these for SSC Maths)**:
       - ❌ "Discuss...", "Explain the importance of...", "Write advantages of..."
+      - ❌ "Complete the Activity" or "Fill in the blank steps" (DO NOT usage these phrases. Just say "Solve").
       - ❌ Theory/essay/discussion questions of ANY kind
-      - ❌ Commerce/economics/financial planning questions
+      - ❌ Commerce/economics/financial planning pure-theory questions
       - ❌ CBSE-style Case Based, Source Based, or Assertion-Reason questions
       - ❌ Any question that can be answered purely in words without mathematical calculation
       
       **REQUIRED (EVERY question must be one of these)**:
-      - ✅ "Solve the following" — equations, expressions, word problems
+      - ✅ "Solve the following" — equations, expressions, numerical word problems
       - ✅ "Find the value of..." — numerical computation
-      - ✅ "Complete the Activity" — a partially-solved problem with BLANK BOXES (______) for students to fill in missing steps. Provide 2-3 steps already done, leave 2-3 blanks for students.
       - ✅ "If ... then find ..." — conditional solving
       - ✅ "Prove that..." — proofs/theorems (Geometry only)
       - ✅ Multi-step word problems requiring pen-and-paper calculation
@@ -423,7 +433,19 @@ export function constructPrompt(
   `;
 }
 
-export function constructSolutionPrompt(paperContent: string, board: string) {
+export function constructSolutionPrompt(paperContent: string, board: string, subject?: string) {
+  const isMathSubject = subject && (subject.toLowerCase().includes("math") || subject.toLowerCase().includes("algebra") || subject.toLowerCase().includes("geometry"));
+  
+  let comprehensivenessRule = `
+    4. **Comprehensiveness (CRITICAL)**: You must provide EXTREMELY DETAILED and EXTENSIVE answers. For 3, 4, or 5 mark questions, provide a minimum of 4-6 detailed bullet points or a completely fleshed-out paragraph (150-300+ words). Do not provide short 1-2 sentence summaries for long answer questions. Be highly descriptive.
+  `;
+
+  if (isMathSubject) {
+    comprehensivenessRule = `
+    4. **Comprehensiveness (CRITICAL FOR MATHS)**: Provide EXTREMELY SHORT, clear, step-by-step mathematical calculations. Keep steps brief (1-2 lines maximum per step). Example format: 2x+3=11 -> 2x=8 -> x=4. DO NOT write long paragraphs. DO NOT write verbose English explanations. Keep it strictly to the numbers and essential steps required for board checking.
+  `;
+  }
+
   return `
     You are a Senior Moderator for ${board.toUpperCase()} Board.
     
@@ -436,7 +458,7 @@ export function constructSolutionPrompt(paperContent: string, board: string) {
     1. **Format**: Section-wise solutions.
     2. **Step-marking**: Show steps for numericals/derivations (Formula -> Substitution -> Calculation -> Final Answer).
     3. **Tone**: Official marking scheme style.
-    4. **Comprehensiveness (CRITICAL)**: You must provide EXTREMELY DETAILED and EXTENSIVE answers. For 3, 4, or 5 mark questions, provide a minimum of 4-6 detailed bullet points or a completely fleshed-out paragraph (150-300+ words). Do not provide short 1-2 sentence summaries for long answer questions. Be highly descriptive.
+    ${comprehensivenessRule}
     5. **Diagrams**: Describe what the diagram should show if a diagram is required.
     
     STRICT OUTPUT FORMATTING:
