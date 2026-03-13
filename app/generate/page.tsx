@@ -487,7 +487,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         position: fixed !important;
                         top: 50% !important;
                         left: 50% !important;
-                        transform: translate(-50%, -50%) !important;
+                        transform: translate(-50%, -50%) rotate(-45deg) scale(1.5) !important;
                         z-index: -1 !important;
                         pointer-events: none !important;
                         display: flex !important;
@@ -497,9 +497,10 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         height: 100vh !important;
                     }
                     .watermark-container-preview img {
-                        max-width: 60% !important;
-                        max-height: 60% !important;
+                        max-width: 80% !important;
+                        max-height: 80% !important;
                         object-fit: contain !important;
+                        opacity: 0.15 !important;
                     }
                     
                     @media print { 

@@ -248,7 +248,7 @@ export default function TeacherQuestionGenerator() {
                         position: fixed;
                         top: 50%;
                         left: 50%;
-                        transform: translate(-50%, -50%);
+                        transform: translate(-50%, -50%) rotate(-45deg) scale(1.5);
                         z-index: -1;
                         pointer-events: none;
                         display: flex;
@@ -258,9 +258,10 @@ export default function TeacherQuestionGenerator() {
                         height: 100vh;
                     }
                     .watermark-print img {
-                        max-width: 60%;
-                        max-height: 60%;
+                        max-width: 80%;
+                        max-height: 80%;
                         object-fit: contain;
+                        opacity: 0.15;
                     }
                     
                     @media print { 
