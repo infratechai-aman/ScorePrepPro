@@ -98,26 +98,26 @@ export const BOARD_PATTERNS: any = {
                 totalMarks: 40,
                 structure: [
                     { section: "Q.1 (A)", type: "MCQ", marskPerQuestion: 1, count: 4 },
-                    { section: "Q.1 (B)", type: "Solve", marskPerQuestion: 1, count: 4 },
-                    { section: "Q.2 (A)", type: "Activity Based", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.1 (B)", type: "Solve (1-step)", marskPerQuestion: 1, count: 4 },
+                    { section: "Q.2 (A)", type: "Complete the Activity (Fill in the steps)", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
                     { section: "Q.2 (B)", type: "Solve", marskPerQuestion: 2, count: 4, choice: "Any 4 from 5" },
-                    { section: "Q.3 (A)", type: "Activity Based", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" },
+                    { section: "Q.3 (A)", type: "Complete the Activity (Fill in the steps)", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" },
                     { section: "Q.3 (B)", type: "Solve", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
-                    { section: "Q.4", type: "HOTS (Out of text)", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" },
-                    { section: "Q.5", type: "Creative/Open Ended", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" }
+                    { section: "Q.4", type: "Application Problem (Solve)", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.5", type: "Word Problem (Solve)", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" }
                 ]
             },
             "Mathematics Part-II (Geometry)": {
                 totalMarks: 40,
                 structure: [
                     { section: "Q.1 (A)", type: "MCQ", marskPerQuestion: 1, count: 4 },
-                    { section: "Q.1 (B)", type: "Solve", marskPerQuestion: 1, count: 4 },
-                    { section: "Q.2 (A)", type: "Activity Based", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.1 (B)", type: "Solve (1-step)", marskPerQuestion: 1, count: 4 },
+                    { section: "Q.2 (A)", type: "Complete the Activity (Fill in the steps)", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
                     { section: "Q.2 (B)", type: "Solve", marskPerQuestion: 2, count: 4, choice: "Any 4 from 5" },
-                    { section: "Q.3 (A)", type: "Activity Based", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" },
+                    { section: "Q.3 (A)", type: "Complete the Activity (Fill in the steps)", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" },
                     { section: "Q.3 (B)", type: "Solve", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
-                    { section: "Q.4", type: "HOTS", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" },
-                    { section: "Q.5", type: "Creative", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" }
+                    { section: "Q.4", type: "Application Problem (Solve)", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.5", type: "Word Problem (Solve)", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" }
                 ]
             },
             "History and Political Science": {
@@ -179,26 +179,26 @@ export const BOARD_PATTERNS: any = {
                 totalMarks: 40,
                 structure: [
                     { section: "Q.1 (A)", type: "MCQ", marskPerQuestion: 1, count: 4 },
-                    { section: "Q.1 (B)", type: "Solve", marskPerQuestion: 1, count: 4 },
-                    { section: "Q.2 (A)", type: "Activity Based", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.1 (B)", type: "Solve (1-step)", marskPerQuestion: 1, count: 4 },
+                    { section: "Q.2 (A)", type: "Complete the Activity (Fill in the steps)", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
                     { section: "Q.2 (B)", type: "Solve", marskPerQuestion: 2, count: 4, choice: "Any 4 from 5" },
-                    { section: "Q.3 (A)", type: "Activity Based", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" },
+                    { section: "Q.3 (A)", type: "Complete the Activity (Fill in the steps)", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" },
                     { section: "Q.3 (B)", type: "Solve", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
-                    { section: "Q.4", type: "HOTS (Out of text)", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" },
-                    { section: "Q.5", type: "Creative/Open Ended", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" }
+                    { section: "Q.4", type: "Application Problem (Solve)", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.5", type: "Word Problem (Solve)", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" }
                 ]
             },
             "Mathematics Part-II (Geometry)": {
                 totalMarks: 40,
                 structure: [
                     { section: "Q.1 (A)", type: "MCQ", marskPerQuestion: 1, count: 4 },
-                    { section: "Q.1 (B)", type: "Solve", marskPerQuestion: 1, count: 4 },
-                    { section: "Q.2 (A)", type: "Activity Based", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.1 (B)", type: "Solve (1-step)", marskPerQuestion: 1, count: 4 },
+                    { section: "Q.2 (A)", type: "Complete the Activity (Fill in the steps)", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
                     { section: "Q.2 (B)", type: "Solve", marskPerQuestion: 2, count: 4, choice: "Any 4 from 5" },
-                    { section: "Q.3 (A)", type: "Activity Based", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" },
+                    { section: "Q.3 (A)", type: "Complete the Activity (Fill in the steps)", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" },
                     { section: "Q.3 (B)", type: "Solve", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
-                    { section: "Q.4", type: "HOTS", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" },
-                    { section: "Q.5", type: "Creative", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" }
+                    { section: "Q.4", type: "Application Problem (Solve)", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.5", type: "Word Problem (Solve)", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" }
                 ]
             },
             "History and Political Science": {

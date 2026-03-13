@@ -241,6 +241,111 @@ export function constructPrompt(
     sectionHeaderInstruction = "- **NO SECTION HEADERS**: DO NOT use 'SECTION A', 'SECTION B', etc. The Maharashtra board does NOT use sections. Use only the exact question numbers (e.g., '### Q.1 (A)') as the main headers.";
   }
 
+  // Board-specific question type clarification
+  const isMathSubject = subject.toLowerCase().includes("math") || subject.toLowerCase().includes("algebra") || subject.toLowerCase().includes("geometry");
+  
+  let boardSpecificInstructions = '';
+  if (board === "maharashtra" && isMathSubject) {
+    boardSpecificInstructions = `
+      === SSC MAHARASHTRA MATHS — ABSOLUTE RULES ===
+      THIS IS A MAHARASHTRA SSC MATHS PAPER. It is ENTIRELY different from CBSE.
+      
+      **FORBIDDEN (NEVER generate these for SSC Maths)**:
+      - ❌ "Discuss...", "Explain the importance of...", "Write advantages of..."
+      - ❌ Theory/essay/discussion questions of ANY kind
+      - ❌ Commerce/economics/financial planning questions
+      - ❌ CBSE-style Case Based, Source Based, or Assertion-Reason questions
+      - ❌ Any question that can be answered purely in words without mathematical calculation
+      
+      **REQUIRED (EVERY question must be one of these)**:
+      - ✅ "Solve the following" — equations, expressions, word problems
+      - ✅ "Find the value of..." — numerical computation
+      - ✅ "Complete the Activity" — a partially-solved problem with BLANK BOXES (______) for students to fill in missing steps. Provide 2-3 steps already done, leave 2-3 blanks for students.
+      - ✅ "If ... then find ..." — conditional solving
+      - ✅ "Prove that..." — proofs/theorems (Geometry only)
+      - ✅ Multi-step word problems requiring pen-and-paper calculation
+      
+      EVERY SINGLE QUESTION must require mathematical calculation or step-by-step solving.
+      There should be ZERO theory, ZERO discussion, ZERO essay-type content in the entire paper.
+    `;
+  } else if (board === "maharashtra") {
+    boardSpecificInstructions = `
+      === SSC MAHARASHTRA SCIENCE/OTHER — RULES ===
+      THIS IS A MAHARASHTRA SSC PAPER. Follow the exact SSC tone and question types.
+      
+      **FORBIDDEN**:
+      - ❌ CBSE-style "Case Based" passages with sub-questions
+      - ❌ "Assertion-Reason" type questions (CBSE only)
+      - ❌ "Source Based / Competency" sections (CBSE only)
+      
+      **SSC-STYLE QUESTION FORMATS**:
+      - "Give scientific reasons" — 2-3 sentence explanation with cause-effect
+      - "Distinguish between X and Y" — tabular/point-based
+      - "Answer the following" — direct factual answers
+      - "Write a note on" — structured paragraphs
+      - "Complete the following" — fill-in-type
+    `;
+  } else if (board === "cbse") {
+    boardSpecificInstructions = `
+      === CBSE BOARD — RULES ===
+      THIS IS A CBSE BOARD PAPER. Follow CBSE-specific formats.
+      
+      **CBSE-SPECIFIC FORMATS**:
+      - "Assertion (A): ... Reason (R): ..." — with 4 standard options
+      - "Case Based Questions" — a long passage (150-250 words) with 4-5 sub-questions
+      - "Source Based" — reading comprehension with inference questions
+      - For Science, include numerical problems where applicable
+      - For Maths, include both computational and application-based questions
+    `;
+  } else if (board === "icse") {
+    boardSpecificInstructions = `
+      === ICSE BOARD — RULES ===
+      THIS IS AN ICSE BOARD PAPER. Follow ICSE-specific formats.
+      
+      **ICSE-SPECIFIC FORMATS**:
+      - Section I is compulsory, Section II has internal choice
+      - "Give reasons for the following" 
+      - "Name the following" / "Define the term"
+      - "Draw a neat labelled diagram" (describe in text)
+      - "Differentiate between X and Y"
+      - Questions follow Selina/Frank textbook style
+    `;
+  }
+
+  // Mandatory inclusions — board-aware
+  let mandatoryInclusions = '';
+  if (board === "maharashtra" && isMathSubject) {
+    // SSC Maths: NO match-the-following, NO passages
+    mandatoryInclusions = `
+      === MANDATORY INCLUSIONS (SSC Maths) ===
+      - Every "Complete the Activity" question must have a partially-solved problem with 2-3 blank steps (______) for students to fill.
+      - "Application Problem" questions must be real-world numerical word problems requiring multi-step solving.
+      - Do NOT include "Match the Following" tables in SSC Maths papers.
+    `;
+  } else if (board === "maharashtra") {
+    mandatoryInclusions = `
+      === MANDATORY INCLUSIONS (SSC Science/Humanities) ===
+      - Include at least ONE "Match the Following" question if the blueprint contains a matching-type section.
+      - For "Read Paragraph and Answer" questions, provide a substantial paragraph of at least 100-150 words.
+    `;
+  } else {
+    mandatoryInclusions = `
+      === MANDATORY INCLUSIONS (Crucial) ===
+      - **MATCH THE FOLLOWING**: You MUST include at least ONE "Match the Following" question set (e.g., Column A vs Column B) worth 2-4 marks.
+      - **ACTIVITY/CASE/SOURCE**: For any "Case Based", "Source Based", or "Passage" sections:
+        - You MUST provide a **long, detailed reading passage of AT LEAST 150-250 words**.
+        - Do NOT provide 1-2 sentence snippets. The paragraph must be substantial enough for students to read and extract answers from.
+    `;
+  }
+
+  // High-value question instruction — subject-aware
+  let highValueInstruction = '';
+  if (isMathSubject) {
+    highValueInstruction = `- **HIGH-VALUE QUESTIONS (3, 4 & 5 Marks)**: For questions worth 3, 4, or 5 marks, generate multi-step numerical/solving problems that require detailed pen-and-paper working. 4-mark and 5-mark problems must have more steps than 3-mark problems. Do NOT generate theory or discussion for Maths.`;
+  } else {
+    highValueInstruction = `- **HIGH-VALUE QUESTIONS (3, 4 & 5 Marks)**: For questions worth 3, 4 or 5 marks, you MUST generate detailed, complex, multi-part questions (e.g., asking for a definition + explanation + applications + example) that genuinely require a long, extensive answer. 5-mark questions must be significantly larger than 3-mark questions. Do not generate simple 1-line questions for high marks under any circumstances.`;
+  }
+
   // Adjust prompt to force strict adherence to the CALCULATED structure
   return `
     You are an expert ${board.toUpperCase()} Board Paper Setter for Class ${grade}.
@@ -268,11 +373,9 @@ export function constructPrompt(
 
     ${textbookSourcingInstruction}
 
-    === MANDATORY INCLUSIONS (Crucial) ===
-    - **MATCH THE FOLLOWING**: You MUST include at least ONE "Match the Following" question set (e.g., Column A vs Column B) worth 2-4 marks.
-    - **ACTIVITY/CASE/SOURCE**: For any "Case Based", "Source Based", or "Passage" sections:
-      - You MUST provide a **long, detailed reading passage of AT LEAST 150-250 words**. 
-      - Do NOT provide 1-2 sentence snippets. The paragraph must be substantial enough for students to read and extract answers from.
+    ${boardSpecificInstructions}
+
+    ${mandatoryInclusions}
     
     === PAPER PATTERN (Calculated for ${totalMarks} Marks) ===
     ${structureText}
@@ -297,7 +400,7 @@ export function constructPrompt(
     
     - **Questions**:
       - **CRITICAL**: EVERY single question must have a number.
-      - **HIGH-VALUE QUESTIONS (3, 4 & 5 Marks)**: For questions worth 3, 4 or 5 marks, you MUST generate detailed, complex, multi-part questions (e.g., asking for a definition + explanation + applications + example) that genuinely require a long, extensive answer. 5-mark questions must be significantly larger than 3-mark questions. Do not generate simple 1-line questions for high marks under any circumstances.
+      ${highValueInstruction}
       - Use 'Q.1', 'Q.2' for main questions.
       - Use '(i)', '(ii)', '(iii)' for sub-questions inside a main question.
       - **SPACING**: You MUST leave exactly ONE blank line between EVERY single question. Do not clump questions together.
