@@ -235,7 +235,7 @@ export const BOARD_PATTERNS: any = {
         },
         ...[5, 6, 7, 8].reduce((acc: any, cls) => {
             acc[`class${cls}`] = {
-                "Science": {
+                "General Science": {
                     totalMarks: 40,
                     structure: [
                         { section: "Q.1 (A)", type: "Fill in blanks", marskPerQuestion: 1, count: 5 },
@@ -255,6 +255,39 @@ export const BOARD_PATTERNS: any = {
                         { section: "Q.2 (B)", type: "Solve", marskPerQuestion: 2, count: 3 },
                         { section: "Q.3", type: "Solve", marskPerQuestion: 3, count: 4 },
                         { section: "Q.4", type: "Challenging", marskPerQuestion: 4, count: 1 }
+                    ]
+                },
+                "History and Civics": {
+                    totalMarks: 40,
+                    structure: [
+                        { section: "Q.1 (A)", type: "Choose Correct Option", marskPerQuestion: 1, count: 3 },
+                        { section: "Q.1 (B)", type: "Identify Wrong Pair", marskPerQuestion: 1, count: 3 },
+                        { section: "Q.2", type: "Short Notes", marskPerQuestion: 2, count: 2 },
+                        { section: "Q.3", type: "Explain Statements with Reasons", marskPerQuestion: 2, count: 2 },
+                        { section: "Q.4", type: "Answer in Brief", marskPerQuestion: 3, count: 2 },
+                        { section: "Q.5", type: "Civics: Choose Correct Option", marskPerQuestion: 1, count: 2 },
+                        { section: "Q.6", type: "Civics: True/False with Reasons", marskPerQuestion: 2, count: 2 },
+                        { section: "Q.7", type: "Civics: Answer in Brief", marskPerQuestion: 2, count: 2 }
+                    ]
+                },
+                "Geography": {
+                    totalMarks: 40,
+                    structure: [
+                        { section: "Q.1", type: "Choose Correct Option", marskPerQuestion: 1, count: 4 },
+                        { section: "Q.2", type: "Match the Following", marskPerQuestion: 1, count: 4 },
+                        { section: "Q.3", type: "One Sentence Answer", marskPerQuestion: 1, count: 4 },
+                        { section: "Q.4", type: "Geographical Reasons", marskPerQuestion: 3, count: 2 },
+                        { section: "Q.5", type: "Detail Note", marskPerQuestion: 3, count: 2 },
+                        { section: "Q.6", type: "Detailed Answer", marskPerQuestion: 4, count: 4 }
+                    ]
+                },
+                "English": {
+                    totalMarks: 40,
+                    structure: [
+                        { section: "Section I", type: "Language Study (Grammar)", marskPerQuestion: 1, count: 8 },
+                        { section: "Section II", type: "Textual Passages", marskPerQuestion: 2, count: 6 },
+                        { section: "Section III", type: "Poetry Comprehension", marskPerQuestion: 2, count: 5 },
+                        { section: "Section IV", type: "Writing Skills", marskPerQuestion: 5, count: 2 }
                     ]
                 }
             };
