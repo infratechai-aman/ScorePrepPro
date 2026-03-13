@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         3. **Marks Display**: Always display marks at the end of the question or section header in bold, e.g., **[1 Mark]** or **[1x5=5 Marks]**.
         4. **Matching Questions**: If you generate a "Match the following" question, you MUST use a Markdown table.
         5. **Layout**: Center the College Name and Title at the top using HTML center tags.
-        6. **Source**: Extract questions primarily from standard textbook chapter exercises.
+        6. **Source**: You MUST extract **80% to 90%** of the questions directly from the standard textbook's **end-of-chapter exercises**. Do not invent original questions unless absolutely necessary to fill the paper. Users specifically requested: "80-90% questions exercise wale chahiye."
         ${includeAnswerKey ? "7. **Answer Key**: Add a clear 'Answer Key' section at the end, separated by a horizontal rule." : "7. **No Answers**: DO NOT include any answers or hints."}
 
         **OUTPUT FORMAT TEMPLATE**:

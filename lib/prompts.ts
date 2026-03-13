@@ -195,22 +195,23 @@ export function constructPrompt(
   let textbookSourcingInstruction = '';
   if (gradeNum >= 1 && gradeNum <= 9) {
     textbookSourcingInstruction = `
-      === TEXTBOOK QUESTION SOURCING (MANDATORY FOR CLASS ${grade}) ===
-      For Class ${grade}, ALL questions in this paper MUST come from the textbook exercises.
-      - Use ONLY end-of-chapter exercise questions from the ${board.toUpperCase()} Board textbook
-      - Include table/matching, short answer, long answer, and numerical questions exactly as they appear in the textbook exercises
-      - DO NOT create original questions — every question must be sourced from the textbook chapter exercises
-      - For numericals, use the exact given data and values from textbook exercise problems
-      - Rephrase minimally if needed for formatting, but keep the core question identical
+      === TEXTBOOK EXERCISE SOURCING (MANDATORY FOR CLASS ${grade}) ===
+      For Class ${grade}, 90% to 100% of the questions MUST come strictly from the textbook's **end-of-chapter exercises**.
+      - Use ONLY end-of-chapter exercise questions from the ${board.toUpperCase()} Board textbook.
+      - Include table/matching, short answer, long answer, and numerical questions *exactly* as they appear in the textbook exercises.
+      - DO NOT create original questions unless absolutely necessary to fill the paper—every question must be sourced from the textbook chapter exercises.
+      - For numericals, use the exact given data and values from textbook exercise problems.
+      - Rephrase minimally only if needed for formatting, but keep the core question identical to the back-of-the-chapter questions.
     `;
   } else {
     textbookSourcingInstruction = `
-      === TEXTBOOK QUESTION SOURCING ===
-      At least 70% of the questions MUST come from the textbook chapter exercises.
-      - Prioritize end-of-chapter exercise questions from the ${board.toUpperCase()} Board textbook
-      - For numericals, prefer using data and values from textbook exercise problems
-      - Remaining 30% can be application-based or conceptual questions that test deeper understanding
-      - DO NOT invent questions that have no connection to the textbook content
+      === TEXTBOOK EXERCISE SOURCING ===
+      At least **80% to 90%** of the questions MUST come directly from the textbook's **end-of-chapter exercises**.
+      - Prioritize end-of-chapter exercise questions from the ${board.toUpperCase()} Board textbook.
+      - For numericals, ALWAYS prefer using exact data and values from textbook exercise problems.
+      - The remaining 10%-20% can be application-based or conceptual questions that test deeper understanding, but even these should be heavily inspired by textbook examples.
+      - DO NOT invent questions that have no connection to the textbook content or exercises.
+      - The user explicitly requested: "80-90% questions exercise wale chahiye" (We want 80-90% of the questions from the exercises). Please respect this constraint heavily.
     `;
   }
 
