@@ -104,7 +104,7 @@ export default function PaperViewerPage() {
                         position: fixed !important;
                         top: 50% !important;
                         left: 50% !important;
-                        transform: translate(-50%, -50%) rotate(-45deg) scale(1.5) !important;
+                        transform: translate(-50%, -50%) scale(1.5) !important;
                         z-index: -1 !important;
                         pointer-events: none !important;
                         display: flex !important;
@@ -278,7 +278,6 @@ export default function PaperViewerPage() {
                                                 transformation: {
                                                     width: w,
                                                     height: h,
-                                                    rotation: 315,
                                                 },
                                                 type: "png",
                                                 floating: {

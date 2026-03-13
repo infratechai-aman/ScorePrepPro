@@ -487,7 +487,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         position: fixed !important;
                         top: 50% !important;
                         left: 50% !important;
-                        transform: translate(-50%, -50%) rotate(-45deg) scale(1.5) !important;
+                        transform: translate(-50%, -50%) scale(1.5) !important;
                         z-index: -1 !important;
                         pointer-events: none !important;
                         display: flex !important;
@@ -658,7 +658,6 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                             transformation: {
                                                 width: w,
                                                 height: h,
-                                                rotation: 315,
                                             },
                                             type: "png",
                                             floating: {
@@ -992,7 +991,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                             <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "40px", minHeight: "800px", color: "#1e293b" }} className="rounded-2xl shadow-xl space-y-8 relative overflow-hidden">
                                 {/* Free Preview Watermark */}
                                 {!user && (
-                                    <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%) rotate(-45deg)", fontSize: "80px", color: "rgba(0,0,0,0.05)", fontWeight: "bold", pointerEvents: "none", zIndex: 0 }}>
+                                    <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", fontSize: "80px", color: "rgba(0,0,0,0.05)", fontWeight: "bold", pointerEvents: "none", zIndex: 0 }}>
                                         FREE PREVIEW
                                     </div>
                                 )}

@@ -248,7 +248,7 @@ export default function TeacherQuestionGenerator() {
                         position: fixed;
                         top: 50%;
                         left: 50%;
-                        transform: translate(-50%, -50%) rotate(-45deg) scale(1.5);
+                        transform: translate(-50%, -50%) scale(1.5);
                         z-index: -1;
                         pointer-events: none;
                         display: flex;
