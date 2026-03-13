@@ -104,20 +104,20 @@ export default function PaperViewerPage() {
                         position: fixed !important;
                         top: 50% !important;
                         left: 50% !important;
-                        transform: translate(-50%, -50%) scale(1.5) !important;
+                        transform: translate(-50%, -50%) !important;
                         z-index: -1 !important;
                         pointer-events: none !important;
                         display: flex !important;
                         justify-content: center !important;
                         align-items: center !important;
                         width: 100% !important;
-                        height: 100vh !important;
+                        height: 100% !important;
                     }
                     .watermark-container-preview img {
-                        max-width: 80% !important;
-                        max-height: 80% !important;
+                        width: 90% !important;
+                        max-width: 800px !important;
                         object-fit: contain !important;
-                        opacity: 1 !important;
+                        opacity: 0.15 !important;
                     }
 
                     @media print {
@@ -252,13 +252,13 @@ export default function PaperViewerPage() {
                     const blob = await res.blob();
                     const arrayBuffer = await blob.arrayBuffer();
                     
-                    let w = 600;
-                    let h = 600;
+                    let w = 800;
+                    let h = 800;
                     
                     await new Promise<void>((resolve) => {
                         const img = new Image();
                         img.onload = () => {
-                            const ratio = Math.min(600 / img.width, 600 / img.height);
+                            const ratio = Math.min(800 / img.width, 800 / img.height);
                             w = img.width * ratio;
                             h = img.height * ratio;
                             resolve();
@@ -391,8 +391,8 @@ export default function PaperViewerPage() {
                         
                         {/* Print Watermark overlay */}
                         {paper?.watermark && (
-                            <div className="watermark-container-preview hidden print:flex fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 pointer-events-none w-full h-[100vh] justify-center items-center">
-                                <img src={paper.watermark} alt="Watermark" className="max-w-[80vw] max-h-[80vh] object-contain opacity-100 mix-blend-multiply" />
+                            <div className="watermark-container-preview hidden print:flex fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 pointer-events-none w-full h-full justify-center items-center">
+                                <img src={paper.watermark} alt="Watermark" className="w-[80%] max-w-[800px] object-contain opacity-15 mix-blend-multiply" />
                             </div>
                         )}
 

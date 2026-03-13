@@ -497,18 +497,18 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         position: fixed !important;
                         top: 50% !important;
                         left: 50% !important;
-                        transform: translate(-50%, -50%) scale(1.5) !important;
+                        transform: translate(-50%, -50%) !important;
                         z-index: -1 !important;
                         pointer-events: none !important;
                         display: flex !important;
                         justify-content: center !important;
                         align-items: center !important;
                         width: 100% !important;
-                        height: 100vh !important;
+                        height: 100% !important;
                     }
                     .watermark-container-preview img {
-                        max-width: 80% !important;
-                        max-height: 80% !important;
+                        width: 90% !important;
+                        max-width: 800px !important;
                         object-fit: contain !important;
                         opacity: 1 !important;
                     }
@@ -641,13 +641,13 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                 const blob = await res.blob();
                 const arrayBuffer = await blob.arrayBuffer();
                 
-                let w = 600;
-                let h = 600;
+                let w = 800;
+                let h = 800;
                 
                 await new Promise<void>((resolve) => {
                     const img = new Image();
                     img.onload = () => {
-                        const ratio = Math.min(600 / img.width, 600 / img.height);
+                        const ratio = Math.min(800 / img.width, 800 / img.height);
                         w = img.width * ratio;
                         h = img.height * ratio;
                         resolve();
@@ -1034,7 +1034,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                         justifyContent: "center",
                                         alignItems: "center"
                                     }}>
-                                        <img src={watermark} alt="Watermark" style={{ maxWidth: "60%", maxHeight: "60%", objectFit: "contain" }} />
+                                        <img src={watermark} alt="Watermark" style={{ width: "80%", maxWidth: "800px", objectFit: "contain", opacity: 0.15 }} />
                                     </div>
                                 )}
 

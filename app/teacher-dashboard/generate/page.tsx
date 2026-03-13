@@ -251,8 +251,8 @@ export default function CustomGeneratorPage() {
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
                 
-                const maxWidth = 150;
-                const maxHeight = 150;
+                const maxWidth = 180;
+                const maxHeight = 180;
                 let w = watermarkImg.width;
                 let h = watermarkImg.height;
                 const ratio = Math.min(maxWidth / w, maxHeight / h);

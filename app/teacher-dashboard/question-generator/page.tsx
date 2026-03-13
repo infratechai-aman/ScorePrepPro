@@ -245,23 +245,23 @@ export default function TeacherQuestionGenerator() {
                     
                     /* Print Watermark */
                     .watermark-print {
-                        position: fixed;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%) scale(1.5);
-                        z-index: -1;
-                        pointer-events: none;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        width: 100%;
-                        height: 100vh;
+                        position: fixed !important;
+                        top: 50% !important;
+                        left: 50% !important;
+                        transform: translate(-50%, -50%) !important;
+                        z-index: -1 !important;
+                        pointer-events: none !important;
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: center !important;
+                        width: 100% !important;
+                        height: 100% !important;
                     }
                     .watermark-print img {
-                        max-width: 80%;
-                        max-height: 80%;
-                        object-fit: contain;
-                        opacity: 0.15;
+                        width: 90% !important;
+                        max-width: 800px !important;
+                        object-fit: contain !important;
+                        opacity: 0.15 !important;
                     }
                     
                     @media print { 
@@ -562,7 +562,7 @@ export default function TeacherQuestionGenerator() {
 
                                     <GlassCard className="bg-white p-8 min-h-[800px] shadow-2xl relative">
                                         {watermark && (
-                                            <div style={{ 
+                                            <div className="watermark-container-preview" style={{ 
                                                 position: "absolute", 
                                                 top: "50%", 
                                                 left: "50%", 
@@ -570,12 +570,12 @@ export default function TeacherQuestionGenerator() {
                                                 opacity: 1, 
                                                 pointerEvents: "none", 
                                                 zIndex: 0,
-                                                width: "60%",
+                                                width: "100%",
                                                 display: "flex",
                                                 justifyContent: "center",
                                                 alignItems: "center"
                                             }}>
-                                                <img src={watermark} alt="Watermark" style={{ maxWidth: "100%", maxHeight: "100%" }} />
+                                                <img src={watermark} alt="Watermark" style={{ width: "80%", maxWidth: "800px", objectFit: "contain", opacity: 0.15 }} />
                                             </div>
                                         )}
                                         <div ref={contentRef} className="prose max-w-none prose-slate relative z-10">
