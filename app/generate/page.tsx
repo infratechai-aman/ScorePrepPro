@@ -503,6 +503,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                     }
                     
                     @media print { 
+                        @page { size: auto; margin: 0mm; }
                         body { padding: 20px; max-width: 100%; } 
                     }
                 </style>
@@ -629,6 +630,21 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                 const blob = await res.blob();
                 const arrayBuffer = await blob.arrayBuffer();
                 
+                let w = 600;
+                let h = 600;
+                
+                await new Promise<void>((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const ratio = Math.min(600 / img.width, 600 / img.height);
+                        w = img.width * ratio;
+                        h = img.height * ratio;
+                        resolve();
+                    };
+                    img.onerror = () => resolve();
+                    img.src = watermark;
+                });
+
                 // Add watermark to headers so it repeats on every page behind text
                 backgroundOptions = {
                     headers: {
@@ -639,8 +655,9 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                         new ImageRun({
                                             data: arrayBuffer,
                                             transformation: {
-                                                width: 400,
-                                                height: 400,
+                                                width: w,
+                                                height: h,
+                                                rotation: 315,
                                             },
                                             type: "png",
                                             floating: {

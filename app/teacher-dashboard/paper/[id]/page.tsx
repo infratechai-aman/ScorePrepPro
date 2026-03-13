@@ -99,6 +99,7 @@ export default function PaperViewerPage() {
                     em { font-style: italic; }
                     blockquote { background: #f1f5f9; border-left: 4px solid #334155; padding: 12px; margin: 16px 0; font-style: italic; }
                     @media print {
+                        @page { size: auto; margin: 0; }
                         body { padding: 20px; }
                     }
                 </style>
@@ -228,6 +229,21 @@ export default function PaperViewerPage() {
                     const blob = await res.blob();
                     const arrayBuffer = await blob.arrayBuffer();
                     
+                    let w = 600;
+                    let h = 600;
+                    
+                    await new Promise<void>((resolve) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const ratio = Math.min(600 / img.width, 600 / img.height);
+                            w = img.width * ratio;
+                            h = img.height * ratio;
+                            resolve();
+                        };
+                        img.onerror = () => resolve();
+                        img.src = paper.watermark;
+                    });
+                    
                     backgroundOptions = {
                         headers: {
                             default: new Header({
@@ -237,8 +253,9 @@ export default function PaperViewerPage() {
                                             new ImageRun({
                                                 data: arrayBuffer,
                                                 transformation: {
-                                                    width: 400,
-                                                    height: 400,
+                                                    width: w,
+                                                    height: h,
+                                                    rotation: 315,
                                                 },
                                                 type: "png",
                                                 floating: {
