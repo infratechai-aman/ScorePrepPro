@@ -234,6 +234,12 @@ export function constructPrompt(
   else if (totalMarks <= 40) duration = "2 Hours";
   else duration = "3 Hours";
 
+  // Dynamic Section Headers
+  let sectionHeaderInstruction = "- **SECTION HEADERS**: Use '### SECTION A' style (Bold and large).";
+  if (board === "maharashtra") {
+    sectionHeaderInstruction = "- **NO SECTION HEADERS**: DO NOT use 'SECTION A', 'SECTION B', etc. The Maharashtra board does NOT use sections. Use only the exact question numbers (e.g., '### Q.1 (A)') as the main headers.";
+  }
+
   // Adjust prompt to force strict adherence to the CALCULATED structure
   return `
     You are an expert ${board.toUpperCase()} Board Paper Setter for Class ${grade}.
@@ -289,10 +295,11 @@ export function constructPrompt(
     ---
     // FORCE_REFRESH_TIMESTAMP_${Date.now()}
     
-    - **SECTION HEADERS**: Use '### SECTION A' style (Bold and large).
+    ${sectionHeaderInstruction}
     
     - **Questions**:
       - **CRITICAL**: EVERY single question must have a number.
+      - **HIGH-VALUE QUESTIONS (4 & 5 Marks)**: For questions worth 4 or 5 marks, you MUST generate detailed, multi-part questions (e.g., asking for a law, derivation, explanation, AND an example) that genuinely require a 150-200 word answer. Do not generate simple 1-line questions for high marks.
       - Use 'Q.1', 'Q.2' for main questions.
       - Use '(i)', '(ii)', '(iii)' for sub-questions inside a main question.
       - **SPACING**: You MUST leave exactly ONE blank line between EVERY single question. Do not clump questions together.
