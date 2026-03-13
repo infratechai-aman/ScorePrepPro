@@ -5,7 +5,7 @@ import { constructPrompt } from "@/lib/prompts";
 
 export async function POST(req: Request) {
     try {
-        const { board, grade, subject, chapters, difficulty, chapterWeights, marks } = await req.json();
+        const { board, grade, subject, chapters, difficulty, chapterWeights, marks, instituteName } = await req.json();
 
         if (!board || !grade || !subject || !chapters) {
             return NextResponse.json(
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
             );
         }
 
-        const systemPrompt = constructPrompt(board, grade, subject, chapters, { difficulty, chapterWeights, totalMarks: marks });
+        const systemPrompt = constructPrompt(board, grade, subject, chapters, { difficulty, chapterWeights, totalMarks: marks, instituteName });
 
         if (!systemPrompt) {
             const errorMsg = `Pattern not found for ${board.toUpperCase()} Class ${grade} ${subject}. Please check if this combination is supported.`;

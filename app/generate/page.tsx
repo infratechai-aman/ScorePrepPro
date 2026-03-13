@@ -56,8 +56,9 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
     // Selection State
     const [selectedChapters, setSelectedChapters] = useState<string[]>([]);
     const [chapterWeights, setChapterWeights] = useState<Record<string, number>>({});
-
+    
     // Config State
+    const [instituteName, setInstituteName] = useState("");
     const [difficulty, setDifficulty] = useState("moderate");
     const [isTeacherMode, setIsTeacherMode] = useState(false);
 
@@ -185,11 +186,19 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
         // Valid markdown components configuration
         const markdownComponents: any = {
-            h1: ({ node, ...props }: any) => <h1 style={{ borderBottom: "2px solid #0f172a", textAlign: "center", marginBottom: "20px", paddingBottom: "10px", textTransform: "uppercase" }} className="text-3xl font-bold" {...props} />,
+            h1: ({ node, ...props }: any) => {
+                // Main Header (Institute Name)
+                return <h1 style={{ borderBottom: "2px solid #0f172a", textAlign: "center", marginBottom: "15px", paddingBottom: "10px", textTransform: "uppercase" }} className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight" {...props} />;
+            },
             h2: ({ node, children, ...props }: any) => {
+                // Secondary Header (Board Class)
+                return <h2 style={{ textAlign: "center", marginBottom: "30px", textTransform: "uppercase" }} className="text-xl md:text-2xl font-bold text-slate-700 tracking-wide" {...props}>{children}</h2>;
+            },
+            h3: ({ node, children, ...props }: any) => {
+                // Subject / Section Name
                 return (
                     <div className="relative group">
-                        <h2 style={{ backgroundColor: "#f8fafc", borderLeft: "4px solid #1e293b", padding: "10px", marginTop: "30px", marginBottom: "15px", textTransform: "uppercase" }} className="text-xl font-bold" {...props}>{children}</h2>
+                        <h3 style={{ backgroundColor: "#f8fafc", borderLeft: "4px solid #1e293b", padding: "10px", marginTop: "30px", marginBottom: "15px", textTransform: "uppercase" }} className="text-xl font-bold text-slate-800" {...props}>{children}</h3>
                     </div>
                 );
             },
@@ -348,7 +357,8 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                     marks: parseInt(totalMarks),
                     chapters: selectedChapters,
                     chapterWeights,
-                    difficulty
+                    difficulty,
+                    instituteName
                 }),
             });
 
@@ -769,9 +779,22 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                         ]} />
                                     </div>
 
-                                    <Select label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} options={
-                                        getSubjects(board, grade).map(s => ({ value: s, label: s }))
-                                    } />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="col-span-1 md:col-span-2">
+                                            <Select label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} options={
+                                                getSubjects(board, grade).map(s => ({ value: s, label: s }))
+                                            } />
+                                        </div>
+                                        
+                                        <div className="col-span-1 md:col-span-2">
+                                            <Input 
+                                                label="Institute / Classes Name (Optional)" 
+                                                placeholder="e.g. Aman Sir Classes" 
+                                                value={instituteName} 
+                                                onChange={(e) => setInstituteName(e.target.value)} 
+                                            />
+                                        </div>
+                                    </div>
 
                                     {userData && userData.plan === 'basic' && (
                                         <div className="text-xs text-slate-500 flex items-center gap-1">

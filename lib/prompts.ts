@@ -7,6 +7,7 @@ interface GenerateOptions {
   difficulty?: DifficultyLevel;
   chapterWeights?: Record<string, number>;
   totalMarks?: number;
+  instituteName?: string;
 }
 
 export function constructPrompt(
@@ -278,13 +279,10 @@ export function constructPrompt(
 
     === OUTPUT FORMAT ===
     - Use Markdown for strict formatting.
+    - DO NOT use raw HTML tags (like <center> or <h1>). ONLY use standard Markdown.
     
-    <center>
-    <h1>${board.toUpperCase()} BOARD EXAM - CLASS ${grade}</h1>
-    <h3>${subject.toUpperCase()}</h3>
-    </center>
-    
-    **Subject**: ${subject} | **Time**: ${duration} | **Max Marks**: ${totalMarks}
+    ${options.instituteName ? `# ${options.instituteName.toUpperCase()}\n    ## ${board.toUpperCase()} BOARD EXAM - CLASS ${grade}` : `# ${board.toUpperCase()} BOARD EXAM - CLASS ${grade}`}
+    ### ${subject.toUpperCase()}
     
     ---
     
