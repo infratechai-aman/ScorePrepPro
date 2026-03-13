@@ -513,6 +513,16 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         opacity: 1 !important;
                     }
                     
+                    /* Pagination fixes */
+                    .print\\:break-before-page {
+                        page-break-before: always !important;
+                        break-before: page !important;
+                    }
+                    p, li, ul, ol, table, img, h1, h2, h3, h4, .prose p, .prose li {
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
+                    }
+
                     @media print { 
                         @page { size: auto; margin: 0mm; }
                         body { padding: 20px; max-width: 100%; } 
