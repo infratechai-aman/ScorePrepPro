@@ -297,7 +297,7 @@ export function constructPrompt(
     
     - **Questions**:
       - **CRITICAL**: EVERY single question must have a number.
-      - **HIGH-VALUE QUESTIONS (4 & 5 Marks)**: For questions worth 4 or 5 marks, you MUST generate detailed, multi-part questions (e.g., asking for a law, derivation, explanation, AND an example) that genuinely require a 150-200 word answer. Do not generate simple 1-line questions for high marks.
+      - **HIGH-VALUE QUESTIONS (3, 4 & 5 Marks)**: For questions worth 3, 4 or 5 marks, you MUST generate detailed, complex, multi-part questions (e.g., asking for a definition + explanation + applications + example) that genuinely require a long, extensive answer. 5-mark questions must be significantly larger than 3-mark questions. Do not generate simple 1-line questions for high marks under any circumstances.
       - Use 'Q.1', 'Q.2' for main questions.
       - Use '(i)', '(ii)', '(iii)' for sub-questions inside a main question.
       - **SPACING**: You MUST leave exactly ONE blank line between EVERY single question. Do not clump questions together.
@@ -333,7 +333,8 @@ export function constructSolutionPrompt(paperContent: string, board: string) {
     1. **Format**: Section-wise solutions.
     2. **Step-marking**: Show steps for numericals/derivations (Formula -> Substitution -> Calculation -> Final Answer).
     3. **Tone**: Official marking scheme style.
-    4. **Diagrams**: Describe what the diagram should show if a diagram is required.
+    4. **Comprehensiveness (CRITICAL)**: You must provide EXTREMELY DETAILED and EXTENSIVE answers. For 3, 4, or 5 mark questions, provide a minimum of 4-6 detailed bullet points or a completely fleshed-out paragraph (150-300+ words). Do not provide short 1-2 sentence summaries for long answer questions. Be highly descriptive.
+    5. **Diagrams**: Describe what the diagram should show if a diagram is required.
     
     STRICT OUTPUT FORMATTING:
     - **CRITICAL**: DO NOT put the entire answer key or multiple questions inside a single giant Markdown table.
