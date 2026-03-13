@@ -15,7 +15,8 @@ import { ImageIcon } from "lucide-react";
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle, AlignmentType, Header, ImageRun, HorizontalPositionAlign, VerticalPositionAlign } from "docx";
+import { saveAs } from "file-saver";
 import { Switch } from "@/components/ui/Switch";
 import { SYLLABUS_DB, getSubjects, getChapters } from "@/lib/syllabus";
 import { useAuth } from "@/contexts/AuthContext";
@@ -620,6 +621,49 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
             }));
         }
 
+        let backgroundOptions: any = {};
+        if (watermark) {
+            try {
+                // Fetch the data URL and convert to ArrayBuffer for docx
+                const res = await fetch(watermark);
+                const blob = await res.blob();
+                const arrayBuffer = await blob.arrayBuffer();
+                
+                // Add watermark to headers so it repeats on every page behind text
+                backgroundOptions = {
+                    headers: {
+                        default: new Header({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new ImageRun({
+                                            data: arrayBuffer,
+                                            transformation: {
+                                                width: 400,
+                                                height: 400,
+                                            },
+                                            type: "png",
+                                            floating: {
+                                                horizontalPosition: {
+                                                    align: HorizontalPositionAlign.CENTER,
+                                                },
+                                                verticalPosition: {
+                                                    align: VerticalPositionAlign.CENTER,
+                                                },
+                                                behindDocument: true,
+                                            },
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    },
+                };
+            } catch (e) {
+                console.error("Failed to add watermark to DOCX", e);
+            }
+        }
+
         const document = new Document({
             sections: [{
                 properties: {
@@ -627,12 +671,13 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         margin: { top: 720, right: 720, bottom: 720, left: 720 },
                     },
                 },
+                ...backgroundOptions,
                 children
             }]
         });
 
         const blob = await Packer.toBlob(document);
-        saveBlob(blob, `${board}-${subject}-question-paper.docx`);
+        saveAs(blob, `${board}-${subject}-question-paper.docx`);
     };
 
     const nextStep = () => setStep(prev => prev + 1);

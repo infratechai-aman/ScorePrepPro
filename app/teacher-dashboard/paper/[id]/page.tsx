@@ -9,7 +9,7 @@ import { ArrowLeft, Download, Printer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle, Header, ImageRun, HorizontalPositionAlign, VerticalPositionAlign } from "docx";
 import { GlassCard } from "@/components/ui/GlassCard";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -219,20 +219,64 @@ export default function PaperViewerPage() {
             }));
         }
 
-        const document = new Document({
-            sections: [{
-                properties: {
-                    page: {
-                        margin: { top: 720, right: 720, bottom: 720, left: 720 },
-                    },
-                },
-                children
-            }]
-        });
+        const buildDocx = async () => {
+            let backgroundOptions: any = {};
+            if (paper?.watermark) {
+                try {
+                    // Fetch the data URL and convert to ArrayBuffer for docx
+                    const res = await fetch(paper.watermark);
+                    const blob = await res.blob();
+                    const arrayBuffer = await blob.arrayBuffer();
+                    
+                    backgroundOptions = {
+                        headers: {
+                            default: new Header({
+                                children: [
+                                    new Paragraph({
+                                        children: [
+                                            new ImageRun({
+                                                data: arrayBuffer,
+                                                transformation: {
+                                                    width: 400,
+                                                    height: 400,
+                                                },
+                                                type: "png",
+                                                floating: {
+                                                    horizontalPosition: {
+                                                        align: HorizontalPositionAlign.CENTER,
+                                                    },
+                                                    verticalPosition: {
+                                                        align: VerticalPositionAlign.CENTER,
+                                                    },
+                                                    behindDocument: true,
+                                                },
+                                            }),
+                                        ],
+                                    }),
+                                ],
+                            }),
+                        },
+                    };
+                } catch (e) {
+                    console.error("Failed to add watermark to DOCX", e);
+                }
+            }
 
-        Packer.toBlob(document).then(blob => {
+            const document = new Document({
+                sections: [{
+                    properties: {
+                        page: {
+                            margin: { top: 720, right: 720, bottom: 720, left: 720 },
+                        },
+                    },
+                    ...backgroundOptions,
+                    children
+                }]
+            });
+            const blob = await Packer.toBlob(document);
             saveBlob(blob, `${paper?.subject || "paper"}-${id}.docx`);
-        });
+        };
+        buildDocx();
     };
 
     // Helper: Build plain text from JSON paper (for Custom Generator papers)
