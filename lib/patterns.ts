@@ -152,7 +152,88 @@ export const BOARD_PATTERNS: any = {
                 ]
             }
         },
-        ...[5, 6, 7, 8, 9].reduce((acc: any, cls) => {
+        class9: {
+            "Science and Technology Part-1": {
+                totalMarks: 40,
+                structure: [
+                    { section: "Q.1 (A)", type: "MCQs", marskPerQuestion: 1, count: 5 },
+                    { section: "Q.1 (B)", type: "Objective (Answer the following)", marskPerQuestion: 1, count: 5 },
+                    { section: "Q.2 (A)", type: "Scientific Reasons", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.2 (B)", type: "Short Answer", marskPerQuestion: 2, count: 3, choice: "Any 3 from 5" },
+                    { section: "Q.3", type: "Conceptual/Application", marskPerQuestion: 3, count: 5, choice: "Any 5 from 8" },
+                    { section: "Q.4", type: "Long Answer", marskPerQuestion: 5, count: 1, choice: "Any 1 from 2" }
+                ]
+            },
+            "Science and Technology Part-2": {
+                totalMarks: 40,
+                structure: [
+                    { section: "Q.1 (A)", type: "MCQs", marskPerQuestion: 1, count: 5 },
+                    { section: "Q.1 (B)", type: "Objective", marskPerQuestion: 1, count: 5 },
+                    { section: "Q.2 (A)", type: "Scientific Reasons", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.2 (B)", type: "Short Answer", marskPerQuestion: 2, count: 3, choice: "Any 3 from 5" },
+                    { section: "Q.3", type: "Conceptual", marskPerQuestion: 3, count: 5, choice: "Any 5 from 8" },
+                    { section: "Q.4", type: "Long Answer", marskPerQuestion: 5, count: 1, choice: "Any 1 from 2" }
+                ]
+            },
+            "Mathematics Part-I (Algebra)": {
+                totalMarks: 40,
+                structure: [
+                    { section: "Q.1 (A)", type: "MCQ", marskPerQuestion: 1, count: 4 },
+                    { section: "Q.1 (B)", type: "Solve", marskPerQuestion: 1, count: 4 },
+                    { section: "Q.2 (A)", type: "Activity Based", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.2 (B)", type: "Solve", marskPerQuestion: 2, count: 4, choice: "Any 4 from 5" },
+                    { section: "Q.3 (A)", type: "Activity Based", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" },
+                    { section: "Q.3 (B)", type: "Solve", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
+                    { section: "Q.4", type: "HOTS (Out of text)", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.5", type: "Creative/Open Ended", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" }
+                ]
+            },
+            "Mathematics Part-II (Geometry)": {
+                totalMarks: 40,
+                structure: [
+                    { section: "Q.1 (A)", type: "MCQ", marskPerQuestion: 1, count: 4 },
+                    { section: "Q.1 (B)", type: "Solve", marskPerQuestion: 1, count: 4 },
+                    { section: "Q.2 (A)", type: "Activity Based", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.2 (B)", type: "Solve", marskPerQuestion: 2, count: 4, choice: "Any 4 from 5" },
+                    { section: "Q.3 (A)", type: "Activity Based", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" },
+                    { section: "Q.3 (B)", type: "Solve", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
+                    { section: "Q.4", type: "HOTS", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.5", type: "Creative", marskPerQuestion: 3, count: 1, choice: "Any 1 from 2" }
+                ]
+            },
+            "History and Political Science": {
+                totalMarks: 40,
+                structure: [
+                    { section: "Q.1 (A)", type: "Choose Correct Option", marskPerQuestion: 1, count: 3 },
+                    { section: "Q.1 (B)", type: "Identify Wrong Pair", marskPerQuestion: 1, count: 3 },
+                    { section: "Q.2 (A)", type: "Complete Concept Map", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.2 (B)", type: "Short Notes", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.3", type: "Explain Statements with Reasons", marskPerQuestion: 2, count: 2, choice: "Any 2 from 4" },
+                    { section: "Q.4", type: "Read Paragraph and Answer", marskPerQuestion: 4, count: 1 },
+                    { section: "Q.5", type: "Detailed Answer", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
+                    { section: "Q.6", type: "Choose Correct Option (Pol Sci)", marskPerQuestion: 1, count: 2 },
+                    { section: "Q.7", type: "True/False with Reasons", marskPerQuestion: 2, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.8 (A)", type: "Explain Concept", marskPerQuestion: 2, count: 1, choice: "Any 1 from 2" },
+                    { section: "Q.8 (B)", type: "Do as Directed", marskPerQuestion: 1, count: 2, choice: "Any 2 from 3" },
+                    { section: "Q.9", type: "Answer in Brief", marskPerQuestion: 2, count: 1, choice: "Any 1 from 2" }
+                ]
+            },
+            "Geography": {
+                totalMarks: 40,
+                structure: [
+                    { section: "Q.1", type: "Choose Correct Option", marskPerQuestion: 1, count: 4 },
+                    { section: "Q.2", type: "Match the Following", marskPerQuestion: 1, count: 4 },
+                    { section: "Q.3", type: "One Sentence Answer", marskPerQuestion: 1, count: 4, choice: "Any 4 from 5" },
+                    { section: "Q.4 (A)", type: "Source Based / Paragraph", marskPerQuestion: 4, count: 1, choice: "Any 4 from 6" },
+                    { section: "Q.4 (B)", type: "Application Based", marskPerQuestion: 4, count: 1, choice: "Any 4 from 5" },
+                    { section: "Q.5", type: "Geographical Reasons", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
+                    { section: "Q.6 (A)", type: "Detail Note", marskPerQuestion: 3, count: 1 },
+                    { section: "Q.6 (B)", type: "Source Analysis", marskPerQuestion: 3, count: 1, choice: "Or Q.6(A)" },
+                    { section: "Q.7", type: "Detailed Answer", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" }
+                ]
+            }
+        },
+        ...[5, 6, 7, 8].reduce((acc: any, cls) => {
             acc[`class${cls}`] = {
                 "Science": {
                     totalMarks: 40,

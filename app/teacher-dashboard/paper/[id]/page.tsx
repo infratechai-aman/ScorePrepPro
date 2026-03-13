@@ -98,9 +98,32 @@ export default function PaperViewerPage() {
                     strong { font-weight: bold; }
                     em { font-style: italic; }
                     blockquote { background: #f1f5f9; border-left: 4px solid #334155; padding: 12px; margin: 16px 0; font-style: italic; }
+                    
+                    /* Print Watermark */
+                    .watermark-container-preview {
+                        position: fixed !important;
+                        top: 50% !important;
+                        left: 50% !important;
+                        transform: translate(-50%, -50%) rotate(-45deg) scale(1.5) !important;
+                        z-index: -1 !important;
+                        pointer-events: none !important;
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: center !important;
+                        width: 100% !important;
+                        height: 100vh !important;
+                    }
+                    .watermark-container-preview img {
+                        max-width: 80% !important;
+                        max-height: 80% !important;
+                        object-fit: contain !important;
+                        opacity: 1 !important;
+                    }
+
                     @media print {
                         @page { size: auto; margin: 0; }
                         body { padding: 20px; }
+                        .watermark-container-preview { display: flex !important; }
                     }
                 </style>
             </head>
@@ -364,8 +387,16 @@ export default function PaperViewerPage() {
                 </div>
 
                 {/* Paper Content */}
-                <GlassCard className="p-12 print:shadow-none print:border-none print:p-4">
-                    <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "20px", color: "#1e293b" }}>
+                <GlassCard className="p-12 print:shadow-none print:border-none print:p-4 relative">
+                    <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "20px", color: "#1e293b", position: "relative" }}>
+                        
+                        {/* Print Watermark overlay */}
+                        {paper?.watermark && (
+                            <div className="watermark-container-preview hidden print:flex fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 pointer-events-none w-full h-[100vh] justify-center items-center">
+                                <img src={paper.watermark} alt="Watermark" className="max-w-[80vw] max-h-[80vh] object-contain opacity-100 mix-blend-multiply" />
+                            </div>
+                        )}
+
                         {isMarkdownPaper ? (
                             /* ===== MARKDOWN PAPER (Smart Generator) ===== */
                             <div className="prose prose-slate max-w-none">

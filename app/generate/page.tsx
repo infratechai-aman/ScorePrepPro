@@ -500,7 +500,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         max-width: 80% !important;
                         max-height: 80% !important;
                         object-fit: contain !important;
-                        opacity: 0.15 !important;
+                        opacity: 1 !important;
                     }
                     
                     @media print { 
