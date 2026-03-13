@@ -184,8 +184,16 @@ export default function CustomGeneratorPage() {
         reader.readAsDataURL(file);
     };
 
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
         if (!paperData) return;
+        
+        let watermarkImg: HTMLImageElement | null = null;
+        if (watermark) {
+            watermarkImg = new Image();
+            watermarkImg.src = watermark;
+            await new Promise(r => watermarkImg!.onload = r);
+        }
+        
         const doc = new jsPDF();
 
         doc.setFontSize(18);
@@ -235,15 +243,22 @@ export default function CustomGeneratorPage() {
         });
 
         // Add Watermark to all pages if exists
-        if (watermark) {
+        if (watermark && watermarkImg) {
             const pageCount = (doc as any).internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
                 // Center the watermark
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
-                const w = 120;
-                const h = 120;
+                
+                const maxWidth = 150;
+                const maxHeight = 150;
+                let w = watermarkImg.width;
+                let h = watermarkImg.height;
+                const ratio = Math.min(maxWidth / w, maxHeight / h);
+                w = w * ratio;
+                h = h * ratio;
+                
                 doc.addImage(watermark, 'PNG', (pageWidth - w) / 2, (pageHeight - h) / 2, w, h);
             }
         }
@@ -385,18 +400,18 @@ export default function CustomGeneratorPage() {
                                 {watermark && (
                                     <div style={{ 
                                         position: "absolute", 
-                                        top: "50%", 
-                                        left: "50%", 
-                                        transform: "translate(-50%, -50%)", 
+                                        top: "0", 
+                                        left: "0",
+                                        right: "0",
+                                        bottom: "0",
                                         opacity: 1, 
                                         pointerEvents: "none", 
                                         zIndex: 0,
-                                        width: "60%",
                                         display: "flex",
                                         justifyContent: "center",
                                         alignItems: "center"
                                     }}>
-                                        <img src={watermark} alt="Watermark" style={{ maxWidth: "100%", maxHeight: "100%" }} />
+                                        <img src={watermark} alt="Watermark" style={{ maxWidth: "60%", maxHeight: "60%", objectFit: "contain" }} />
                                     </div>
                                 )}
                                 {paperData ? (

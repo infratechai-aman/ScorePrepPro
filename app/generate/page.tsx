@@ -464,6 +464,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         line-height: 1.6;
                         max-width: 800px;
                         margin: 0 auto;
+                        position: relative;
                     }
                     h1, h2, h3, h4 { margin-top: 20px; margin-bottom: 10px; }
                     h1 { font-size: 24px; text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 10px; text-transform: uppercase; }
@@ -479,7 +480,30 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                     strong { font-weight: bold; }
                     em { font-style: italic; }
                     blockquote { background: #f1f5f9; border-left: 4px solid #334155; padding: 12px; margin: 16px 0; font-style: italic; }
-                    @media print { body { padding: 20px; } }
+                    
+                    /* Print Watermark */
+                    .watermark-container-preview {
+                        position: fixed !important;
+                        top: 50% !important;
+                        left: 50% !important;
+                        transform: translate(-50%, -50%) !important;
+                        z-index: -1 !important;
+                        pointer-events: none !important;
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: center !important;
+                        width: 100% !important;
+                        height: 100vh !important;
+                    }
+                    .watermark-container-preview img {
+                        max-width: 60% !important;
+                        max-height: 60% !important;
+                        object-fit: contain !important;
+                    }
+                    
+                    @media print { 
+                        body { padding: 20px; max-width: 100%; } 
+                    }
                 </style>
             </head>
             <body>${htmlContent}</body>
@@ -902,7 +926,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                 </div>
                             </div>
 
-                            <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "40px", minHeight: "800px", color: "#1e293b" }} className="rounded-2xl shadow-xl space-y-8">
+                            <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "40px", minHeight: "800px", color: "#1e293b" }} className="rounded-2xl shadow-xl space-y-8 relative overflow-hidden">
                                 {/* Free Preview Watermark */}
                                 {!user && (
                                     <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%) rotate(-45deg)", fontSize: "80px", color: "rgba(0,0,0,0.05)", fontWeight: "bold", pointerEvents: "none", zIndex: 0 }}>
@@ -912,20 +936,20 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
                                 {/* User Custom Watermark */}
                                 {watermark && (
-                                    <div style={{ 
+                                    <div className="watermark-container-preview" style={{ 
                                         position: "absolute", 
-                                        top: "50%", 
-                                        left: "50%", 
-                                        transform: "translate(-50%, -50%)", 
+                                        top: "0", 
+                                        left: "0",
+                                        right: "0",
+                                        bottom: "0",
                                         opacity: 1, 
                                         pointerEvents: "none", 
                                         zIndex: 0,
-                                        width: "60%",
                                         display: "flex",
                                         justifyContent: "center",
                                         alignItems: "center"
                                     }}>
-                                        <img src={watermark} alt="Watermark" style={{ maxWidth: "100%", maxHeight: "100%" }} />
+                                        <img src={watermark} alt="Watermark" style={{ maxWidth: "60%", maxHeight: "60%", objectFit: "contain" }} />
                                     </div>
                                 )}
 

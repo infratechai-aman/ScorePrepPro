@@ -199,15 +199,89 @@ export default function TeacherQuestionGenerator() {
         reader.readAsDataURL(file);
     };
 
-    const downloadPDF = async () => {
+    const downloadPDF = () => {
         if (!contentRef.current) return;
-        const canvas = await html2canvas(contentRef.current, { scale: 2 });
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "mm", "a4");
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-        pdf.save("question-paper.pdf");
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert("Please allow popups to download PDF.");
+            return;
+        }
+        const htmlContent = contentRef.current.innerHTML;
+        const watermarkHtml = watermark ? `
+            <div class="watermark-print">
+                <img src="${watermark}" alt="Watermark" />
+            </div>
+        ` : '';
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Question Paper</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        color: #1e293b;
+                        padding: 40px;
+                        line-height: 1.6;
+                        max-width: 800px;
+                        margin: 0 auto;
+                        position: relative;
+                    }
+                    h1, h2, h3, h4 { margin-top: 20px; margin-bottom: 10px; }
+                    h1 { font-size: 24px; text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 10px; text-transform: uppercase; }
+                    h2 { font-size: 18px; background-color: #f8fafc; border-left: 4px solid #1e293b; padding: 10px; text-transform: uppercase; }
+                    h3 { font-size: 16px; background-color: #f8fafc; border-left: 4px solid #1e293b; padding: 8px; text-transform: uppercase; }
+                    p { margin-bottom: 10px; }
+                    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+                    th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+                    th { background-color: #f8fafc; font-weight: bold; }
+                    hr { margin: 24px 0; border-top: 2px solid #cbd5e1; }
+                    ul, ol { padding-left: 24px; margin-bottom: 12px; }
+                    li { margin-bottom: 4px; }
+                    strong { font-weight: bold; }
+                    em { font-style: italic; }
+                    
+                    /* Print Watermark */
+                    .watermark-print {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        z-index: -1;
+                        pointer-events: none;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 100%;
+                        height: 100vh;
+                    }
+                    .watermark-print img {
+                        max-width: 60%;
+                        max-height: 60%;
+                        object-fit: contain;
+                    }
+                    
+                    @media print { 
+                        body { padding: 20px; max-width: 100%; } 
+                        .watermark-print {
+                            display: flex !important;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                ${watermarkHtml}
+                ${htmlContent}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
     };
 
     return (
