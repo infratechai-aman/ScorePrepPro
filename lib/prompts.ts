@@ -129,11 +129,12 @@ export function constructPrompt(
       choiceInstruction = `Add instruction in italics under section name: '*Attempt any ${attemptCount} of the following ${generateCount} questions. Give scientific reasons where applicable.*'`;
     }
 
+    const sectionTotal = s.count * s.marskPerQuestion;
     if (choiceInstruction) {
-      return `- **${s.section}**: ${s.type} | GENERATE ${generateCount} QUESTIONS. (Students attempt ${attemptCount}) | ${s.marskPerQuestion} Marks each. | ${choiceInstruction}`;
+      return `- **${s.section}**: ${s.type} [${sectionTotal} Mark(s)] | GENERATE ${generateCount} QUESTIONS. (Students attempt ${attemptCount}) | ${s.marskPerQuestion} Marks each. | ${choiceInstruction}`;
     }
 
-    return `- **${s.section}**: ${s.type} | GENERATE ${attemptCount} QUESTIONS. | ${s.marskPerQuestion} Marks each.`;
+    return `- **${s.section}**: ${s.type} [${sectionTotal} Mark(s)] | GENERATE ${attemptCount} QUESTIONS. | ${s.marskPerQuestion} Marks each.`;
   }).join("\n");
 
   const diff = options.difficulty || "moderate";
