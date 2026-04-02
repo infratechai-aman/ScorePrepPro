@@ -513,10 +513,26 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         opacity: 1 !important;
                     }
                     
+                    /* Page border - repeats on every printed page */
+                    .page-border {
+                        position: fixed;
+                        top: 10px;
+                        left: 12px;
+                        right: 12px;
+                        bottom: 10px;
+                        border: 1.5px solid #94a3b8;
+                        pointer-events: none;
+                        z-index: 9999;
+                    }
+
                     /* Pagination fixes */
                     .print\\:break-before-page {
                         page-break-before: always !important;
                         break-before: page !important;
+                    }
+                    h2, h3 {
+                        page-break-after: avoid !important;
+                        break-after: avoid !important;
                     }
                     table, img {
                         page-break-inside: avoid !important;
@@ -525,11 +541,11 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
                     @media print { 
                         @page { size: auto; margin: 0; }
-                        body { padding: 40px; max-width: 100%; } 
+                        body { padding: 35px 30px; max-width: 100%; } 
                     }
                 </style>
             </head>
-            <body>${htmlContent}</body>
+            <body><div class="page-border"></div>${htmlContent}</body>
             </html>
         `);
         printWindow.document.close();

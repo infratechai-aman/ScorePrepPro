@@ -264,9 +264,27 @@ export default function TeacherQuestionGenerator() {
                         opacity: 0.15 !important;
                     }
                     
+                    /* Page border - repeats on every printed page */
+                    .page-border {
+                        position: fixed;
+                        top: 10px;
+                        left: 12px;
+                        right: 12px;
+                        bottom: 10px;
+                        border: 1.5px solid #94a3b8;
+                        pointer-events: none;
+                        z-index: 9999;
+                    }
+
+                    /* Heading break rules */
+                    h2, h3 {
+                        page-break-after: avoid !important;
+                        break-after: avoid !important;
+                    }
+                    
                     @media print { 
                         @page { size: auto; margin: 0; }
-                        body { padding: 40px; max-width: 100%; } 
+                        body { padding: 35px 30px; max-width: 100%; } 
                         .watermark-print {
                             display: flex !important;
                         }
@@ -274,6 +292,7 @@ export default function TeacherQuestionGenerator() {
                 </style>
             </head>
             <body>
+                <div class="page-border"></div>
                 ${watermarkHtml}
                 ${htmlContent}
             </body>
