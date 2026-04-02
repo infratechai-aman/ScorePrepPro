@@ -516,10 +516,10 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                     /* Page border - repeats on every printed page */
                     .page-border {
                         position: fixed;
-                        top: -20px;
-                        left: -20px;
-                        right: -20px;
-                        bottom: -20px;
+                        top: 15px;
+                        left: 15px;
+                        right: 15px;
+                        bottom: 15px;
                         border: 1.5px solid #94a3b8;
                         pointer-events: none;
                         z-index: 9999;
@@ -540,12 +540,21 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                     }
 
                     @media print { 
-                        @page { size: auto; margin: 35px; }
-                        body { padding: 0; max-width: 100%; } 
+                        @page { size: auto; margin: 0; }
+                        body { padding: 0; margin: 0; max-width: 100%; } 
                     }
                 </style>
             </head>
-            <body><div class="page-border"></div>${htmlContent}</body>
+            <body>
+                <div class="page-border"></div>
+                <table style="width: 100%; border-collapse: collapse; border: none;">
+                    <thead><tr><td style="height: 40px; border: none; padding: 0;"></td></tr></thead>
+                    <tbody><tr><td style="padding: 0 40px; border: none;">
+                        ${htmlContent}
+                    </td></tr></tbody>
+                    <tfoot><tr><td style="height: 40px; border: none; padding: 0;"></td></tr></tfoot>
+                </table>
+            </body>
             </html>
         `);
         printWindow.document.close();
