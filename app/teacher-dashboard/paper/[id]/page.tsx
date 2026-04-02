@@ -123,10 +123,10 @@ export default function PaperViewerPage() {
                     /* Page border - repeats on every printed page */
                     .page-border {
                         position: fixed;
-                        top: 10px;
-                        left: 12px;
-                        right: 12px;
-                        bottom: 10px;
+                        top: -20px;
+                        left: -20px;
+                        right: -20px;
+                        bottom: -20px;
                         border: 1.5px solid #94a3b8;
                         pointer-events: none;
                         z-index: 9999;
@@ -147,8 +147,8 @@ export default function PaperViewerPage() {
                     }
 
                     @media print {
-                        @page { size: auto; margin: 25px; }
-                        body { padding: 20px 30px; }
+                        @page { size: auto; margin: 35px; }
+                        body { padding: 0; }
                         .watermark-container-preview { display: flex !important; }
                     }
                 </style>
