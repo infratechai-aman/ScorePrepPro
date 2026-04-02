@@ -524,8 +524,8 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                     }
 
                     @media print { 
-                        @page { size: auto; margin: 20mm 0mm 10mm 0mm; }
-                        body { padding: 20px; max-width: 100%; } 
+                        @page { size: auto; margin: 0; }
+                        body { padding: 50px 20px 30px 20px; max-width: 100%; } 
                     }
                 </style>
             </head>
