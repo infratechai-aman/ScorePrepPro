@@ -265,8 +265,8 @@ export default function TeacherQuestionGenerator() {
                     }
                     
                     @media print { 
-                        @page { size: auto; margin: 15mm 0mm 10mm 0mm; }
-                        body { padding: 5px 20px; max-width: 100%; } 
+                        @page { size: auto; margin: 0; }
+                        body { padding: 40px; max-width: 100%; } 
                         .watermark-print {
                             display: flex !important;
                         }

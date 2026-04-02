@@ -125,14 +125,14 @@ export default function PaperViewerPage() {
                         page-break-before: always !important;
                         break-before: page !important;
                     }
-                    p, li, ul, ol, table, img, h1, h2, h3, h4, .prose p, .prose li {
+                    table, img {
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
                     }
 
                     @media print {
-                        @page { size: auto; margin: 15mm 0mm 10mm 0mm; }
-                        body { padding: 5px 20px; }
+                        @page { size: auto; margin: 0; }
+                        body { padding: 40px; }
                         .watermark-container-preview { display: flex !important; }
                     }
                 </style>
