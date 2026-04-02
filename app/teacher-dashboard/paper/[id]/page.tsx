@@ -148,7 +148,7 @@ export default function PaperViewerPage() {
 
                     @media print {
                         @page { size: auto; margin: 25px; }
-                        body { padding: 0; }
+                        body { padding: 20px 30px; }
                         .watermark-container-preview { display: flex !important; }
                     }
                 </style>
@@ -508,8 +508,8 @@ export default function PaperViewerPage() {
                             </>
                         )}
 
-                        <div className="mt-12 pt-8 border-t border-slate-200 text-center text-xs text-slate-400">
-                            Generated via ScorePrepPro AI
+                        <div className="mt-12 pt-8 text-center text-xs text-slate-400">
+                            {/* Footer text removed as requested */}
                         </div>
                     </div>
                 </GlassCard>
