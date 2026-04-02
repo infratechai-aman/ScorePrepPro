@@ -131,8 +131,8 @@ export default function PaperViewerPage() {
                     }
 
                     @media print {
-                        @page { size: auto; margin: 0; }
-                        body { padding: 50px 20px 30px 20px; }
+                        @page { size: auto; margin: 15mm 0mm 10mm 0mm; }
+                        body { padding: 5px 20px; }
                         .watermark-container-preview { display: flex !important; }
                     }
                 </style>
