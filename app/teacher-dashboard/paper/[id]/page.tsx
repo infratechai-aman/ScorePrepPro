@@ -146,8 +146,10 @@ export default function PaperViewerPage() {
                         break-inside: avoid !important;
                     }
 
+                    /* Global Print Rules */
+                    @page { size: auto; margin: 0mm; }
+
                     @media print {
-                        @page { size: auto; margin: 0; }
                         body { padding: 0; margin: 0; }
                         .watermark-container-preview { display: flex !important; }
                     }
@@ -156,11 +158,11 @@ export default function PaperViewerPage() {
             <body>
                 <div class="page-border"></div>
                 <table style="width: 100%; border-collapse: collapse; border: none;">
-                    <thead><tr><td style="height: 40px; border: none; padding: 0;"></td></tr></thead>
+                    <thead><tr><td style="height: 40px; border: none; padding: 0;"><div style="height:40px;color:transparent;">&nbsp;</div></td></tr></thead>
                     <tbody><tr><td style="padding: 0 40px; border: none;">
                         ${htmlContent}
                     </td></tr></tbody>
-                    <tfoot><tr><td style="height: 40px; border: none; padding: 0;"></td></tr></tfoot>
+                    <tfoot><tr><td style="height: 40px; border: none; padding: 0;"><div style="height:40px;color:transparent;">&nbsp;</div></td></tr></tfoot>
                 </table>
             </body>
             </html>
