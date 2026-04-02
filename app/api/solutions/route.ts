@@ -37,7 +37,7 @@ export async function POST(req: Request) {
             const systemPrompt = constructSolutionPrompt(chunk, board, subject);
             const userPrompt = isMathSubject 
                 ? `Generate the exhaustive Answer Key for this part of the paper (Part ${index + 1} of ${chunks.length}). Make sure your answers are EXTREMELY SHORT, directly showing the 2-3 essential mathematical steps. DO NOT write paragraphs.`
-                : `Generate the exhaustive Answer Key for this part of the paper (Part ${index + 1} of ${chunks.length}). Make sure your answers are extraordinarily detailed and long.`;
+                : `Generate the Answer Key for this part of the paper (Part ${index + 1} of ${chunks.length}). PERFECTLY adapt the length of your answers based on the marks of each question as per the system instructions (1 mark = ONLY answer/no explanation, up to 5 marks = detailed points).`;
             return openai.chat.completions.create({
                 model: "gpt-4o-mini",
                 messages: [

@@ -437,7 +437,13 @@ export function constructSolutionPrompt(paperContent: string, board: string, sub
   const isMathSubject = subject && (subject.toLowerCase().includes("math") || subject.toLowerCase().includes("algebra") || subject.toLowerCase().includes("geometry"));
   
   let comprehensivenessRule = `
-    4. **Comprehensiveness (CRITICAL)**: You must provide EXTREMELY DETAILED and EXTENSIVE answers. For 3, 4, or 5 mark questions, provide a minimum of 4-6 detailed bullet points or a completely fleshed-out paragraph (150-300+ words). Do not provide short 1-2 sentence summaries for long answer questions. Be highly descriptive.
+    4. **Comprehensiveness (CRITICAL)**: You MUST adapt the length of your answer strictly based on the marks allocated:
+       - **MCQs / Fill in the Blanks / 1 Mark**: Provide ONLY the direct answer/option. Absolutely NO explanation, NO reasoning, and NO description. (e.g., "Answer: (b) Iron rusting").
+       - **2 Mark Questions**: Provide exactly 2 to 3 concise points or 2-3 sentences.
+       - **3 Mark Questions**: Provide exactly 3 to 4 points.
+       - **4 Mark Questions**: Provide exactly 5 to 6 points.
+       - **5+ Mark Questions**: Provide a highly descriptive answer with 6 to 8 structured points.
+       Do NOT over-explain low-mark questions.
   `;
 
   if (isMathSubject) {
