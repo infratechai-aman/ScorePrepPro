@@ -5,14 +5,12 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { ArrowLeft, Download, BookOpen, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, BookOpen, Loader2, Printer } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 interface NoteData {
     subject: string;
@@ -53,51 +51,8 @@ export default function NoteViewPage() {
         }
     };
 
-    const handleDownloadPDF = async () => {
-        if (!contentRef.current) return;
-        try {
-            const canvas = await html2canvas(contentRef.current, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: "#ffffff",
-                logging: false,
-            });
-            const imgData = canvas.toDataURL("image/png");
-            const pdf = new jsPDF("p", "mm", "a4");
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = pdfWidth - 20;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            let heightLeft = imgHeight;
-            let position = 10;
-
-            pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
-            heightLeft -= (pdfHeight - 20);
-
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight + 10;
-                pdf.addPage();
-                pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
-                heightLeft -= (pdfHeight - 20);
-            }
-
-            pdf.save(`${note?.subject} - ${note?.chapter} - Notes.pdf`);
-        } catch (err) {
-            console.error("PDF failed:", err);
-            if (note) {
-                const d = new jsPDF();
-                const lines = d.splitTextToSize(note.content.replace(/[#*>`]/g, ''), 180);
-                let y = 20;
-                d.setFontSize(11);
-                lines.forEach((line: string) => {
-                    if (y > 280) { d.addPage(); y = 20; }
-                    d.text(line, 15, y);
-                    y += 7;
-                });
-                d.save(`${note.subject} - ${note.chapter} - Notes.pdf`);
-            }
-        }
+    const handleDownloadPDF = () => {
+        window.print();
     };
 
     if (loading) {
@@ -315,6 +270,18 @@ export default function NoteViewPage() {
                     margin-bottom: 0.75rem;
                     line-height: 1.85;
                 }
+                @media print {
+                    body { background: white !important; }
+                    .print-hide, aside, header, nav { display: none !important; }
+                    .notes-content { font-size: 11pt; padding: 0; }
+                    .notes-content h1 { -webkit-text-fill-color: #4f46e5; font-size: 18pt; }
+                    .notes-content h2 { font-size: 14pt; color: #4f46e5; }
+                    .notes-content h3 { font-size: 12pt; }
+                    .notes-content blockquote { break-inside: avoid; }
+                    .notes-content table { break-inside: avoid; }
+                    .notes-content pre { break-inside: avoid; }
+                    @page { margin: 2cm; }
+                }
             `}</style>
 
             <div className="p-4 md:p-8 overflow-y-auto h-[calc(100vh-80px)]">
@@ -331,8 +298,8 @@ export default function NoteViewPage() {
                             {boardLabel && <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full font-semibold">{boardLabel}</span>}
                             <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full font-semibold">Class {note.grade}</span>
                         </div>
-                        <Button size="sm" onClick={handleDownloadPDF}>
-                            <Download className="h-4 w-4 mr-1" /> PDF
+                        <Button size="sm" onClick={handleDownloadPDF} className="gap-1.5">
+                            <Printer className="h-4 w-4" /> Print / PDF
                         </Button>
                     </div>
                 </div>

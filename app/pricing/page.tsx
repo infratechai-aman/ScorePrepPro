@@ -103,6 +103,26 @@ export default function PricingPage() {
             missing: [],
             color: "purple",
             popular: false
+        },
+        {
+            id: "the_teacher",
+            name: "THE TEACHER",
+            price: billingCycle === "half-yearly" ? "₹4,000" : "₹7,000",
+            amount: billingCycle === "half-yearly" ? 4000 : 7000,
+            features: [
+                "All Premium Features",
+                "Custom Subjects (Upload Your Own Content)",
+                "AI Content Memory (Upload Once → AI Remembers Forever)",
+                "Generate Papers/Notes/MCQs from YOUR Content",
+                "Student Classroom System",
+                "MCQ Exam Creator + Auto Evaluation",
+                "Student Analytics Dashboard",
+                "Up to 10 Published Exams",
+                "Unlimited Students"
+            ],
+            missing: [],
+            color: "rose",
+            popular: false
         }
     ];
 
@@ -230,9 +250,9 @@ export default function PricingPage() {
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-4 gap-4 max-w-7xl mx-auto">
+                <div className="grid md:grid-cols-5 gap-4 max-w-7xl mx-auto">
                     {PLANS.map((plan) => (
-                        <GlassCard key={plan.id} className={`p-6 relative ${plan.id === 'teacher' ? 'border-purple-200 bg-purple-50/30' : plan.id === 'premium' ? 'border-amber-200 bg-amber-50/30' : ''}`}>
+                        <GlassCard key={plan.id} className={`p-6 relative ${plan.id === 'the_teacher' ? 'border-rose-200 bg-gradient-to-b from-rose-50/50 to-purple-50/30 ring-2 ring-rose-200' : plan.id === 'teacher' ? 'border-purple-200 bg-purple-50/30' : plan.id === 'premium' ? 'border-amber-200 bg-amber-50/30' : ''}`}>
                             {plan.popular && (
                                 <div className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg uppercase tracking-wider">
                                     Popular
@@ -251,7 +271,7 @@ export default function PricingPage() {
                                 <div className="space-y-3 text-left">
                                     {plan.features.map((feat) => (
                                         <div key={feat} className="flex items-center gap-3">
-                                            <div className={`p-1 rounded-full ${plan.id === 'teacher' ? 'bg-purple-100 text-purple-600' : plan.id === 'premium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
+                                            <div className={`p-1 rounded-full ${plan.id === 'the_teacher' ? 'bg-rose-100 text-rose-600' : plan.id === 'teacher' ? 'bg-purple-100 text-purple-600' : plan.id === 'premium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
                                                 <Check className="h-3 w-3" />
                                             </div>
                                             <span className="text-slate-700">{feat}</span>
@@ -268,7 +288,7 @@ export default function PricingPage() {
                                 </div>
 
                                 <Button
-                                    className={`w-full h-auto py-3 whitespace-normal text-center leading-snug ${plan.id === 'teacher' ? 'bg-purple-600 hover:bg-purple-700' : plan.id === 'premium' ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
+                                    className={`w-full h-auto py-3 whitespace-normal text-center leading-snug ${plan.id === 'the_teacher' ? 'bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-700 hover:to-purple-700' : plan.id === 'teacher' ? 'bg-purple-600 hover:bg-purple-700' : plan.id === 'premium' ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
                                     size="lg"
                                     isLoading={processing === plan.id}
                                     onClick={() => handleUpgrade(plan.id, plan.amount)}

@@ -13,7 +13,7 @@ import { LayoutDashboard, Sparkles } from "lucide-react";
 
 export default function TeacherDashboardPage() {
     const { userData } = useAuth();
-    const isTeacher = userData?.plan === 'teacher';
+    const isTeacher = userData?.plan === 'teacher' || userData?.plan === 'the_teacher';
     const [activeTab, setActiveTab] = useState<"overview" | "generate">("overview");
 
     return (

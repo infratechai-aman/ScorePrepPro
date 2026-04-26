@@ -9,17 +9,23 @@ import {
     HelpCircle,
     LogOut,
     BookOpen,
-    Sparkles
+    Sparkles,
+    GraduationCap,
+    Users,
+    ClipboardList,
+    BarChart3
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import Image from "next/image";
 
 export function Sidebar() {
     const pathname = usePathname();
     const { logout, userData } = useAuth();
 
     const isTeacher = userData?.plan === 'teacher';
+    const isTheTeacher = userData?.plan === 'the_teacher';
 
     const menuItems = [
         { icon: <LayoutDashboard size={20} />, label: "Overview", href: "/teacher-dashboard" },
@@ -32,21 +38,26 @@ export function Sidebar() {
         { icon: <HelpCircle size={20} />, label: "Help & Support", href: "/teacher-dashboard/support" },
     ].filter(item => item.show !== false);
 
+    const theTeacherItems = [
+        { icon: <GraduationCap size={20} />, label: "Custom Subjects", href: "/teacher-dashboard/custom-subjects" },
+        { icon: <Sparkles size={20} />, label: "Content Generator", href: "/teacher-dashboard/custom-generate" },
+        { icon: <Users size={20} />, label: "Classrooms", href: "/teacher-dashboard/classrooms" },
+        { icon: <ClipboardList size={20} />, label: "Exams", href: "/teacher-dashboard/exams" },
+    ];
+
     return (
         <aside className="fixed left-0 top-0 h-screen w-64 bg-[#0f172a] text-white flex flex-col border-r border-slate-800 z-50 print:hidden">
             {/* Logo */}
             <div className="h-20 flex items-center gap-3 px-6 border-b border-slate-800">
-                <div className="bg-indigo-600 p-2 rounded-lg">
-                    <BookOpen className="h-5 w-5 text-white" />
-                </div>
+                <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={40} height={40} className="rounded-xl object-contain bg-slate-800 p-1" />
                 <div>
                     <h1 className="font-bold text-lg font-serif tracking-tight">ScorePrepPro</h1>
-                    <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">{isTeacher ? 'Teacher Mode' : 'Premium'}</p>
+                    <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">{isTheTeacher ? 'THE TEACHER' : isTeacher ? 'Teacher Mode' : 'Premium'}</p>
                 </div>
             </div>
 
             {/* Menu */}
-            <div className="flex-1 py-8 px-4 space-y-1 overflow-y-auto">
+            <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
                 <p className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Main Menu</p>
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href;
@@ -66,6 +77,33 @@ export function Sidebar() {
                         </Link>
                     )
                 })}
+
+                {/* THE TEACHER Section */}
+                {isTheTeacher && (
+                    <>
+                        <div className="pt-6 pb-2">
+                            <p className="px-4 text-xs font-bold text-purple-400 uppercase tracking-wider">THE TEACHER</p>
+                        </div>
+                        {theTeacherItems.map((item) => {
+                            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${isActive
+                                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/50'
+                                        : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                                        }`}
+                                >
+                                    <span className={`${isActive ? 'text-white' : 'text-purple-400 group-hover:text-white'}`}>
+                                        {item.icon}
+                                    </span>
+                                    {item.label}
+                                </Link>
+                            )
+                        })}
+                    </>
+                )}
             </div>
 
             {/* System Status & Logout */}

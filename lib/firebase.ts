@@ -2,6 +2,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -39,17 +40,20 @@ const app = getFirebaseApp();
 
 let auth: any;
 let db: any;
+let storage: any;
 let googleProvider: any;
 
 if (app) {
     auth = getAuth(app);
     db = getFirestore(app);
+    storage = getStorage(app);
     googleProvider = new GoogleAuthProvider();
 } else {
     // Mock for build time
     auth = {} as any;
     db = {} as any;
+    storage = {} as any;
     googleProvider = {} as any;
 }
 
-export { auth, db, googleProvider };
+export { auth, db, storage, googleProvider };

@@ -14,13 +14,14 @@ export function useUsage() {
         free: { papers: 1, keys: 0, download: false, teacher: false },
         basic: { papers: 100, keys: 0, download: true, teacher: false }, // 0 keys = not allowed
         premium: { papers: 300, keys: 300, download: true, teacher: false },
-        teacher: { papers: 1000, keys: 1000, download: true, teacher: true } // High limits for teacher
+        teacher: { papers: 1000, keys: 1000, download: true, teacher: true }, // High limits for teacher
+        the_teacher: { papers: 9999, keys: 9999, download: true, teacher: true } // THE TEACHER - unlimited
     };
 
     const getLimit = () => {
         if (!userData) return PLAN_LIMITS.free; // Free preview (non-logged in) matches free logged-in roughly
         // @ts-ignore - Handle potential missing plan types gracefully
-        return PLAN_LIMITS[userData.plan as "free" | "basic" | "premium" | "teacher"] || PLAN_LIMITS.free;
+        return PLAN_LIMITS[userData.plan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.free;
     };
 
     const checkLimit = (type: "paper" | "key" | "download") => {
@@ -68,6 +69,6 @@ export function useUsage() {
         loading,
         limits,
         usage,
-        canGenerateKey: userData?.plan === "premium"
+        canGenerateKey: userData?.plan === "premium" || userData?.plan === "teacher" || userData?.plan === "the_teacher"
     };
 }

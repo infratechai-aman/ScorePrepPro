@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 export function Navbar() {
     const { user, userData, loading } = useAuth();
@@ -26,9 +27,7 @@ export function Navbar() {
                 <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 md:px-6">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 group">
-                        <div className="bg-primary/10 p-2.5 rounded-xl group-hover:bg-primary/20 transition-colors">
-                            <BookOpen className="h-6 w-6 text-primary" />
-                        </div>
+                        <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={40} height={40} className="rounded-xl object-contain bg-white/50 p-1" />
                         <span className="text-2xl font-bold text-slate-900 font-serif tracking-tight">
                             ScorePrepPro
                         </span>
@@ -54,10 +53,10 @@ export function Navbar() {
                     <div className="hidden md:flex items-center gap-4">
                         {!loading && (
                             user ? (
-                                <Link href={(userData?.plan === 'teacher' || userData?.plan === 'premium') ? "/teacher-dashboard" : "/dashboard"}>
+                                <Link href={(userData?.plan === 'teacher' || userData?.plan === 'premium' || userData?.plan === 'the_teacher') ? "/teacher-dashboard" : userData?.role === 'student' ? "/student" : "/dashboard"}>
                                     <Button size="lg" className="rounded-full px-6 bg-slate-900 text-white hover:bg-slate-800 shadow-md shadow-slate-900/10 gap-2">
                                         <UserCircle className="h-4 w-4" />
-                                        {userData?.plan === 'teacher' ? 'Teacher Panel' : userData?.plan === 'premium' ? 'Premium Panel' : 'Dashboard'}
+                                        {userData?.plan === 'the_teacher' ? 'THE TEACHER' : userData?.plan === 'teacher' ? 'Teacher Panel' : userData?.plan === 'premium' ? 'Premium Panel' : userData?.role === 'student' ? 'Student Panel' : 'Dashboard'}
                                     </Button>
                                 </Link>
                             ) : (
