@@ -15,6 +15,10 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "ScorePrepPro - AI Question Paper Generator",
   description: "Generate premium board-level question papers with AI",
+  icons: {
+    icon: "/ScorePrepPro_Logo.png",
+    apple: "/ScorePrepPro_Logo.png",
+  },
 };
 
 import { AuthProvider } from "@/contexts/AuthContext";
