@@ -8,7 +8,7 @@ export function Footer() {
             <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12 mb-16">
                 <div className="col-span-1 md:col-span-1">
                     <Link href="/" className="flex items-center gap-2 mb-6">
-                        <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={40} height={40} className="rounded-xl object-contain bg-slate-800 p-1" />
+                        <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={48} height={48} className="rounded-xl object-contain" />
                         <span className="text-xl font-bold text-slate-900 font-serif">
                             ScorePrepPro
                         </span>

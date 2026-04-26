@@ -27,7 +27,7 @@ export function Navbar() {
                 <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 md:px-6">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 group">
-                        <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={40} height={40} className="rounded-xl object-contain bg-white/50 p-1" />
+                        <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={52} height={52} className="rounded-xl object-contain" />
                         <span className="text-2xl font-bold text-slate-900 font-serif tracking-tight">
                             ScorePrepPro
                         </span>

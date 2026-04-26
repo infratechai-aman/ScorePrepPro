@@ -49,7 +49,7 @@ export function Sidebar() {
         <aside className="fixed left-0 top-0 h-screen w-64 bg-[#0f172a] text-white flex flex-col border-r border-slate-800 z-50 print:hidden">
             {/* Logo */}
             <div className="h-20 flex items-center gap-3 px-6 border-b border-slate-800">
-                <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={40} height={40} className="rounded-xl object-contain bg-slate-800 p-1" />
+                <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={48} height={48} className="rounded-xl object-contain" />
                 <div>
                     <h1 className="font-bold text-lg font-serif tracking-tight">ScorePrepPro</h1>
                     <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">{isTheTeacher ? 'THE TEACHER' : isTeacher ? 'Teacher Mode' : 'Premium'}</p>
