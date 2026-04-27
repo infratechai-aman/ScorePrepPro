@@ -4,11 +4,21 @@ import { getFirestore } from "firebase-admin/firestore";
 let adminApp: App;
 
 if (!getApps().length) {
-    // Initialize with project ID only (uses Application Default Credentials in production,
-    // or falls back to project ID matching for environments like Vercel)
-    adminApp = initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    });
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+
+    if (serviceAccount) {
+        // Use service account credentials
+        const parsed = JSON.parse(serviceAccount);
+        adminApp = initializeApp({
+            credential: cert(parsed),
+            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        });
+    } else {
+        // Fallback for local dev — will only work with Application Default Credentials
+        adminApp = initializeApp({
+            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        });
+    }
 } else {
     adminApp = getApps()[0];
 }
