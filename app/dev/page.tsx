@@ -27,7 +27,7 @@ export default function DevUpgradePage() {
         }
     };
 
-    const upgradePlan = async (plan: "free" | "basic" | "premium" | "teacher") => {
+    const upgradePlan = async (plan: "free" | "basic" | "premium" | "teacher" | "the_teacher") => {
         if (!user) {
             alert("Please login first!");
             router.push("/login");
@@ -93,6 +93,14 @@ export default function DevUpgradePage() {
                 </div>
 
                 <div className="space-y-3">
+                    <Button
+                        onClick={() => upgradePlan("the_teacher")}
+                        isLoading={loading}
+                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 border-none text-white"
+                    >
+                        ⭐ Force Upgrade to THE TEACHER
+                    </Button>
+
                     <Button
                         onClick={() => upgradePlan("teacher")}
                         isLoading={loading}
