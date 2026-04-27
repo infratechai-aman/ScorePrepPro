@@ -202,7 +202,6 @@ export default function SubjectDetailPage() {
                                         placeholder="Brief description of what this unit covers..."
                                     />
                                 </div>
-                            </div>
 
                                 {/* PDF Upload Zone */}
                                 <div>
