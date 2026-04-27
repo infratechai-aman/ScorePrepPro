@@ -6,6 +6,10 @@ import { SubjectProgress } from "@/components/dashboard/SubjectProgress";
 import { RecentPapers } from "@/components/dashboard/RecentPapers";
 import { ActivityGraph } from "@/components/dashboard/ActivityGraph";
 import { RightSidebar } from "@/components/dashboard/RightSidebar";
+import { TheTeacherStats } from "@/components/dashboard/TheTeacherStats";
+import { TheTeacherSubjects } from "@/components/dashboard/TheTeacherSubjects";
+import { TheTeacherRecentActivity } from "@/components/dashboard/TheTeacherRecentActivity";
+import { TheTeacherRightSidebar } from "@/components/dashboard/TheTeacherRightSidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import GeneratorPage from "@/app/generate/page";
 import { useState } from "react";
@@ -14,6 +18,7 @@ import { LayoutDashboard, Sparkles } from "lucide-react";
 export default function TeacherDashboardPage() {
     const { userData } = useAuth();
     const isTeacher = userData?.plan === 'teacher' || userData?.plan === 'the_teacher';
+    const isTheTeacher = userData?.plan === 'the_teacher';
     const [activeTab, setActiveTab] = useState<"overview" | "generate">("overview");
 
     return (
@@ -48,34 +53,71 @@ export default function TeacherDashboardPage() {
                         <>
                             <div className="mb-8">
                                 <h1 className="text-3xl font-bold text-slate-900 font-serif mb-2">
-                                    {isTeacher ? 'Welcome, Teacher!' : `Welcome back, ${userData?.name || 'User'}!`}
+                                    {isTheTeacher
+                                        ? 'Welcome, Teacher!'
+                                        : isTeacher
+                                            ? 'Welcome, Teacher!'
+                                            : `Welcome back, ${userData?.name || 'User'}!`
+                                    }
                                 </h1>
                                 <p className="text-slate-500">
-                                    {isTeacher ? "Here is what's happening with your classes today." : "Here's your premium dashboard overview."}
+                                    {isTheTeacher
+                                        ? "Your custom teaching workspace. Manage subjects, classrooms, and exams."
+                                        : isTeacher
+                                            ? "Here is what's happening with your classes today."
+                                            : "Here's your premium dashboard overview."
+                                    }
                                 </p>
                             </div>
 
-                            <StatsCards />
+                            {/* Plan-specific dashboard content */}
+                            {isTheTeacher ? (
+                                <>
+                                    {/* THE TEACHER Dashboard */}
+                                    <TheTeacherStats />
 
-                            <div className="grid xl:grid-cols-3 gap-8">
-                                <div className="xl:col-span-2 space-y-8">
-                                    <SubjectProgress />
-                                    <RecentPapers />
-                                </div>
-                            </div>
+                                    <div className="grid xl:grid-cols-3 gap-8">
+                                        <div className="xl:col-span-2 space-y-8">
+                                            <TheTeacherSubjects />
+                                            <TheTeacherRecentActivity />
+                                        </div>
+                                    </div>
 
-                            <div className="xl:grid xl:grid-cols-3 gap-8">
-                                <div className="xl:col-span-3">
-                                    <ActivityGraph />
-                                </div>
-                            </div>
+                                    <div className="xl:grid xl:grid-cols-3 gap-8">
+                                        <div className="xl:col-span-3">
+                                            <ActivityGraph />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Regular Teacher / Premium Dashboard */}
+                                    <StatsCards />
+
+                                    <div className="grid xl:grid-cols-3 gap-8">
+                                        <div className="xl:col-span-2 space-y-8">
+                                            <SubjectProgress />
+                                            <RecentPapers />
+                                        </div>
+                                    </div>
+
+                                    <div className="xl:grid xl:grid-cols-3 gap-8">
+                                        <div className="xl:col-span-3">
+                                            <ActivityGraph />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </>
                     ) : (
                         <GeneratorPage embedded={true} />
                     )}
                 </main>
 
-                {activeTab === "overview" && <RightSidebar />}
+                {/* Plan-specific right sidebar */}
+                {activeTab === "overview" && (
+                    isTheTeacher ? <TheTeacherRightSidebar /> : <RightSidebar />
+                )}
             </div>
         </div>
     );

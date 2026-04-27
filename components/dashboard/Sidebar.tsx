@@ -29,9 +29,9 @@ export function Sidebar() {
 
     const menuItems = [
         { icon: <LayoutDashboard size={20} />, label: "Overview", href: "/teacher-dashboard" },
-        { icon: <Sparkles size={20} />, label: "Paper Generator", href: "/teacher-dashboard/smart-generate", show: true },
-        { icon: <BookOpen size={20} />, label: "Notes Generator", href: "/teacher-dashboard/notes-generator", show: true },
-        { icon: <FileText size={20} />, label: "Custom Generator", href: "/teacher-dashboard/question-generator", show: isTeacher },
+        { icon: <Sparkles size={20} />, label: "Paper Generator", href: "/teacher-dashboard/smart-generate", show: !isTheTeacher },
+        { icon: <BookOpen size={20} />, label: "Notes Generator", href: "/teacher-dashboard/notes-generator", show: !isTheTeacher },
+        { icon: <FileText size={20} />, label: "Custom Generator", href: "/teacher-dashboard/question-generator", show: isTeacher && !isTheTeacher },
         { icon: <FolderOpen size={20} />, label: "My Repository", href: "/teacher-dashboard/repository" },
         { icon: <Bot size={20} />, label: "AI Tutor", href: "/teacher-dashboard/ai-tutor" },
         { icon: <Settings size={20} />, label: "Settings", href: "/teacher-dashboard/settings" },
@@ -113,7 +113,7 @@ export function Sidebar() {
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                         <span className="text-xs font-bold text-slate-300">System Status</span>
                     </div>
-                    <p className="text-[10px] text-slate-500 leading-relaxed mb-3">AI Engine v2.5 is active for CBSE & ICSE Boards.</p>
+                    <p className="text-[10px] text-slate-500 leading-relaxed mb-3">{isTheTeacher ? 'AI Engine v2.5 is active for your custom content.' : 'AI Engine v2.5 is active for CBSE & ICSE Boards.'}</p>
                     <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full w-[80%] bg-indigo-500 rounded-full"></div>
                     </div>

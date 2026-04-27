@@ -35,7 +35,9 @@ export function DashboardHeader({ title = "Overview" }: { title?: string }) {
                     <div className="flex items-center gap-3">
                         <div className="text-right hidden md:block">
                             <p className="text-sm font-bold text-slate-900">{userData?.name || "Guest User"}</p>
-                            <p className="text-xs text-indigo-600 font-bold uppercase tracking-wider">{userData?.plan || "TEACHER"}</p>
+                            <p className="text-xs text-indigo-600 font-bold uppercase tracking-wider">
+                                {userData?.plan === 'the_teacher' ? 'THE_TEACHER' : userData?.plan || "TEACHER"}
+                            </p>
                         </div>
                         <div className="w-10 h-10 rounded-full bg-indigo-100 border-2 border-indigo-50 overflow-hidden">
                             <img src={`https://ui-avatars.com/api/?name=${userData?.name || 'User'}&background=4f46e5&color=fff`} alt="Profile" />
@@ -45,7 +47,11 @@ export function DashboardHeader({ title = "Overview" }: { title?: string }) {
                     <Button
                         size="sm"
                         className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 ml-2"
-                        onClick={() => router.push(userData?.plan === 'teacher' ? "/teacher-dashboard/question-generator" : "/teacher-dashboard/smart-generate")}
+                        onClick={() => router.push(
+                            userData?.plan === 'the_teacher' ? "/teacher-dashboard/custom-generate"
+                            : userData?.plan === 'teacher' ? "/teacher-dashboard/question-generator"
+                            : "/teacher-dashboard/smart-generate"
+                        )}
                     >
                         Quick Generate
                     </Button>
