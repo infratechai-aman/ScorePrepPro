@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function GET(req: Request) {
     try {
@@ -12,32 +12,27 @@ export async function GET(req: Request) {
         let exams: any[] = [];
 
         if (teacherUid) {
-            const q = query(collection(db, "exams"), where("teacherUid", "==", teacherUid));
-            const snapshot = await getDocs(q);
+            const snapshot = await adminDb.collection("exams")
+                .where("teacherUid", "==", teacherUid)
+                .get();
             exams = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         } else if (classroomId) {
-            const q = query(
-                collection(db, "exams"),
-                where("classroomId", "==", classroomId),
-                where("status", "==", "published")
-            );
-            const snapshot = await getDocs(q);
+            const snapshot = await adminDb.collection("exams")
+                .where("classroomId", "==", classroomId)
+                .where("status", "==", "published")
+                .get();
             exams = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         } else if (studentUid) {
-            // Get all classrooms the student is in
-            const userDoc = await getDoc(doc(db, "users", studentUid));
+            const userDoc = await adminDb.collection("users").doc(studentUid).get();
             const classrooms = userDoc.data()?.classrooms || {};
             const classroomIds = Object.keys(classrooms);
 
             for (const cId of classroomIds) {
-                const q = query(
-                    collection(db, "exams"),
-                    where("classroomId", "==", cId),
-                    where("status", "==", "published")
-                );
-                const snapshot = await getDocs(q);
-                const classExams = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                exams.push(...classExams);
+                const snapshot = await adminDb.collection("exams")
+                    .where("classroomId", "==", cId)
+                    .where("status", "==", "published")
+                    .get();
+                exams.push(...snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
             }
         }
 
@@ -55,16 +50,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        // Check published exam limit (max 10)
-        const publishedQuery = query(
-            collection(db, "exams"),
-            where("teacherUid", "==", teacherUid),
-            where("status", "==", "published")
-        );
-        const publishedSnap = await getDocs(publishedQuery);
-        // Note: limit check happens at publish time, not creation
-
-        const docRef = await addDoc(collection(db, "exams"), {
+        const docRef = await adminDb.collection("exams").add({
             teacherUid,
             classroomId: classroomId || "",
             subjectId: subjectId || "",
@@ -75,7 +61,7 @@ export async function POST(req: Request) {
             difficulty: difficulty || "medium",
             timeLimit: timeLimit || 30,
             status: "draft",
-            createdAt: serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
             scheduledAt: null,
             expiresAt: null
         });

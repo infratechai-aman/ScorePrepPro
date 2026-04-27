@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function GET(req: Request) {
     try {
@@ -11,11 +11,9 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Missing teacherUid" }, { status: 400 });
         }
 
-        const q = query(
-            collection(db, "customSubjects"),
-            where("teacherUid", "==", teacherUid)
-        );
-        const snapshot = await getDocs(q);
+        const snapshot = await adminDb.collection("customSubjects")
+            .where("teacherUid", "==", teacherUid)
+            .get();
         const subjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         return NextResponse.json({ subjects });
@@ -34,11 +32,9 @@ export async function POST(req: Request) {
         }
 
         // Check limit: max 2 custom subjects
-        const q = query(
-            collection(db, "customSubjects"),
-            where("teacherUid", "==", teacherUid)
-        );
-        const existing = await getDocs(q);
+        const existing = await adminDb.collection("customSubjects")
+            .where("teacherUid", "==", teacherUid)
+            .get();
 
         if (existing.size >= 2) {
             return NextResponse.json(
@@ -47,13 +43,13 @@ export async function POST(req: Request) {
             );
         }
 
-        const docRef = await addDoc(collection(db, "customSubjects"), {
+        const docRef = await adminDb.collection("customSubjects").add({
             teacherUid,
             name,
             grade: grade || "",
             board: board || "Custom",
             description: description || "",
-            createdAt: serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
             unitCount: 0
         });
 

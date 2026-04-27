@@ -27,9 +27,13 @@ export default function CustomSubjectsPage() {
     const fetchSubjects = async () => {
         setLoading(true);
         try {
-            const q = query(collection(db, "customSubjects"), where("teacherUid", "==", userData?.uid));
-            const snapshot = await getDocs(q);
-            setSubjects(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+            const res = await fetch(`/api/custom-subjects?teacherUid=${userData?.uid}`);
+            const data = await res.json();
+            if (res.ok) {
+                setSubjects(data.subjects || []);
+            } else {
+                console.error("Error fetching subjects:", data.error);
+            }
         } catch (err) {
             console.error("Error fetching subjects:", err);
         } finally {

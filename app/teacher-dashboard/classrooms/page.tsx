@@ -28,17 +28,11 @@ export default function ClassroomsPage() {
     const fetchClassrooms = async () => {
         setLoading(true);
         try {
-            const q = query(collection(db, "classrooms"), where("teacherUid", "==", userData?.uid));
-            const snap = await getDocs(q);
-            const rooms = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-            // Get student count for each classroom
-            for (const room of rooms) {
-                const studentsSnap = await getDocs(collection(db, "classrooms", room.id, "students"));
-                room.actualStudentCount = studentsSnap.size;
+            const res = await fetch(`/api/classrooms?teacherUid=${userData?.uid}`);
+            const data = await res.json();
+            if (res.ok) {
+                setClassrooms(data.classrooms || []);
             }
-
-            setClassrooms(rooms);
         } catch (err) {
             console.error("Error:", err);
         } finally {

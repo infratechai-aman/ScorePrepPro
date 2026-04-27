@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 import { nanoid } from "nanoid";
 
 export async function GET(req: Request) {
@@ -12,8 +12,9 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Missing teacherUid" }, { status: 400 });
         }
 
-        const q = query(collection(db, "classrooms"), where("teacherUid", "==", teacherUid));
-        const snapshot = await getDocs(q);
+        const snapshot = await adminDb.collection("classrooms")
+            .where("teacherUid", "==", teacherUid)
+            .get();
         const classrooms = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         return NextResponse.json({ classrooms });
@@ -32,11 +33,11 @@ export async function POST(req: Request) {
 
         const code = nanoid(6).toUpperCase();
 
-        const docRef = await addDoc(collection(db, "classrooms"), {
+        const docRef = await adminDb.collection("classrooms").add({
             teacherUid,
             name,
             code,
-            createdAt: serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
             studentCount: 0
         });
 

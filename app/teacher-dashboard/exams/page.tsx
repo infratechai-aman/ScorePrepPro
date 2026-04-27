@@ -24,9 +24,11 @@ export default function ExamsPage() {
     const fetchExams = async () => {
         setLoading(true);
         try {
-            const q = query(collection(db, "exams"), where("teacherUid", "==", userData?.uid));
-            const snap = await getDocs(q);
-            setExams(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            const res = await fetch(`/api/exams?teacherUid=${userData?.uid}`);
+            const data = await res.json();
+            if (res.ok) {
+                setExams(data.exams || []);
+            }
         } catch (err) {
             console.error("Error:", err);
         } finally {
