@@ -19,6 +19,8 @@ export default function SubjectDetailPage() {
     const [showCreate, setShowCreate] = useState(false);
     const [creating, setCreating] = useState(false);
     const [form, setForm] = useState({ title: "", description: "" });
+    const [pdfFile, setPdfFile] = useState<File | null>(null);
+    const [uploadProgress, setUploadProgress] = useState("");
 
     useEffect(() => {
         fetchData();
@@ -46,6 +48,7 @@ export default function SubjectDetailPage() {
     const handleCreateUnit = async () => {
         if (!form.title.trim()) return;
         setCreating(true);
+        setUploadProgress("Creating unit...");
         try {
             const res = await fetch(`/api/custom-subjects/${subjectId}/units`, {
                 method: "POST",
@@ -54,13 +57,34 @@ export default function SubjectDetailPage() {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
+
+            // If a PDF was selected, upload it to the new unit
+            if (pdfFile && data.id) {
+                setUploadProgress("Uploading & processing PDF...");
+                const formData = new FormData();
+                formData.append("file", pdfFile);
+
+                const uploadRes = await fetch(`/api/custom-subjects/${subjectId}/units/${data.id}/upload`, {
+                    method: "POST",
+                    body: formData,
+                });
+                const uploadData = await uploadRes.json();
+                if (!uploadRes.ok) {
+                    console.error("PDF upload failed:", uploadData.error);
+                    alert(`Unit created but PDF upload failed: ${uploadData.error}`);
+                }
+            }
+
             setShowCreate(false);
             setForm({ title: "", description: "" });
+            setPdfFile(null);
+            setUploadProgress("");
             fetchData();
         } catch (err: any) {
             alert(err.message);
         } finally {
             setCreating(false);
+            setUploadProgress("");
         }
     };
 
@@ -179,10 +203,85 @@ export default function SubjectDetailPage() {
                                     />
                                 </div>
                             </div>
+
+                                {/* PDF Upload Zone */}
+                                <div>
+                                    <label className="text-sm font-medium text-slate-700 mb-1 block">Upload PDF <span className="text-slate-400 font-normal">(optional)</span></label>
+                                    <div
+                                        className={`relative border-2 border-dashed rounded-xl p-5 text-center transition-all cursor-pointer group
+                                            ${pdfFile
+                                                ? "border-indigo-300 bg-indigo-50/50"
+                                                : "border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-indigo-50/30"
+                                            }`}
+                                        onClick={() => document.getElementById("pdf-upload-input")?.click()}
+                                        onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("border-indigo-400", "bg-indigo-50"); }}
+                                        onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove("border-indigo-400", "bg-indigo-50"); }}
+                                        onDrop={(e) => {
+                                            e.preventDefault();
+                                            e.currentTarget.classList.remove("border-indigo-400", "bg-indigo-50");
+                                            const droppedFile = e.dataTransfer.files[0];
+                                            if (droppedFile && (droppedFile.type === "application/pdf" || droppedFile.name.endsWith(".pdf"))) {
+                                                setPdfFile(droppedFile);
+                                            } else {
+                                                alert("Only PDF files are supported.");
+                                            }
+                                        }}
+                                    >
+                                        <input
+                                            id="pdf-upload-input"
+                                            type="file"
+                                            accept=".pdf"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const f = e.target.files?.[0];
+                                                if (f) setPdfFile(f);
+                                                e.target.value = "";
+                                            }}
+                                        />
+                                        {pdfFile ? (
+                                            <div className="flex items-center justify-center gap-3">
+                                                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                                                    <FileText className="w-5 h-5 text-indigo-600" />
+                                                </div>
+                                                <div className="text-left min-w-0">
+                                                    <p className="text-sm font-semibold text-slate-800 truncate">{pdfFile.name}</p>
+                                                    <p className="text-xs text-slate-400">{(pdfFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); setPdfFile(null); }}
+                                                    className="ml-2 text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 px-2 py-1 rounded-lg transition-colors"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <div className="w-10 h-10 mx-auto rounded-lg bg-slate-100 flex items-center justify-center mb-2 group-hover:bg-indigo-100 transition-colors">
+                                                    <FileText className="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                                                </div>
+                                                <p className="text-sm text-slate-500">
+                                                    <span className="font-semibold text-indigo-600">Click to upload</span> or drag & drop
+                                                </p>
+                                                <p className="text-xs text-slate-400 mt-0.5">PDF files only • AI will extract knowledge automatically</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Progress text */}
+                            {creating && uploadProgress && (
+                                <div className="flex items-center gap-2 text-sm text-indigo-600 font-medium">
+                                    <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                                    {uploadProgress}
+                                </div>
+                            )}
+
                             <div className="flex gap-3 pt-2">
-                                <Button variant="outline" onClick={() => setShowCreate(false)} className="flex-1 rounded-xl">Cancel</Button>
+                                <Button variant="outline" onClick={() => { setShowCreate(false); setPdfFile(null); }} className="flex-1 rounded-xl">Cancel</Button>
                                 <Button onClick={handleCreateUnit} isLoading={creating} className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-xl">
-                                    Create Unit
+                                    {pdfFile ? "Create & Upload" : "Create Unit"}
                                 </Button>
                             </div>
                         </GlassCard>
