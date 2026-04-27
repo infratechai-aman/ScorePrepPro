@@ -24,7 +24,7 @@
     "nanoid": "^5.1.9",
     "next": "16.1.6",
     "openai": "^6.18.0",
-    "pdf-parse": "^2.4.5",
+    "pdf-parse-new": "^2.0.0",
     "razorpay": "^2.9.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",

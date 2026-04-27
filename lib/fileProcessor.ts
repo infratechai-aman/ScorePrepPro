@@ -35,13 +35,7 @@ export async function extractTextFromFile(
 }
 
 async function extractFromPDF(buffer: Buffer): Promise<string> {
-    if (typeof globalThis.DOMMatrix === "undefined") {
-        (globalThis as any).DOMMatrix = class DOMMatrix {};
-    }
-    if (typeof globalThis.Path2D === "undefined") {
-        (globalThis as any).Path2D = class Path2D {};
-    }
-    const pdfParse = (await import("pdf-parse")).default;
+    const pdfParse = (await import("pdf-parse-new")).default;
     const data = await pdfParse(buffer);
     return data.text || "";
 }
