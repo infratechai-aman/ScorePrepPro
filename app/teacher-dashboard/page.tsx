@@ -22,11 +22,11 @@ export default function TeacherDashboardPage() {
     const [activeTab, setActiveTab] = useState<"overview" | "generate">("overview");
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="h-screen bg-slate-50 flex flex-col overflow-hidden">
             <DashboardHeader title={activeTab === "overview" ? "Overview" : "Generate Paper"} />
 
-            <div className="flex flex-1">
-                <main className="flex-1 p-8 space-y-8 overflow-y-auto h-[calc(100vh-80px)]">
+            <div className="flex flex-1 overflow-hidden">
+                <main className="flex-1 p-8 space-y-8 overflow-y-auto">
                     {/* Tab Switcher */}
                     <div className="flex gap-2 bg-white p-1 rounded-xl border border-slate-200 w-fit shadow-sm">
                         <button
