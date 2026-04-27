@@ -1,8 +1,6 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, getCountFromServer } from "firebase/firestore";
 import { GraduationCap, Users, ClipboardList, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -25,28 +23,11 @@ export function TheTeacherStats() {
 
     const fetchStats = async () => {
         try {
-            const uid = userData?.uid;
-            if (!uid) return;
-
-            // Fetch custom subjects count
-            const subjectsSnap = await getDocs(query(collection(db, "customSubjects"), where("teacherUid", "==", uid)));
-            const subjectsCount = subjectsSnap.size;
-
-            // Fetch classrooms + student count
-            const classroomsSnap = await getDocs(query(collection(db, "classrooms"), where("teacherUid", "==", uid)));
-            const classroomsCount = classroomsSnap.size;
-
-            let totalStudents = 0;
-            for (const room of classroomsSnap.docs) {
-                const studentsSnap = await getCountFromServer(collection(db, "classrooms", room.id, "students"));
-                totalStudents += studentsSnap.data().count;
+            const res = await fetch(`/api/teacher-dashboard?teacherUid=${userData?.uid}&section=stats`);
+            const data = await res.json();
+            if (res.ok) {
+                setStats(data);
             }
-
-            // Fetch exams count
-            const examsSnap = await getDocs(query(collection(db, "exams"), where("teacherUid", "==", uid)));
-            const examsCount = examsSnap.size;
-
-            setStats({ subjects: subjectsCount, classrooms: classroomsCount, exams: examsCount, students: totalStudents });
         } catch (err) {
             console.error("Error fetching teacher stats:", err);
         } finally {

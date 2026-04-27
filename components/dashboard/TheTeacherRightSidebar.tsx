@@ -1,9 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
-import { Crown, ChevronRight, Zap, ClipboardList, CheckCircle, Clock, Sparkles, Calendar } from "lucide-react";
+import { Crown, ChevronRight, Zap, ClipboardList, CheckCircle, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useEffect, useState } from "react";
 
@@ -17,28 +15,17 @@ export function TheTeacherRightSidebar() {
 
     const fetchUpcomingExams = async () => {
         try {
-            const q = query(
-                collection(db, "exams"),
-                where("teacherUid", "==", userData?.uid),
-                where("status", "==", "published"),
-                orderBy("createdAt", "desc"),
-                limit(3)
-            );
-            const snap = await getDocs(q);
-            setUpcomingExams(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        } catch (err) {
-            console.error("Error fetching exams:", err);
-        }
+            const res = await fetch(`/api/teacher-dashboard?teacherUid=${userData?.uid}&section=published-exams`);
+            const data = await res.json();
+            if (res.ok) setUpcomingExams(data.exams || []);
+        } catch (err) { console.error("Error fetching exams:", err); }
     };
 
     return (
         <aside className="w-80 bg-slate-50/50 border-l border-slate-200 hidden xl:flex flex-col p-6 space-y-8 h-[calc(100vh-80px)] overflow-y-auto sticky top-20">
-
             {/* Plan Status Card */}
             <div className="relative bg-white p-6 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                {/* Decorative gradient blob */}
                 <div className="absolute -top-10 -right-10 w-28 h-28 bg-purple-500/10 rounded-full blur-2xl" />
-
                 <div className="flex items-center gap-3 mb-4 relative z-10">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 text-white flex items-center justify-center shadow-lg shadow-purple-200">
                         <Crown size={22} />
@@ -56,31 +43,27 @@ export function TheTeacherRightSidebar() {
             <div>
                 <div className="flex items-center justify-between mb-4">
                     <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-purple-500" />
-                        Published Exams
+                        <Calendar className="w-4 h-4 text-purple-500" /> Published Exams
                     </h4>
                     <span className="text-xs font-bold text-indigo-600 uppercase">View All</span>
                 </div>
-
                 <div className="space-y-3">
-                    {upcomingExams.length > 0 ? (
-                        upcomingExams.map((exam, i) => (
-                            <div key={i} className="group flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-100 hover:shadow-sm hover:border-purple-100 transition-all cursor-pointer">
-                                <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center group-hover:bg-purple-100 transition-colors">
-                                    <ClipboardList className="w-4 h-4 text-purple-600" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h5 className="font-bold text-slate-800 text-sm truncate">{exam.title}</h5>
-                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                        <CheckCircle className="w-3 h-3 text-emerald-500" />
-                                        <span className="text-xs text-emerald-600 font-medium">Published</span>
-                                        <span className="text-xs text-slate-300 ml-1">•</span>
-                                        <span className="text-xs text-slate-400">{exam.totalQuestions || exam.mcqs?.length || 0} MCQs</span>
-                                    </div>
+                    {upcomingExams.length > 0 ? upcomingExams.map((exam, i) => (
+                        <div key={i} className="group flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-100 hover:shadow-sm hover:border-purple-100 transition-all cursor-pointer">
+                            <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                                <ClipboardList className="w-4 h-4 text-purple-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h5 className="font-bold text-slate-800 text-sm truncate">{exam.title}</h5>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                    <CheckCircle className="w-3 h-3 text-emerald-500" />
+                                    <span className="text-xs text-emerald-600 font-medium">Published</span>
+                                    <span className="text-xs text-slate-300 ml-1">•</span>
+                                    <span className="text-xs text-slate-400">{exam.totalQuestions || 0} MCQs</span>
                                 </div>
                             </div>
-                        ))
-                    ) : (
+                        </div>
+                    )) : (
                         <div className="p-4 bg-slate-50 rounded-xl text-center">
                             <p className="text-xs text-slate-400">No published exams yet</p>
                         </div>
@@ -88,11 +71,10 @@ export function TheTeacherRightSidebar() {
                 </div>
             </div>
 
-            {/* Pro Tip — Custom Content focused */}
+            {/* Pro Tip */}
             <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-purple-900/80 rounded-3xl p-6 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2" />
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500 rounded-full blur-2xl opacity-15 translate-y-1/2 -translate-x-1/2" />
-
                 <h4 className="font-bold text-lg mb-2 relative z-10 flex items-center gap-2">
                     <Zap className="w-4 h-4 text-amber-400 fill-amber-400" /> Pro Tip
                 </h4>
@@ -103,7 +85,6 @@ export function TheTeacherRightSidebar() {
                     Try Generator <ChevronRight className="w-3 h-3" />
                 </a>
             </div>
-
         </aside>
     );
 }

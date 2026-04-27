@@ -1,8 +1,6 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
 import { BookOpen, ArrowRight, Plus, Layers } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -19,10 +17,11 @@ export function TheTeacherSubjects() {
 
     const fetchSubjects = async () => {
         try {
-            const q = query(collection(db, "customSubjects"), where("teacherUid", "==", userData?.uid));
-            const snap = await getDocs(q);
-            const subs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            setSubjects(subs);
+            const res = await fetch(`/api/teacher-dashboard?teacherUid=${userData?.uid}&section=subjects`);
+            const data = await res.json();
+            if (res.ok) {
+                setSubjects(data.subjects || []);
+            }
         } catch (err) {
             console.error("Error fetching subjects:", err);
         } finally {
