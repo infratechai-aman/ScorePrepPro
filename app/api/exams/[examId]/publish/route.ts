@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { doc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
 
 export async function POST(
     req: Request,
@@ -11,12 +10,10 @@ export async function POST(
         const { classroomId, teacherUid } = await req.json();
 
         // Check published exam limit (max 10)
-        const publishedQuery = query(
-            collection(db, "exams"),
-            where("teacherUid", "==", teacherUid),
-            where("status", "==", "published")
-        );
-        const publishedSnap = await getDocs(publishedQuery);
+        const publishedSnap = await adminDb.collection("exams")
+            .where("teacherUid", "==", teacherUid)
+            .where("status", "==", "published")
+            .get();
 
         if (publishedSnap.size >= 10) {
             return NextResponse.json(
@@ -25,8 +22,7 @@ export async function POST(
             );
         }
 
-        const examRef = doc(db, "exams", examId);
-        await updateDoc(examRef, {
+        await adminDb.collection("exams").doc(examId).update({
             status: "published",
             classroomId: classroomId || "",
             publishedAt: new Date().toISOString()

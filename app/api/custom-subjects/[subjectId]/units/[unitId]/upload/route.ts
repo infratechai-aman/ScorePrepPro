@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { doc, updateDoc, increment, addDoc, collection, getDoc, serverTimestamp } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 import { extractTextFromFile, getFileExtension } from "@/lib/fileProcessor";
 import { processContentToKnowledge } from "@/lib/knowledgeEngine";
 
@@ -45,22 +45,21 @@ export async function POST(
         }
 
         // Step 2: Save material record to Firestore
-        const materialsRef = collection(db, "customSubjects", subjectId, "units", unitId, "materials");
-        await addDoc(materialsRef, {
+        await adminDb.collection("customSubjects").doc(subjectId).collection("units").doc(unitId).collection("materials").add({
             fileName: file.name,
             fileType: fileExt,
             fileSize: file.size,
-            uploadedAt: serverTimestamp(),
-            extractedText: extractedText.substring(0, 50000), // Store up to 50k chars
+            uploadedAt: FieldValue.serverTimestamp(),
+            extractedText: extractedText.substring(0, 50000),
             processed: true
         });
 
         // Step 3: Get subject info for context
-        const subjectDoc = await getDoc(doc(db, "customSubjects", subjectId));
+        const subjectDoc = await adminDb.collection("customSubjects").doc(subjectId).get();
         const subjectData = subjectDoc.data();
         const subjectName = subjectData?.name || "Unknown Subject";
 
-        const unitDoc = await getDoc(doc(db, "customSubjects", subjectId, "units", unitId));
+        const unitDoc = await adminDb.collection("customSubjects").doc(subjectId).collection("units").doc(unitId).get();
         const unitData = unitDoc.data();
         const unitTitle = unitData?.title || "Unknown Unit";
 
@@ -74,17 +73,16 @@ export async function POST(
             : knowledge.fullKnowledge;
 
         // Step 6: Update unit with permanent knowledge
-        const unitRef = doc(db, "customSubjects", subjectId, "units", unitId);
-        await updateDoc(unitRef, {
+        await adminDb.collection("customSubjects").doc(subjectId).collection("units").doc(unitId).update({
             knowledgeExtracted: true,
-            knowledgeText: mergedKnowledge.substring(0, 100000), // Store up to 100k chars
+            knowledgeText: mergedKnowledge.substring(0, 100000),
             knowledgeSummary: knowledge.summary,
             concepts: knowledge.concepts,
             definitions: knowledge.definitions,
             formulas: knowledge.formulas,
             keyTopics: knowledge.keyTopics,
-            materialCount: increment(1),
-            lastProcessedAt: serverTimestamp()
+            materialCount: FieldValue.increment(1),
+            lastProcessedAt: FieldValue.serverTimestamp()
         });
 
         return NextResponse.json({

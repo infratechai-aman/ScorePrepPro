@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, addDoc, serverTimestamp, doc, updateDoc, increment, deleteDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function GET(
     req: Request,
@@ -8,8 +8,7 @@ export async function GET(
 ) {
     try {
         const { subjectId } = await params;
-        const unitsRef = collection(db, "customSubjects", subjectId, "units");
-        const snapshot = await getDocs(unitsRef);
+        const snapshot = await adminDb.collection("customSubjects").doc(subjectId).collection("units").get();
         const units = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
         return NextResponse.json({ units });
@@ -31,19 +30,17 @@ export async function POST(
             return NextResponse.json({ error: "Unit title is required" }, { status: 400 });
         }
 
-        const unitsRef = collection(db, "customSubjects", subjectId, "units");
-        const docRef = await addDoc(unitsRef, {
+        const docRef = await adminDb.collection("customSubjects").doc(subjectId).collection("units").add({
             title,
             description: description || "",
-            createdAt: serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
             materialCount: 0,
             knowledgeExtracted: false,
             knowledgeText: ""
         });
 
         // Update unit count on parent subject
-        const subjectRef = doc(db, "customSubjects", subjectId);
-        await updateDoc(subjectRef, { unitCount: increment(1) });
+        await adminDb.collection("customSubjects").doc(subjectId).update({ unitCount: FieldValue.increment(1) });
 
         return NextResponse.json({ id: docRef.id, message: "Unit created successfully" });
     } catch (error: any) {
@@ -64,9 +61,8 @@ export async function DELETE(
             return NextResponse.json({ error: "Unit ID required" }, { status: 400 });
         }
 
-        await deleteDoc(doc(db, "customSubjects", subjectId, "units", unitId));
-        const subjectRef = doc(db, "customSubjects", subjectId);
-        await updateDoc(subjectRef, { unitCount: increment(-1) });
+        await adminDb.collection("customSubjects").doc(subjectId).collection("units").doc(unitId).delete();
+        await adminDb.collection("customSubjects").doc(subjectId).update({ unitCount: FieldValue.increment(-1) });
 
         return NextResponse.json({ message: "Unit deleted" });
     } catch (error: any) {

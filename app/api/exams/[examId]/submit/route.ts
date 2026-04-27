@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(
     req: Request,
@@ -15,19 +15,19 @@ export async function POST(
         }
 
         // Check if already submitted
-        const submissionRef = doc(db, "exams", examId, "submissions", studentUid);
-        const existingSubmission = await getDoc(submissionRef);
-        if (existingSubmission.exists()) {
+        const submissionRef = adminDb.collection("exams").doc(examId).collection("submissions").doc(studentUid);
+        const existingSubmission = await submissionRef.get();
+        if (existingSubmission.exists) {
             return NextResponse.json({ error: "Already submitted this exam" }, { status: 400 });
         }
 
         // Get exam to evaluate
-        const examDoc = await getDoc(doc(db, "exams", examId));
-        if (!examDoc.exists()) {
+        const examDoc = await adminDb.collection("exams").doc(examId).get();
+        if (!examDoc.exists) {
             return NextResponse.json({ error: "Exam not found" }, { status: 404 });
         }
 
-        const examData = examDoc.data();
+        const examData = examDoc.data()!;
         const mcqs = examData.mcqs || [];
 
         // Auto-evaluate
@@ -40,35 +40,22 @@ export async function POST(
             const correctAnswer = mcqs[i].correctAnswer;
             const isCorrect = selectedAnswer === correctAnswer;
             if (isCorrect) score++;
-
-            evaluation.push({
-                questionIndex: i,
-                selectedAnswer,
-                correctAnswer,
-                isCorrect
-            });
+            evaluation.push({ questionIndex: i, selectedAnswer, correctAnswer, isCorrect });
         }
 
         const percentage = Math.round((score / totalMarks) * 100);
 
-        // Save submission
-        await setDoc(submissionRef, {
+        await submissionRef.set({
             answers,
             evaluation,
             score,
             totalMarks,
             percentage,
             timeTaken: timeTaken || 0,
-            submittedAt: serverTimestamp()
+            submittedAt: FieldValue.serverTimestamp()
         });
 
-        return NextResponse.json({
-            score,
-            totalMarks,
-            percentage,
-            evaluation,
-            message: "Exam submitted and evaluated!"
-        });
+        return NextResponse.json({ score, totalMarks, percentage, evaluation, message: "Exam submitted and evaluated!" });
     } catch (error: any) {
         console.error("Error submitting exam:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });

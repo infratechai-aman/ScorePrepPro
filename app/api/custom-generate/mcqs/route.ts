@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
 import { generateFromKnowledge } from "@/lib/knowledgeEngine";
 
 export const runtime = "nodejs";
@@ -18,9 +17,9 @@ export async function POST(req: Request) {
         let unitNames: string[] = [];
 
         for (const unitId of unitIds) {
-            const unitDoc = await getDoc(doc(db, "customSubjects", subjectId, "units", unitId));
-            if (unitDoc.exists()) {
-                const data = unitDoc.data();
+            const unitDoc = await adminDb.collection("customSubjects").doc(subjectId).collection("units").doc(unitId).get();
+            if (unitDoc.exists) {
+                const data = unitDoc.data()!;
                 if (data.knowledgeText) {
                     combinedKnowledge += `\n\n## ${data.title}\n${data.knowledgeText}`;
                     unitNames.push(data.title);

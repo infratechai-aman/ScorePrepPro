@@ -1,8 +1,6 @@
-
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
-import { db } from "@/lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
 
 export const runtime = "nodejs";
 export const maxDuration = 180;
@@ -24,9 +22,9 @@ export async function POST(req: Request) {
         const cacheKey = `${(board || 'standard').toLowerCase()}_${(grade || '').toString().toLowerCase()}_${subject.toLowerCase().replace(/\s+/g, '_')}_${unit.toLowerCase().replace(/\s+/g, '_')}`;
 
         try {
-            const cachedDoc = await getDoc(doc(db, 'notesCache', cacheKey));
-            if (cachedDoc.exists()) {
-                const cached = cachedDoc.data();
+            const cachedDoc = await adminDb.collection('notesCache').doc(cacheKey).get();
+            if (cachedDoc.exists) {
+                const cached = cachedDoc.data()!;
                 console.log(`Cache HIT for notes: ${cacheKey}`);
                 return NextResponse.json({ content: cached.content, cached: true });
             }
@@ -355,7 +353,7 @@ RULES:
         // SAVE TO CACHE for future users
         // ============================================================
         try {
-            await setDoc(doc(db, 'notesCache', cacheKey), {
+            await adminDb.collection('notesCache').doc(cacheKey).set({
                 content,
                 board: board || 'standard',
                 grade: grade || '',

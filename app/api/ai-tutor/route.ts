@@ -1,15 +1,7 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
-import { db } from "@/lib/firebase"; // Ensure this exports your firebase admin or client instance appropriately for server context. 
-// Note: If db is client SDK, we might need admin SDK for server routes to bypass rules if needed, 
-// but consistent with existing code (api/generate uses openai directly but doesn't seem to use db? wait, api/generate didn't use db).
-// Let's assume we can use the same firebase setup. 
-// Actually, standard Next.js API routes run on server. Client SDK might work if auth is passed or if rules allow publicly (bad).
-// For this MVP, I'll use the client SDK with the understanding that in a real app Admin SDK is better.
-// However, to track usage securely, we really need the user's UID.
-// I'll parse the 'Authorization' header or a custom header since I don't have a session cookie utility ready here.
-// For now, I will pass the userId in the body for MVP (NOT SECURE for production but works for this demo context).
-import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 
 const DAILY_LIMIT = 100000;
 
@@ -23,13 +15,13 @@ export async function POST(req: Request) {
 
         // 1. Check Rate Limit
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-        const usageRef = doc(db, "users", userId, "ai_usage", "daily");
-        const usageSnap = await getDoc(usageRef);
+        const usageRef = adminDb.collection("users").doc(userId).collection("ai_usage").doc("daily");
+        const usageSnap = await usageRef.get();
 
         let currentUsage = 0;
 
-        if (usageSnap.exists()) {
-            const data = usageSnap.data();
+        if (usageSnap.exists) {
+            const data = usageSnap.data()!;
             if (data.date === today) {
                 currentUsage = data.tokens_used || 0;
                 if (currentUsage >= DAILY_LIMIT) {
@@ -37,11 +29,11 @@ export async function POST(req: Request) {
                 }
             } else {
                 // Reset for new day
-                await setDoc(usageRef, { date: today, tokens_used: 0 });
+                await usageRef.set({ date: today, tokens_used: 0 });
             }
         } else {
             // Create initial record
-            await setDoc(usageRef, { date: today, tokens_used: 0 });
+            await usageRef.set({ date: today, tokens_used: 0 });
         }
 
         // 2. Call OpenAI
@@ -80,8 +72,8 @@ FORMATTING RULES (CRITICAL):
         const totalTokens = completion.usage?.total_tokens || (reply?.length || 0) / 4; // Fallback estimation
 
         // 3. Update Usage
-        await updateDoc(usageRef, {
-            tokens_used: increment(totalTokens)
+        await usageRef.update({
+            tokens_used: FieldValue.increment(totalTokens)
         });
 
         return NextResponse.json({

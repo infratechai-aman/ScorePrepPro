@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 import { generatePremiumNotes } from "@/lib/premiumNotesEngine";
 
 export const runtime = "nodejs";
@@ -23,9 +23,9 @@ export async function POST(req: Request) {
         let unitNames: string[] = [];
 
         for (const unitId of unitIds) {
-            const unitDoc = await getDoc(doc(db, "customSubjects", subjectId, "units", unitId));
-            if (unitDoc.exists()) {
-                const data = unitDoc.data();
+            const unitDoc = await adminDb.collection("customSubjects").doc(subjectId).collection("units").doc(unitId).get();
+            if (unitDoc.exists) {
+                const data = unitDoc.data()!;
                 if (data.knowledgeText) {
                     combinedKnowledge += `\n\n## ${data.title}\n${data.knowledgeText}`;
                     unitNames.push(data.title);
@@ -41,8 +41,8 @@ export async function POST(req: Request) {
         }
 
         // Get subject info
-        const subjectDoc = await getDoc(doc(db, "customSubjects", subjectId));
-        const subjectData = subjectDoc.exists() ? subjectDoc.data() : {};
+        const subjectDoc = await adminDb.collection("customSubjects").doc(subjectId).get();
+        const subjectData = subjectDoc.exists ? subjectDoc.data() : {};
         const finalSubjectName = subjectName || subjectData?.name || "Custom Subject";
         const unitTitle = unitNames.join(", ");
 
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
         // Auto-save to repository
         let noteId = "";
         try {
-            const noteRef = await addDoc(collection(db, "users", teacherUid, "notes"), {
+            const noteRef = await adminDb.collection("users").doc(teacherUid).collection("notes").add({
                 subject: finalSubjectName,
                 chapter: unitTitle,
                 grade: subjectData?.grade || "",
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
                 source: "the_teacher",
                 subjectId,
                 unitIds,
-                createdAt: serverTimestamp()
+                createdAt: FieldValue.serverTimestamp()
             });
             noteId = noteRef.id;
         } catch (saveErr) {

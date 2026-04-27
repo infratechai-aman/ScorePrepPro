@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(req: Request) {
     try {
@@ -11,8 +11,7 @@ export async function POST(req: Request) {
         }
 
         // Find classroom by code
-        const q = query(collection(db, "classrooms"), where("code", "==", code.toUpperCase()));
-        const snapshot = await getDocs(q);
+        const snapshot = await adminDb.collection("classrooms").where("code", "==", code.toUpperCase()).get();
 
         if (snapshot.empty) {
             return NextResponse.json({ error: "Invalid classroom code. Please check and try again." }, { status: 404 });
@@ -22,9 +21,9 @@ export async function POST(req: Request) {
         const classroomId = classroomDoc.id;
 
         // Check if student already joined
-        const studentRef = doc(db, "classrooms", classroomId, "students", studentUid);
-        const existingDoc = await getDoc(studentRef);
-        if (existingDoc.exists()) {
+        const studentRef = adminDb.collection("classrooms").doc(classroomId).collection("students").doc(studentUid);
+        const existingDoc = await studentRef.get();
+        if (existingDoc.exists) {
             return NextResponse.json({
                 classroomId,
                 classroomName: classroomDoc.data().name,
@@ -33,21 +32,20 @@ export async function POST(req: Request) {
         }
 
         // Add student to classroom
-        await setDoc(studentRef, {
+        await studentRef.set({
             name: studentName || "Student",
             email: studentEmail || "",
-            joinedAt: serverTimestamp()
+            joinedAt: FieldValue.serverTimestamp()
         });
 
         // Increment student count
-        await updateDoc(doc(db, "classrooms", classroomId), {
-            studentCount: increment(1)
+        await adminDb.collection("classrooms").doc(classroomId).update({
+            studentCount: FieldValue.increment(1)
         });
 
         // Also update the user's document with classroom reference
         try {
-            const userRef = doc(db, "users", studentUid);
-            await updateDoc(userRef, {
+            await adminDb.collection("users").doc(studentUid).update({
                 [`classrooms.${classroomId}`]: true
             });
         } catch (e) {
