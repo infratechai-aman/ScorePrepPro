@@ -42,6 +42,27 @@ export default function ExamResultPage() {
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-indigo-600" size={32} /></div>;
 
+    if (exam?.type === "paper") {
+        return (
+            <main className="max-w-3xl mx-auto p-6 space-y-8">
+                <Link href="/student" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600"><ArrowLeft size={16} /> Dashboard</Link>
+
+                <GlassCard className="p-8 text-center space-y-4 border-t-4 border-t-indigo-500">
+                    <CheckCircle className="mx-auto text-indigo-500" size={48} />
+                    <h1 className="text-3xl font-bold font-serif text-slate-900">Exam Submitted!</h1>
+                    <p className="text-slate-600">Your subjective answers have been saved and sent to your teacher for manual grading.</p>
+                </GlassCard>
+
+                <div className="space-y-3">
+                    <h2 className="text-xl font-bold font-serif text-slate-900">Your Submission</h2>
+                    <GlassCard className="p-6">
+                        <pre className="whitespace-pre-wrap font-mono text-sm text-slate-700">{submission?.textAnswers}</pre>
+                    </GlassCard>
+                </div>
+            </main>
+        );
+    }
+
     const pct = submission?.percentage || 0;
     const color = pct >= 80 ? "emerald" : pct >= 50 ? "amber" : "red";
 

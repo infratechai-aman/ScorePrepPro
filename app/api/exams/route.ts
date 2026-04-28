@@ -42,12 +42,21 @@ export async function GET(req: Request) {
     }
 }
 
-export async function POST(req: Request) {
+    export async function POST(req: Request) {
     try {
-        const { teacherUid, classroomId, subjectId, unitId, title, mcqs, totalQuestions, difficulty, timeLimit } = await req.json();
+        const { teacherUid, classroomId, subjectId, unitId, title, type, content, mcqs, totalQuestions, difficulty, timeLimit } = await req.json();
 
-        if (!teacherUid || !title || !mcqs || mcqs.length === 0) {
+        const isPaper = type === "paper";
+
+        if (!teacherUid || !title) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        if (!isPaper && (!mcqs || mcqs.length === 0)) {
+            return NextResponse.json({ error: "MCQs required for MCQ exam" }, { status: 400 });
+        }
+        if (isPaper && !content) {
+            return NextResponse.json({ error: "Content required for Paper exam" }, { status: 400 });
         }
 
         const docRef = await adminDb.collection("exams").add({
@@ -56,8 +65,10 @@ export async function POST(req: Request) {
             subjectId: subjectId || "",
             unitId: unitId || "",
             title,
-            mcqs,
-            totalQuestions: totalQuestions || mcqs.length,
+            type: type || "mcq",
+            content: content || "",
+            mcqs: mcqs || [],
+            totalQuestions: totalQuestions || (mcqs ? mcqs.length : 0),
             difficulty: difficulty || "medium",
             timeLimit: timeLimit || 30,
             status: "draft",

@@ -134,7 +134,10 @@ function CustomGenerateContent() {
     };
 
     const handlePublishExam = async () => {
-        if (!selectedSubject || mcqResult.length === 0) return;
+        if (!selectedSubject) return;
+        if (genType === "mcqs" && mcqResult.length === 0) return;
+        if (genType === "paper" && !result) return;
+        
         setPublishingExam(true);
         try {
             const subjectName = subjects.find(s => s.id === selectedSubject)?.name || "Subject";
@@ -149,10 +152,12 @@ function CustomGenerateContent() {
                     classroomId: "", // Open link access
                     subjectId: selectedSubject,
                     title: finalTitle,
-                    mcqs: mcqResult,
-                    totalQuestions: mcqResult.length,
+                    type: genType === "paper" ? "paper" : "mcq",
+                    content: genType === "paper" ? result : "",
+                    mcqs: genType === "mcqs" ? mcqResult : [],
+                    totalQuestions: genType === "mcqs" ? mcqResult.length : 1,
                     difficulty,
-                    timeLimit: mcqCount * 2, // roughly 2 mins per question
+                    timeLimit: genType === "paper" ? duration : mcqCount * 2,
                 }),
             });
             const createData = await createRes.json();
@@ -291,6 +296,12 @@ function CustomGenerateContent() {
                                 </div>
                             </div>
                         )}
+                        {genType === "paper" && (
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Exam Title (Optional)</label>
+                                <input type="text" value={examTitle} onChange={e => setExamTitle(e.target.value)} placeholder="e.g. Term 1 Exam" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm focus:border-indigo-500 transition-colors" />
+                            </div>
+                        )}
 
                         <div>
                             <label className="text-sm font-medium text-slate-700 mb-1.5 block">Difficulty</label>
@@ -337,7 +348,7 @@ function CustomGenerateContent() {
                                         </Link>
                                     )}
                                     
-                                    {genType === "mcqs" ? (
+                                    {genType === "mcqs" || genType === "paper" ? (
                                         publishedExamLink ? (
                                             <div className="flex items-center gap-2 bg-white border border-indigo-200 rounded-lg pl-3 pr-1 py-1">
                                                 <span className="text-xs text-indigo-700 font-medium select-all truncate max-w-[200px]">{publishedExamLink}</span>
@@ -346,9 +357,14 @@ function CustomGenerateContent() {
                                                 </Button>
                                             </div>
                                         ) : (
-                                            <Button onClick={handlePublishExam} isLoading={publishingExam} className="rounded-lg text-xs gap-1.5 py-1.5 px-3 bg-indigo-600 hover:bg-indigo-700">
-                                                <Share2 size={14} /> Publish as Shareable Exam
-                                            </Button>
+                                            <div className="flex gap-2">
+                                                {genType === "paper" && (
+                                                    <Button variant="outline" onClick={handlePrint} className="rounded-lg text-xs gap-1.5 py-1.5 px-3"><Download size={14} /> Print / PDF</Button>
+                                                )}
+                                                <Button onClick={handlePublishExam} isLoading={publishingExam} className="rounded-lg text-xs gap-1.5 py-1.5 px-3 bg-indigo-600 hover:bg-indigo-700">
+                                                    <Share2 size={14} /> Publish as Shareable Exam
+                                                </Button>
+                                            </div>
                                         )
                                     ) : (
                                         <Button variant="outline" onClick={handlePrint} className="rounded-lg text-xs gap-1.5 py-1.5 px-3"><Download size={14} /> Print / PDF</Button>

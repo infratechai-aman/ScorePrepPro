@@ -8,9 +8,9 @@ export async function POST(
 ) {
     try {
         const { examId } = await params;
-        const { studentUid, studentName, answers, timeTaken } = await req.json();
+        const { studentUid, studentName, answers, textAnswers, timeTaken } = await req.json();
 
-        if (!studentUid || !answers) {
+        if (!studentUid) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
@@ -28,15 +28,30 @@ export async function POST(
         }
 
         const examData = examDoc.data()!;
-        const mcqs = examData.mcqs || [];
+        const isPaper = examData.type === "paper";
 
-        // Auto-evaluate
+        if (isPaper) {
+            // Subjective exam - no auto evaluation
+            await submissionRef.set({
+                studentName: studentName || "Guest Student",
+                textAnswers: textAnswers || "",
+                score: null,
+                percentage: null,
+                timeTaken: timeTaken || 0,
+                submittedAt: FieldValue.serverTimestamp()
+            });
+
+            return NextResponse.json({ message: "Subjective exam submitted successfully!" });
+        }
+
+        // MCQ auto-evaluation
+        const mcqs = examData.mcqs || [];
         let score = 0;
         const totalMarks = mcqs.length;
         const evaluation: { questionIndex: number; selectedAnswer: number; correctAnswer: number; isCorrect: boolean }[] = [];
 
         for (let i = 0; i < mcqs.length; i++) {
-            const selectedAnswer = answers[i] !== undefined ? answers[i] : -1;
+            const selectedAnswer = answers && answers[i] !== undefined ? answers[i] : -1;
             const correctAnswer = mcqs[i].correctAnswer;
             const isCorrect = selectedAnswer === correctAnswer;
             if (isCorrect) score++;
@@ -47,7 +62,7 @@ export async function POST(
 
         await submissionRef.set({
             studentName: studentName || "Guest Student",
-            answers,
+            answers: answers || {},
             evaluation,
             score,
             totalMarks,

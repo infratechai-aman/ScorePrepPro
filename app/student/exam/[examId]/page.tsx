@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { Clock, ChevronLeft, ChevronRight, Send, AlertTriangle } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 
 export default function StudentExamPage() {
     const { examId } = useParams() as { examId: string };
@@ -13,6 +16,7 @@ export default function StudentExamPage() {
     const router = useRouter();
     const [exam, setExam] = useState<any>(null);
     const [answers, setAnswers] = useState<Record<number, number>>({});
+    const [textAnswers, setTextAnswers] = useState("");
     const [currentQ, setCurrentQ] = useState(0);
     const [timeLeft, setTimeLeft] = useState(0);
     const [submitting, setSubmitting] = useState(false);
@@ -23,6 +27,7 @@ export default function StudentExamPage() {
     const [guestName, setGuestName] = useState("");
     const [hasStarted, setHasStarted] = useState(false);
     const [guestUid, setGuestUid] = useState("");
+    const [warnings, setWarnings] = useState(0);
 
     useEffect(() => {
         // Initialize guest uid
@@ -68,7 +73,49 @@ export default function StudentExamPage() {
         if (timeLeft === 1) { handleSubmit(); return; }
         const t = setInterval(() => setTimeLeft(p => Math.max(0, p - 1)), 1000);
         return () => clearInterval(t);
-    }, [timeLeft, exam]);
+    }, [timeLeft, exam, hasStarted]);
+
+    // Anti-cheat mechanisms
+    useEffect(() => {
+        if (!hasStarted) return;
+        
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                setWarnings(prev => {
+                    const newWarnings = prev + 1;
+                    if (newWarnings >= 2) {
+                        alert("Exam auto-submitted due to multiple tab switches.");
+                        handleSubmit();
+                    } else {
+                        alert("Warning: Do not switch tabs during the exam. One more warning and your exam will be auto-submitted.");
+                    }
+                    return newWarnings;
+                });
+            }
+        };
+
+        const blockKeys = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'p' || e.key === 's')) {
+                e.preventDefault();
+            }
+            if (e.key === 'PrintScreen') {
+                navigator.clipboard.writeText('');
+                alert("Screenshots are disabled.");
+            }
+        };
+
+        const blockContext = (e: MouseEvent) => e.preventDefault();
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        document.addEventListener("keydown", blockKeys);
+        document.addEventListener("contextmenu", blockContext);
+
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            document.removeEventListener("keydown", blockKeys);
+            document.removeEventListener("contextmenu", blockContext);
+        };
+    }, [hasStarted, handleSubmit]);
 
     const handleSubmit = useCallback(async () => {
         if (submitting) return;
@@ -85,6 +132,7 @@ export default function StudentExamPage() {
                     studentUid: finalUid, 
                     studentName: finalName,
                     answers, 
+                    textAnswers,
                     timeTaken: startTime - timeLeft 
                 }) 
             });
@@ -92,7 +140,7 @@ export default function StudentExamPage() {
             if (!r.ok) throw new Error(d.error);
             router.push(`/student/exam/${examId}/result`);
         } catch (e: any) { alert(e.message); setSubmitting(false); }
-    }, [answers, timeLeft, submitting, examId, userData, guestUid, guestName, exam]);
+    }, [answers, textAnswers, timeLeft, submitting, examId, userData, guestUid, guestName, exam, router]);
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full" /></div>;
 
@@ -122,8 +170,8 @@ export default function StudentExamPage() {
 
                     <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-100">
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-slate-800">{exam?.mcqs?.length}</p>
-                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Questions</p>
+                            <p className="text-2xl font-bold text-slate-800">{exam?.type === "paper" ? "Subjective" : exam?.mcqs?.length}</p>
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{exam?.type === "paper" ? "Format" : "Questions"}</p>
                         </div>
                         <div className="text-center">
                             <p className="text-2xl font-bold text-slate-800">{exam?.timeLimit}</p>
@@ -168,8 +216,59 @@ export default function StudentExamPage() {
     const secs = timeLeft % 60;
     const isLow = timeLeft < 120;
 
+    if (exam?.type === "paper") {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col select-none">
+                {/* Timer Bar */}
+                <div className={`fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 ${isLow ? "bg-red-600" : "bg-[#0f172a]"} text-white transition-colors`}>
+                    <h2 className="font-bold text-sm truncate">{exam?.title}</h2>
+                    <div className="flex items-center gap-2 font-mono text-lg font-bold">
+                        <Clock size={18} />
+                        {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
+                    </div>
+                </div>
+
+                <div className="flex-1 pt-14 flex flex-col lg:flex-row h-screen">
+                    {/* Left: Question Paper */}
+                    <div className="flex-1 overflow-y-auto border-r border-slate-200 bg-white p-6 md:p-10">
+                        <div className="notes-content prose prose-slate max-w-none prose-headings:font-serif prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{exam.content}</ReactMarkdown>
+                        </div>
+                    </div>
+                    {/* Right: Answer Box */}
+                    <div className="flex-1 flex flex-col bg-slate-50">
+                        <div className="p-4 border-b border-slate-200 bg-white flex justify-between items-center">
+                            <h3 className="font-bold text-slate-800">Your Answers</h3>
+                            <Button onClick={handleSubmit} isLoading={submitting} className="bg-indigo-600 hover:bg-indigo-700">Submit Exam</Button>
+                        </div>
+                        <div className="flex-1 p-6">
+                            <textarea 
+                                value={textAnswers} 
+                                onChange={e => setTextAnswers(e.target.value)} 
+                                className="w-full h-full resize-none p-6 rounded-xl border border-slate-200 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-mono text-sm leading-relaxed"
+                                placeholder="Type your answers here...&#10;&#10;e.g.&#10;Q1: My answer...&#10;Q2: Another answer..."
+                            />
+                        </div>
+                    </div>
+                </div>
+                
+                <style jsx global>{`
+                    .notes-content { font-family: 'Inter', -apple-system, sans-serif; line-height: 1.8; color: #1e293b; }
+                    .notes-content h1 { font-family: 'Playfair Display', serif; font-weight: 800; font-size: 1.75rem; background: linear-gradient(135deg, #4f46e5, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; padding-bottom: 0.75rem; margin-bottom: 1.5rem; border-bottom: 3px solid #e2e8f0; }
+                    .notes-content h2 { font-family: 'Playfair Display', serif; font-weight: 700; color: #0f172a; margin-top: 2rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem; }
+                    .notes-content h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: #334155; margin-top: 1.5rem; }
+                    .notes-content p { margin-bottom: 1rem; }
+                    .notes-content ul, .notes-content ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+                    .notes-content li { margin-bottom: 0.5rem; padding-left: 0.5rem; }
+                    .notes-content strong { color: #0f172a; font-weight: 700; }
+                    .notes-content blockquote { border-left: 4px solid #818cf8; background: #eef2ff; padding: 1rem 1.5rem; border-radius: 0 0.5rem 0.5rem 0; font-style: italic; color: #4338ca; }
+                `}</style>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="min-h-screen bg-slate-50 flex flex-col select-none">
             {/* Timer Bar */}
             <div className={`fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 ${isLow ? "bg-red-600" : "bg-[#0f172a]"} text-white transition-colors`}>
                 <h2 className="font-bold text-sm truncate">{exam?.title}</h2>
