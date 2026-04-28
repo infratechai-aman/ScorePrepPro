@@ -17,15 +17,27 @@ export default function ExamResultPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetch = async () => {
-            if (!userData?.uid) return;
-            const examDoc = await getDoc(doc(db, "exams", examId));
-            if (examDoc.exists()) setExam(examDoc.data());
-            const subDoc = await getDoc(doc(db, "exams", examId, "submissions", userData.uid));
-            if (subDoc.exists()) setSubmission(subDoc.data());
+        const fetchResult = async () => {
+            const uidToCheck = userData?.uid || (typeof window !== "undefined" ? localStorage.getItem(`exam_guest_uid_${examId}`) : "");
+            if (!uidToCheck) {
+                setLoading(false);
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/api/exams/${examId}?studentUid=${uidToCheck}`);
+                const data = await res.json();
+                
+                if (res.ok) {
+                    setExam(data.exam);
+                    setSubmission(data.submission);
+                }
+            } catch (err) {
+                console.error(err);
+            }
             setLoading(false);
         };
-        fetch();
+        fetchResult();
     }, [examId, userData?.uid]);
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-indigo-600" size={32} /></div>;

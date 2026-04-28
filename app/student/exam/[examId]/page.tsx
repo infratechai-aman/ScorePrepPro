@@ -36,24 +36,27 @@ export default function StudentExamPage() {
         }
 
         const fetchExam = async () => {
-            const d = await getDoc(doc(db, "exams", examId));
-            if (d.exists()) { 
-                const examData = d.data();
-                setExam(examData); 
-                setTimeLeft((examData.timeLimit || 30) * 60); 
-            } else {
-                setErrorMsg("Exam not found.");
-                setLoading(false);
-                return;
-            }
+            try {
+                const uidToCheck = userData?.uid || localStorage.getItem(`exam_guest_uid_${examId}`) || "";
+                const res = await fetch(`/api/exams/${examId}?studentUid=${uidToCheck}`);
+                const data = await res.json();
 
-            // Check if already submitted
-            const uidToCheck = userData?.uid || localStorage.getItem(`exam_guest_uid_${examId}`);
-            if (uidToCheck) {
-                const sub = await getDoc(doc(db, "exams", examId, "submissions", uidToCheck));
-                if (sub.exists()) router.push(`/student/exam/${examId}/result`);
+                if (!res.ok) {
+                    setErrorMsg(data.error || "Failed to load exam.");
+                    setLoading(false);
+                    return;
+                }
+
+                if (data.submission) {
+                    router.push(`/student/exam/${examId}/result`);
+                    return;
+                }
+
+                setExam(data.exam);
+                setTimeLeft((data.exam.timeLimit || 30) * 60);
+            } catch (err: any) {
+                setErrorMsg(err.message || "Something went wrong.");
             }
-            
             setLoading(false);
         };
         fetchExam();
