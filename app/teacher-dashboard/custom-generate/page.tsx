@@ -200,7 +200,14 @@ function CustomGenerateContent() {
                 {/* Type tabs */}
                 <div className="flex gap-3">
                     {genTypes.map(t => (
-                        <button key={t.id} onClick={() => setGenType(t.id)}
+                        <button key={t.id} onClick={() => {
+                            setGenType(t.id);
+                            setResult("");
+                            setMcqResult([]);
+                            setSavedNoteId("");
+                            setPublishedExamLink("");
+                            setPipelineStep(0);
+                        }}
                             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                                 genType === t.id
                                     ? t.color === "emerald" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200"
