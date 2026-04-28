@@ -188,6 +188,7 @@ ONLY output the JSON array, nothing else.`;
         ],
         temperature: generationType === "mcqs" ? 0.3 : 0.7,
         max_tokens: generationType === "mcqs" ? 6000 : 10000,
+        ...(generationType === "paper" ? { response_format: { type: "json_object" } } : {})
     });
 
     return response.choices[0].message.content || "";
