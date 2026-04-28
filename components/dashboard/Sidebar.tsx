@@ -57,7 +57,7 @@ export function Sidebar() {
             </div>
 
             {/* Menu */}
-            <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
+            <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto scrollbar-hide">
                 <p className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Main Menu</p>
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href;
