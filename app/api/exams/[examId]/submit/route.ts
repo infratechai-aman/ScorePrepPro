@@ -67,14 +67,15 @@ export async function POST(
                 evaluation.push({
                     questionIndex: i,
                     isSubjective: true,
-                    textAnswer: answers ? answers[i] : ""
+                    textAnswer: answers?.[i] || ""
                 });
                 continue;
             }
 
             // MCQ evaluation
             const selectedAnswer = answers && answers[i] !== undefined ? parseInt(answers[i]) : -1;
-            const correctAnswer = isPaper ? mcqs[i]?.correctAnswer : examData.mcqs[i].correctAnswer;
+            let correctAnswer = isPaper ? mcqs[i]?.correctAnswer : examData.mcqs[i].correctAnswer;
+            if (correctAnswer === undefined) correctAnswer = -1; // Fallback to prevent undefined in firestore
             const isCorrect = selectedAnswer === correctAnswer;
             if (isCorrect && !hasSubjective) score++; // Only accumulate score if no subjective questions (otherwise handled manually later)
             
