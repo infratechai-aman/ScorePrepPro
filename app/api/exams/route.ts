@@ -44,7 +44,7 @@ export async function GET(req: Request) {
 
     export async function POST(req: Request) {
     try {
-        const { teacherUid, classroomId, subjectId, unitId, title, type, content, structuredPaper, mcqs, totalQuestions, difficulty, timeLimit } = await req.json();
+        const { teacherUid, classroomId, subjectId, unitId, title, type, content, structuredPaper, mcqs, totalQuestions, difficulty, timeLimit, passcode, validityHours } = await req.json();
 
         const isPaper = type === "paper";
 
@@ -57,6 +57,13 @@ export async function GET(req: Request) {
         }
         if (isPaper && !content && !structuredPaper) {
             return NextResponse.json({ error: "Content or Structured Paper required for Paper exam" }, { status: 400 });
+        }
+
+        let expiresAt = null;
+        if (validityHours) {
+            const now = new Date();
+            now.setHours(now.getHours() + Number(validityHours));
+            expiresAt = now;
         }
 
         const docRef = await adminDb.collection("exams").add({
@@ -72,10 +79,12 @@ export async function GET(req: Request) {
             totalQuestions: totalQuestions || (mcqs ? mcqs.length : 0),
             difficulty: difficulty || "medium",
             timeLimit: timeLimit || 30,
+            passcode: passcode || null,
+            validityHours: validityHours || null,
             status: "draft",
             createdAt: FieldValue.serverTimestamp(),
             scheduledAt: null,
-            expiresAt: null
+            expiresAt
         });
 
         return NextResponse.json({ id: docRef.id, message: "Exam created as draft" });

@@ -25,7 +25,10 @@ export default function StudentExamPage() {
     
     // Guest states
     const [guestName, setGuestName] = useState("");
+    const [rollNo, setRollNo] = useState("");
+    const [passcode, setPasscode] = useState("");
     const [hasStarted, setHasStarted] = useState(false);
+    const [isBlurred, setIsBlurred] = useState(false);
     const [guestUid, setGuestUid] = useState("");
     const [warnings, setWarnings] = useState(0);
 
@@ -57,6 +60,12 @@ export default function StudentExamPage() {
                     return;
                 }
 
+                if (data.exam.isExpired) {
+                    setErrorMsg("This exam has expired and is no longer accepting submissions.");
+                    setLoading(false);
+                    return;
+                }
+
                 setExam(data.exam);
                 setTimeLeft((data.exam.timeLimit || 30) * 60);
             } catch (err: any) {
@@ -81,6 +90,7 @@ export default function StudentExamPage() {
                 body: JSON.stringify({ 
                     studentUid: finalUid, 
                     studentName: finalName,
+                    rollNo,
                     answers, 
                     textAnswers, // Keep for backwards compatibility with old unstructured papers
                     timeTaken: startTime - timeLeft 
@@ -131,14 +141,28 @@ export default function StudentExamPage() {
 
         const blockContext = (e: MouseEvent) => e.preventDefault();
 
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = "Are you sure you want to leave? Your exam progress will be lost.";
+        };
+
+        const handleBlur = () => setIsBlurred(true);
+        const handleFocus = () => setIsBlurred(false);
+
         document.addEventListener("visibilitychange", handleVisibilityChange);
         document.addEventListener("keydown", blockKeys);
         document.addEventListener("contextmenu", blockContext);
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        window.addEventListener("blur", handleBlur);
+        window.addEventListener("focus", handleFocus);
 
         return () => {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
             document.removeEventListener("keydown", blockKeys);
             document.removeEventListener("contextmenu", blockContext);
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+            window.removeEventListener("blur", handleBlur);
+            window.removeEventListener("focus", handleFocus);
         };
     }, [hasStarted, handleSubmit]);
 
@@ -179,28 +203,73 @@ export default function StudentExamPage() {
                         </div>
                     </div>
 
-                    {!userData?.uid && (
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Full Name</label>
+                    <div className="space-y-3">
+                        {!userData?.uid && (
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-semibold text-slate-700">Full Name</label>
+                                <input 
+                                    type="text" 
+                                    value={guestName} 
+                                    onChange={(e) => setGuestName(e.target.value)} 
+                                    placeholder="Enter your name" 
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition-all"
+                                    required
+                                />
+                            </div>
+                        )}
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-semibold text-slate-700">Roll No</label>
                             <input 
                                 type="text" 
-                                value={guestName} 
-                                onChange={(e) => setGuestName(e.target.value)} 
-                                placeholder="Enter your name" 
+                                value={rollNo} 
+                                onChange={(e) => setRollNo(e.target.value)} 
+                                placeholder="Enter your Roll No" 
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition-all"
                                 required
                             />
                         </div>
-                    )}
+                        {exam?.requiresPasscode && (
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-semibold text-slate-700">Exam Code</label>
+                                <input 
+                                    type="text" 
+                                    value={passcode} 
+                                    onChange={(e) => setPasscode(e.target.value)} 
+                                    placeholder="Enter the passcode to unlock" 
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition-all font-mono"
+                                    required
+                                />
+                            </div>
+                        )}
+                    </div>
 
                     <Button 
-                        onClick={() => {
-                            if (!userData?.uid && !guestName.trim()) {
-                                alert("Please enter your name");
-                                return;
+                        onClick={async () => {
+                            if (!userData?.uid && !guestName.trim()) { alert("Please enter your name"); return; }
+                            if (!rollNo.trim()) { alert("Please enter your Roll No"); return; }
+                            
+                            if (exam?.requiresPasscode) {
+                                if (!passcode.trim()) { alert("Please enter the Exam Code"); return; }
+                                setSubmitting(true);
+                                try {
+                                    const res = await fetch(`/api/exams/${examId}/verify`, {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ passcode, studentName: userData?.name || guestName, rollNo })
+                                    });
+                                    const data = await res.json();
+                                    if (!res.ok) throw new Error(data.error);
+                                    setExam({ ...exam, ...data.exam });
+                                } catch (e: any) {
+                                    alert(e.message);
+                                    setSubmitting(false);
+                                    return;
+                                }
+                                setSubmitting(false);
                             }
                             setHasStarted(true);
                         }} 
+                        isLoading={submitting}
                         className="w-full py-6 text-lg rounded-xl bg-indigo-600 hover:bg-indigo-700"
                     >
                         Start Exam
@@ -218,7 +287,7 @@ export default function StudentExamPage() {
 
     if (exam?.type === "paper") {
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col select-none">
+            <div className={`min-h-screen bg-slate-50 flex flex-col select-none transition-all ${isBlurred ? "blur-xl grayscale pointer-events-none" : ""}`}>
                 {/* Timer Bar */}
                 <div className={`fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 ${isLow ? "bg-red-600" : "bg-[#0f172a]"} text-white transition-colors`}>
                     <h2 className="font-bold text-sm truncate">{exam?.title}</h2>
@@ -327,7 +396,7 @@ export default function StudentExamPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col select-none">
+        <div className={`min-h-screen bg-slate-50 flex flex-col select-none transition-all ${isBlurred ? "blur-xl grayscale pointer-events-none" : ""}`}>
             {/* Timer Bar */}
             <div className={`fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 ${isLow ? "bg-red-600" : "bg-[#0f172a]"} text-white transition-colors`}>
                 <h2 className="font-bold text-sm truncate">{exam?.title}</h2>

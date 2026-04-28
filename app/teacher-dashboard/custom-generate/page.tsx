@@ -55,6 +55,8 @@ function CustomGenerateContent() {
     const [mcqCount, setMcqCount] = useState(10);
     const [includeAnswerKey, setIncludeAnswerKey] = useState(false);
     const [examTitle, setExamTitle] = useState("");
+    const [validityHours, setValidityHours] = useState(""); // "" means No Expiry
+    const [passcode, setPasscode] = useState("");
 
     useEffect(() => { if (userData?.uid) fetchSubjects(); }, [userData?.uid]);
     useEffect(() => { if (selectedSubject) fetchUnits(selectedSubject); }, [selectedSubject]);
@@ -162,6 +164,8 @@ function CustomGenerateContent() {
                     totalQuestions: genType === "mcqs" ? mcqResult.length : (genType === "paper" ? paperResult?.questions?.length || 1 : 1),
                     difficulty,
                     timeLimit: genType === "paper" ? duration : mcqCount * 2,
+                    validityHours: validityHours || null,
+                    passcode: passcode || null,
                 }),
             });
             const createData = await createRes.json();
@@ -290,21 +294,35 @@ function CustomGenerateContent() {
                             </>
                         )}
                         {genType === "mcqs" && (
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">MCQ Count</label>
-                                    <input type="number" value={mcqCount} onChange={(e) => setMcqCount(Number(e.target.value))} min={5} max={50} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm" />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Exam Title (Optional)</label>
-                                    <input type="text" value={examTitle} onChange={e => setExamTitle(e.target.value)} placeholder="e.g. Unit 1 Checkpoint" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm focus:border-indigo-500 transition-colors" />
-                                </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 mb-1.5 block">MCQ Count</label>
+                                <input type="number" value={mcqCount} onChange={(e) => setMcqCount(Number(e.target.value))} min={5} max={50} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm" />
                             </div>
                         )}
-                        {genType === "paper" && (
-                            <div>
-                                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Exam Title (Optional)</label>
-                                <input type="text" value={examTitle} onChange={e => setExamTitle(e.target.value)} placeholder="e.g. Term 1 Exam" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm focus:border-indigo-500 transition-colors" />
+
+                        {(genType === "paper" || genType === "mcqs") && (
+                            <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Exam Settings</h3>
+                                <div>
+                                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Exam Title (Optional)</label>
+                                    <input type="text" value={examTitle} onChange={e => setExamTitle(e.target.value)} placeholder="e.g. Term 1 Exam" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Exam Code (Passcode)</label>
+                                    <input type="text" value={passcode} onChange={e => setPasscode(e.target.value)} placeholder="Leave blank for open access" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm font-mono placeholder:font-sans focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Exam Validity</label>
+                                    <select value={validityHours} onChange={e => setValidityHours(e.target.value)} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm focus:border-indigo-500 transition-colors">
+                                        <option value="">Never Expires</option>
+                                        <option value="1">1 Hour</option>
+                                        <option value="3">3 Hours</option>
+                                        <option value="6">6 Hours</option>
+                                        <option value="12">12 Hours</option>
+                                        <option value="24">24 Hours</option>
+                                        <option value="48">48 Hours</option>
+                                    </select>
+                                </div>
                             </div>
                         )}
 

@@ -8,7 +8,7 @@ export async function POST(
 ) {
     try {
         const { examId } = await params;
-        const { studentUid, studentName, answers, textAnswers, timeTaken } = await req.json();
+        const { studentUid, studentName, rollNo, answers, textAnswers, timeTaken } = await req.json();
 
         if (!studentUid) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -34,6 +34,7 @@ export async function POST(
             // Legacy Subjective exam - no auto evaluation
             await submissionRef.set({
                 studentName: studentName || "Guest Student",
+                rollNo: rollNo || "",
                 textAnswers: textAnswers || "",
                 score: null,
                 percentage: null,
@@ -86,6 +87,7 @@ export async function POST(
 
         await submissionRef.set({
             studentName: studentName || "Guest Student",
+            rollNo: rollNo || "",
             answers: answers || {},
             evaluation,
             score: hasSubjective ? null : score,

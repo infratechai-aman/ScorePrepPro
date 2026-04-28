@@ -115,6 +115,7 @@ export default function ExamDetailPage() {
                                 <thead>
                                     <tr className="border-b border-slate-200 bg-slate-50/50">
                                         <th className="text-left py-3 px-4 font-semibold text-slate-600">Student Name</th>
+                                        <th className="text-left py-3 px-4 font-semibold text-slate-600">Roll No</th>
                                         <th className="text-left py-3 px-4 font-semibold text-slate-600">Score</th>
                                         <th className="text-left py-3 px-4 font-semibold text-slate-600">Percentage</th>
                                         <th className="text-left py-3 px-4 font-semibold text-slate-600">Time Taken</th>
@@ -125,6 +126,7 @@ export default function ExamDetailPage() {
                                     {submissionsList.map((s, i) => (
                                         <tr key={s.uid} className="border-b border-slate-100 hover:bg-slate-50">
                                             <td className="py-3 px-4 font-medium text-slate-900">{s.studentName}</td>
+                                            <td className="py-3 px-4 text-slate-600">{s.rollNo || "-"}</td>
                                             <td className="py-3 px-4 text-slate-700 font-semibold">
                                                 {s.score === null ? "Pending" : `${s.score} / ${s.totalMarks}`}
                                             </td>
@@ -172,7 +174,7 @@ export default function ExamDetailPage() {
                     <GlassCard className="w-full max-w-2xl max-h-[80vh] flex flex-col p-0">
                         <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
                             <div>
-                                <h3 className="font-bold text-slate-900 font-serif">Submission by {viewedSubmission.studentName}</h3>
+                                <h3 className="font-bold text-slate-900 font-serif">Submission by {viewedSubmission.studentName} {viewedSubmission.rollNo ? `(${viewedSubmission.rollNo})` : ""}</h3>
                                 <p className="text-xs text-slate-500">Time Taken: {Math.floor((viewedSubmission.timeTaken || 0) / 60)}m {(viewedSubmission.timeTaken || 0) % 60}s</p>
                             </div>
                             <Button variant="ghost" onClick={() => setViewedSubmission(null)} className="h-8 px-3 rounded-lg text-sm">Close</Button>
