@@ -165,19 +165,21 @@ UNIT CONTENT (Generate ONLY from this):
 ${knowledgeText}
 
 Output format for EACH MCQ (use this EXACT JSON format):
-Return a JSON array:
-[
-  {
-    "question": "...",
-    "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
-    "correctAnswer": 0,
-    "explanation": "..."
-  }
-]
+Return a JSON object:
+{
+  "mcqs": [
+    {
+      "question": "...",
+      "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
+      "correctAnswer": 0,
+      "explanation": "..."
+    }
+  ]
+}
 
 correctAnswer is the index (0-3) of the correct option.
 Make questions varied: recall, application, analysis.
-ONLY output the JSON array, nothing else.`;
+ONLY output the JSON object, nothing else.`;
     }
 
     const response = await openai.chat.completions.create({
@@ -188,7 +190,7 @@ ONLY output the JSON array, nothing else.`;
         ],
         temperature: generationType === "mcqs" ? 0.3 : 0.7,
         max_tokens: generationType === "mcqs" ? 6000 : 10000,
-        ...(generationType === "paper" ? { response_format: { type: "json_object" } } : {})
+        ...((generationType === "paper" || generationType === "mcqs") ? { response_format: { type: "json_object" } } : {})
     });
 
     return response.choices[0].message.content || "";

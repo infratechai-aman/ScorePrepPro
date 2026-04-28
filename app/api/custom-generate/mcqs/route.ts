@@ -51,8 +51,8 @@ export async function POST(req: Request) {
             if (cleanContent.startsWith("```")) {
                 cleanContent = cleanContent.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
             }
-            const mcqs = JSON.parse(cleanContent);
-            return NextResponse.json({ mcqs });
+            const parsed = JSON.parse(cleanContent);
+            return NextResponse.json({ mcqs: parsed.mcqs || parsed });
         } catch {
             return NextResponse.json({ mcqs: [], raw: content });
         }
