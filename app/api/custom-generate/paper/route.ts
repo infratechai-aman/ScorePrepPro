@@ -7,7 +7,7 @@ export const maxDuration = 120;
 
 export async function POST(req: Request) {
     try {
-        const { subjectId, unitIds, subjectName, difficulty, marks, duration, questionType, instituteName, includeAnswerKey } = await req.json();
+        const { subjectId, unitIds, subjectName, difficulty, marks, duration, questionType, instituteName, includeAnswerKey, guidelines } = await req.json();
 
         if (!subjectId || !unitIds || unitIds.length === 0) {
             return NextResponse.json({ error: "Subject and at least one unit required" }, { status: 400 });
@@ -44,7 +44,8 @@ export async function POST(req: Request) {
                 marks: marks || 50,
                 duration: duration || 60,
                 questionType: questionType || "Mixed",
-                includeAnswerKey: includeAnswerKey || false
+                includeAnswerKey: includeAnswerKey || false,
+                guidelines: guidelines || ""
             }
         );
 

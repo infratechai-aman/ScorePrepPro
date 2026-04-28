@@ -57,6 +57,7 @@ function CustomGenerateContent() {
     const [examTitle, setExamTitle] = useState("");
     const [validityHours, setValidityHours] = useState(""); // "" means No Expiry
     const [passcode, setPasscode] = useState("");
+    const [guidelines, setGuidelines] = useState("");
 
     useEffect(() => { if (userData?.uid) fetchSubjects(); }, [userData?.uid]);
     useEffect(() => { if (selectedSubject) fetchUnits(selectedSubject); }, [selectedSubject]);
@@ -109,7 +110,7 @@ function CustomGenerateContent() {
                 // Paper or MCQs — use existing endpoints + save to repo
                 const endpoint = genType === "paper" ? "/api/custom-generate/paper" : "/api/custom-generate/mcqs";
                 const body: any = { subjectId: selectedSubject, unitIds: selectedUnits, subjectName, difficulty };
-                if (genType === "paper") { body.marks = marks; body.duration = duration; body.questionType = questionType; body.includeAnswerKey = includeAnswerKey; }
+                if (genType === "paper") { body.marks = marks; body.duration = duration; body.questionType = questionType; body.includeAnswerKey = includeAnswerKey; body.guidelines = guidelines; }
                 if (genType === "mcqs") body.mcqCount = mcqCount;
 
                 const res = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -278,6 +279,15 @@ function CustomGenerateContent() {
                                         <input type="number" value={marks} onChange={(e) => setMarks(Number(e.target.value))} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm" /></div>
                                     <div><label className="text-sm font-medium text-slate-700 mb-1 block">Duration</label>
                                         <input type="number" value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm" /></div>
+                                </div>
+                                <div className="mt-3">
+                                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Exam Pattern / Guidelines (Optional)</label>
+                                    <textarea
+                                        value={guidelines}
+                                        onChange={(e) => setGuidelines(e.target.value)}
+                                        placeholder="e.g. 5 MCQs (1 mark each), 4 theory questions (5 marks each, attempt 3), 3 long questions (10 marks each, attempt 2)"
+                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none text-sm min-h-[80px] focus:border-indigo-500 transition-colors"
+                                    />
                                 </div>
                                 <div className="flex items-center gap-2 p-3 mt-3 bg-slate-50 rounded-xl border border-slate-200">
                                     <input

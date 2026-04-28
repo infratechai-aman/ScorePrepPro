@@ -93,9 +93,10 @@ export async function generateFromKnowledge(
         notesType?: string; // short, detailed, revision, worksheet, summary
         mcqCount?: number;
         includeAnswerKey?: boolean;
+        guidelines?: string;
     } = {}
 ): Promise<string> {
-    const { difficulty = "medium", marks = 50, duration = 60, questionType = "Mixed", notesType = "detailed", mcqCount = 10, includeAnswerKey = false } = options;
+    const { difficulty = "medium", marks = 50, duration = 60, questionType = "Mixed", notesType = "detailed", mcqCount = 10, includeAnswerKey = false, guidelines = "" } = options;
 
     let systemPrompt = "";
     let userPrompt = "";
@@ -137,6 +138,9 @@ Output format MUST be a JSON object:
 - For "subjective" type, do not include "options" or "correctAnswer".
 - Ensure the total marks roughly equal ${marks}.
 - ${questionType === "MCQ" ? "Make ALL questions 'mcq' type." : questionType === "Theory" ? "Make ALL questions 'subjective' type." : "Mix 'mcq' and 'subjective' types."}
+
+${guidelines ? `CRITICAL STRUCTURE GUIDELINES PROVIDED BY THE TEACHER:\n"""\n${guidelines}\n"""\n\nYou MUST EXACTLY follow the structure requested above. For example, if it says "5 mcqs, 4 5-mark questions", generate exactly that. Format the questions to match the guidelines perfectly while maintaining the JSON schema.` : ''}
+
 ONLY output the JSON object, nothing else.`;
     } else if (generationType === "notes") {
         systemPrompt = `You are a premium educational content creator. Generate beautiful, well-structured study notes STRICTLY from the provided content. Use rich markdown formatting.`;
