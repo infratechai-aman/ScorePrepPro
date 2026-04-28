@@ -43,7 +43,8 @@ export async function POST(req: Request) {
                 difficulty: difficulty || "medium",
                 marks: marks || 50,
                 duration: duration || 60,
-                questionType: questionType || "Mixed"
+                questionType: questionType || "Mixed",
+                includeAnswerKey: includeAnswerKey || false
             }
         );
 

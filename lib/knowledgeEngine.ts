@@ -92,9 +92,10 @@ export async function generateFromKnowledge(
         questionType?: string; // MCQ, Theory, Mixed
         notesType?: string; // short, detailed, revision, worksheet, summary
         mcqCount?: number;
+        includeAnswerKey?: boolean;
     } = {}
 ): Promise<string> {
-    const { difficulty = "medium", marks = 50, duration = 60, questionType = "Mixed", notesType = "detailed", mcqCount = 10 } = options;
+    const { difficulty = "medium", marks = 50, duration = 60, questionType = "Mixed", notesType = "detailed", mcqCount = 10, includeAnswerKey = false } = options;
 
     let systemPrompt = "";
     let userPrompt = "";
@@ -111,7 +112,8 @@ Duration: ${duration} minutes
 UNIT CONTENT (Generate ONLY from this):
 ${knowledgeText}
 
-Format the paper professionally with proper sections, question numbering (Q.1, Q.2...), marks allocation, and general instructions. ${questionType === "MCQ" ? "All questions should be MCQ with 4 options." : questionType === "Theory" ? "All questions should be descriptive/theory type." : "Mix MCQ and theory questions."}`;
+Format the paper professionally with proper sections, question numbering (Q.1, Q.2...), marks allocation, and general instructions. ${questionType === "MCQ" ? "All questions should be MCQ with 4 options." : questionType === "Theory" ? "All questions should be descriptive/theory type." : "Mix MCQ and theory questions."}
+${includeAnswerKey ? "IMPORTANT: You MUST include a clear 'Answer Key' section at the very end of the output, separated by a horizontal rule (---)." : "IMPORTANT: DO NOT include any answers or hints."}`;
     } else if (generationType === "notes") {
         systemPrompt = `You are a premium educational content creator. Generate beautiful, well-structured study notes STRICTLY from the provided content. Use rich markdown formatting.`;
         userPrompt = `Generate ${notesType} notes for:

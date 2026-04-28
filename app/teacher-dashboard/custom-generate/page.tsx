@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { BookOpen, FileText, ClipboardList, Sparkles, ArrowLeft, Download, Loader2, Save, CheckCircle2 } from "lucide-react";
+import { BookOpen, FileText, ClipboardList, Sparkles, ArrowLeft, Download, Loader2, Save, CheckCircle2, Share2, Copy } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 import Link from "next/link";
@@ -43,6 +43,8 @@ function CustomGenerateContent() {
     const [mcqResult, setMcqResult] = useState<any[]>([]);
     const [savedNoteId, setSavedNoteId] = useState("");
     const [pipelineStep, setPipelineStep] = useState(0);
+    const [publishedExamLink, setPublishedExamLink] = useState("");
+    const [publishingExam, setPublishingExam] = useState(false);
 
     const [notesType, setNotesType] = useState("detailed");
     const [questionType, setQuestionType] = useState("Mixed");
@@ -50,6 +52,7 @@ function CustomGenerateContent() {
     const [marks, setMarks] = useState(50);
     const [duration, setDuration] = useState(60);
     const [mcqCount, setMcqCount] = useState(10);
+    const [includeAnswerKey, setIncludeAnswerKey] = useState(false);
 
     useEffect(() => { if (userData?.uid) fetchSubjects(); }, [userData?.uid]);
     useEffect(() => { if (selectedSubject) fetchUnits(selectedSubject); }, [selectedSubject]);
@@ -71,7 +74,7 @@ function CustomGenerateContent() {
 
     const handleGenerate = async () => {
         if (!selectedSubject || selectedUnits.length === 0) { alert("Select a subject and units."); return; }
-        setGenerating(true); setResult(""); setMcqResult([]); setSavedNoteId(""); setPipelineStep(0);
+        setGenerating(true); setResult(""); setMcqResult([]); setSavedNoteId(""); setPipelineStep(0); setPublishedExamLink("");
 
         const subjectName = subjects.find(s => s.id === selectedSubject)?.name || "Custom Subject";
 
@@ -102,7 +105,7 @@ function CustomGenerateContent() {
                 // Paper or MCQs — use existing endpoints + save to repo
                 const endpoint = genType === "paper" ? "/api/custom-generate/paper" : "/api/custom-generate/mcqs";
                 const body: any = { subjectId: selectedSubject, unitIds: selectedUnits, subjectName, difficulty };
-                if (genType === "paper") { body.marks = marks; body.duration = duration; body.questionType = questionType; }
+                if (genType === "paper") { body.marks = marks; body.duration = duration; body.questionType = questionType; body.includeAnswerKey = includeAnswerKey; }
                 if (genType === "mcqs") body.mcqCount = mcqCount;
 
                 const res = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -127,6 +130,51 @@ function CustomGenerateContent() {
                 }
             }
         } catch (err: any) { alert("Generation failed: " + err.message); } finally { setGenerating(false); }
+    };
+
+    const handlePublishExam = async () => {
+        if (!selectedSubject || mcqResult.length === 0) return;
+        setPublishingExam(true);
+        try {
+            const subjectName = subjects.find(s => s.id === selectedSubject)?.name || "Custom Subject";
+            const examTitle = `${subjectName} - Auto Generated Exam`;
+            
+            // 1. Create exam draft
+            const createRes = await fetch("/api/exams", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    teacherUid: userData?.uid,
+                    classroomId: "", // Open link access
+                    subjectId: selectedSubject,
+                    title: examTitle,
+                    mcqs: mcqResult,
+                    totalQuestions: mcqResult.length,
+                    difficulty,
+                    timeLimit: mcqCount * 2, // roughly 2 mins per question
+                }),
+            });
+            const createData = await createRes.json();
+            if (!createRes.ok) throw new Error(createData.error);
+            const examId = createData.id;
+
+            // 2. Publish it immediately
+            const pubRes = await fetch(`/api/exams/${examId}/publish`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ classroomId: "", teacherUid: userData?.uid }),
+            });
+            const pubData = await pubRes.json();
+            if (!pubRes.ok) throw new Error(pubData.error);
+
+            // 3. Set the link
+            const link = `${window.location.origin}/exam/${examId}`;
+            setPublishedExamLink(link);
+        } catch (err: any) {
+            alert("Failed to publish exam: " + err.message);
+        } finally {
+            setPublishingExam(false);
+        }
     };
 
     const handlePrint = () => { window.print(); };
@@ -209,6 +257,18 @@ function CustomGenerateContent() {
                                     <div><label className="text-sm font-medium text-slate-700 mb-1 block">Duration</label>
                                         <input type="number" value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm" /></div>
                                 </div>
+                                <div className="flex items-center gap-2 p-3 mt-3 bg-slate-50 rounded-xl border border-slate-200">
+                                    <input
+                                        type="checkbox"
+                                        id="answerKey"
+                                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                                        checked={includeAnswerKey}
+                                        onChange={(e) => setIncludeAnswerKey(e.target.checked)}
+                                    />
+                                    <label htmlFor="answerKey" className="text-sm font-medium text-slate-700 cursor-pointer select-none">
+                                        Include Answer Key
+                                    </label>
+                                </div>
                             </>
                         )}
                         {genType === "mcqs" && (
@@ -252,6 +312,7 @@ function CustomGenerateContent() {
                             <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50 print:hidden">
                                 <div className="flex items-center gap-2 text-sm text-slate-600">
                                     {savedNoteId && <span className="flex items-center gap-1 text-emerald-600 font-medium"><CheckCircle2 size={14} /> Saved to Repository</span>}
+                                    {publishedExamLink && <span className="flex items-center gap-1 text-emerald-600 font-medium"><CheckCircle2 size={14} /> Exam Published</span>}
                                 </div>
                                 <div className="flex gap-2">
                                     {savedNoteId && (
@@ -259,7 +320,23 @@ function CustomGenerateContent() {
                                             <Button variant="outline" className="rounded-lg text-xs gap-1.5 py-1.5 px-3"><BookOpen size={14} /> View in Repo</Button>
                                         </Link>
                                     )}
-                                    <Button variant="outline" onClick={handlePrint} className="rounded-lg text-xs gap-1.5 py-1.5 px-3"><Download size={14} /> Print / PDF</Button>
+                                    
+                                    {genType === "mcqs" ? (
+                                        publishedExamLink ? (
+                                            <div className="flex items-center gap-2 bg-white border border-indigo-200 rounded-lg pl-3 pr-1 py-1">
+                                                <span className="text-xs text-indigo-700 font-medium select-all truncate max-w-[200px]">{publishedExamLink}</span>
+                                                <Button onClick={() => { navigator.clipboard.writeText(publishedExamLink); alert("Link copied to clipboard!"); }} className="h-6 w-6 p-0 rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200" title="Copy Link">
+                                                    <Copy size={12} />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <Button onClick={handlePublishExam} isLoading={publishingExam} className="rounded-lg text-xs gap-1.5 py-1.5 px-3 bg-indigo-600 hover:bg-indigo-700">
+                                                <Share2 size={14} /> Publish as Shareable Exam
+                                            </Button>
+                                        )
+                                    ) : (
+                                        <Button variant="outline" onClick={handlePrint} className="rounded-lg text-xs gap-1.5 py-1.5 px-3"><Download size={14} /> Print / PDF</Button>
+                                    )}
                                 </div>
                             </div>
                         )}
