@@ -17,20 +17,51 @@ export default function StudentExamPage() {
     const [timeLeft, setTimeLeft] = useState(0);
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [errorMsg, setErrorMsg] = useState("");
 
     useEffect(() => {
         const fetchExam = async () => {
-            const d = await getDoc(doc(db, "exams", examId));
-            if (d.exists()) { setExam(d.data()); setTimeLeft((d.data().timeLimit || 30) * 60); }
-            // Check if already submitted
-            if (userData?.uid) {
-                const sub = await getDoc(doc(db, "exams", examId, "submissions", userData.uid));
-                if (sub.exists()) router.push(`/student/exam/${examId}/result`);
+            if (userData === undefined) return; // Wait for auth to resolve
+            
+            if (!userData) {
+                setErrorMsg("Please log in to take this exam.");
+                setLoading(false);
+                return;
             }
+
+            if (userData.role !== "student") {
+                setErrorMsg("Only students are authorized to take exams.");
+                setLoading(false);
+                return;
+            }
+
+            const d = await getDoc(doc(db, "exams", examId));
+            if (d.exists()) { 
+                const examData = d.data();
+                
+                // Classroom access check
+                if (examData.classroomId && !userData.classrooms?.[examData.classroomId]) {
+                    setErrorMsg("You are not enrolled in the classroom for this exam.");
+                    setLoading(false);
+                    return;
+                }
+
+                setExam(examData); 
+                setTimeLeft((examData.timeLimit || 30) * 60); 
+            } else {
+                setErrorMsg("Exam not found.");
+                setLoading(false);
+                return;
+            }
+
+            // Check if already submitted
+            const sub = await getDoc(doc(db, "exams", examId, "submissions", userData.uid));
+            if (sub.exists()) router.push(`/student/exam/${examId}/result`);
+            
             setLoading(false);
         };
         fetchExam();
-    }, [examId, userData?.uid]);
+    }, [examId, userData]);
 
     // Timer — only starts after exam is loaded
     useEffect(() => {
@@ -53,6 +84,21 @@ export default function StudentExamPage() {
     }, [answers, timeLeft, submitting, examId, userData?.uid]);
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full" /></div>;
+
+    if (errorMsg) return (
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+            <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-red-100 p-8 text-center space-y-4">
+                <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <AlertTriangle size={32} />
+                </div>
+                <h1 className="text-xl font-bold text-slate-900">Access Denied</h1>
+                <p className="text-slate-500">{errorMsg}</p>
+                <Button onClick={() => router.push(userData ? "/student" : "/login")} className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700">
+                    {userData ? "Return to Dashboard" : "Go to Login"}
+                </Button>
+            </div>
+        </div>
+    );
 
     const mcqs = exam?.mcqs || [];
     const mcq = mcqs[currentQ];

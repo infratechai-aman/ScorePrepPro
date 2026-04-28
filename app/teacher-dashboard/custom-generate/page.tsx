@@ -53,6 +53,7 @@ function CustomGenerateContent() {
     const [duration, setDuration] = useState(60);
     const [mcqCount, setMcqCount] = useState(10);
     const [includeAnswerKey, setIncludeAnswerKey] = useState(false);
+    const [examTitle, setExamTitle] = useState("");
 
     useEffect(() => { if (userData?.uid) fetchSubjects(); }, [userData?.uid]);
     useEffect(() => { if (selectedSubject) fetchUnits(selectedSubject); }, [selectedSubject]);
@@ -136,8 +137,8 @@ function CustomGenerateContent() {
         if (!selectedSubject || mcqResult.length === 0) return;
         setPublishingExam(true);
         try {
-            const subjectName = subjects.find(s => s.id === selectedSubject)?.name || "Custom Subject";
-            const examTitle = `${subjectName} - Auto Generated Exam`;
+            const subjectName = subjects.find(s => s.id === selectedSubject)?.name || "Subject";
+            const finalTitle = examTitle.trim() ? examTitle : `${subjectName} - Auto Generated Exam`;
             
             // 1. Create exam draft
             const createRes = await fetch("/api/exams", {
@@ -147,7 +148,7 @@ function CustomGenerateContent() {
                     teacherUid: userData?.uid,
                     classroomId: "", // Open link access
                     subjectId: selectedSubject,
-                    title: examTitle,
+                    title: finalTitle,
                     mcqs: mcqResult,
                     totalQuestions: mcqResult.length,
                     difficulty,
@@ -279,8 +280,16 @@ function CustomGenerateContent() {
                             </>
                         )}
                         {genType === "mcqs" && (
-                            <div><label className="text-sm font-medium text-slate-700 mb-1.5 block">MCQ Count</label>
-                                <input type="number" value={mcqCount} onChange={(e) => setMcqCount(Number(e.target.value))} min={5} max={50} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm" /></div>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">MCQ Count</label>
+                                    <input type="number" value={mcqCount} onChange={(e) => setMcqCount(Number(e.target.value))} min={5} max={50} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm" />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Exam Title (Optional)</label>
+                                    <input type="text" value={examTitle} onChange={e => setExamTitle(e.target.value)} placeholder="e.g. Unit 1 Checkpoint" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-sm focus:border-indigo-500 transition-colors" />
+                                </div>
+                            </div>
                         )}
 
                         <div>

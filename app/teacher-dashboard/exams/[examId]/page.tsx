@@ -21,6 +21,7 @@ export default function ExamDetailPage() {
     const [publishing, setPublishing] = useState(false);
     const [copied, setCopied] = useState(false);
     const [submissionCount, setSubmissionCount] = useState(0);
+    const [submissionsList, setSubmissionsList] = useState<any[]>([]);
 
     useEffect(() => { fetchExam(); }, [examId]);
     useEffect(() => { if (userData?.uid) fetchClassrooms(); }, [userData?.uid]);
@@ -32,6 +33,13 @@ export default function ExamDetailPage() {
             if (d.exists()) { setExam({ id: d.id, ...d.data() }); setSelectedClassroom(d.data().classroomId || ""); }
             const subs = await getDocs(collection(db, "exams", examId, "submissions"));
             setSubmissionCount(subs.size);
+            
+            const subsData = await Promise.all(subs.docs.map(async (subDoc) => {
+                const data = subDoc.data();
+                const userDoc = await getDoc(doc(db, "users", subDoc.id));
+                return { uid: subDoc.id, ...data, studentName: userDoc.exists() ? userDoc.data().name : "Unknown Student" };
+            }));
+            setSubmissionsList(subsData);
         } catch (e) { console.error(e); } finally { setLoading(false); }
     };
 
@@ -92,6 +100,40 @@ export default function ExamDetailPage() {
                         </select>
                         <Button onClick={handlePublish} isLoading={publishing} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl gap-2"><Send size={16} /> Publish</Button>
                     </GlassCard>
+                )}
+
+                {submissionsList.length > 0 && (
+                    <div className="space-y-3">
+                        <h2 className="text-lg font-bold font-serif">Student Submissions</h2>
+                        <GlassCard className="overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-slate-200 bg-slate-50/50">
+                                        <th className="text-left py-3 px-4 font-semibold text-slate-600">Student Name</th>
+                                        <th className="text-left py-3 px-4 font-semibold text-slate-600">Score</th>
+                                        <th className="text-left py-3 px-4 font-semibold text-slate-600">Percentage</th>
+                                        <th className="text-left py-3 px-4 font-semibold text-slate-600">Time Taken</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {submissionsList.map((s, i) => (
+                                        <tr key={s.uid} className="border-b border-slate-100 hover:bg-slate-50">
+                                            <td className="py-3 px-4 font-medium text-slate-900">{s.studentName}</td>
+                                            <td className="py-3 px-4 text-slate-700 font-semibold">{s.score} / {s.totalMarks}</td>
+                                            <td className="py-3 px-4">
+                                                <span className={`px-2 py-1 rounded-md text-xs font-bold ${s.percentage >= 75 ? 'bg-emerald-100 text-emerald-700' : s.percentage >= 40 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {s.percentage}%
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4 text-slate-500">
+                                                {Math.floor((s.timeTaken || 0) / 60)}m {(s.timeTaken || 0) % 60}s
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </GlassCard>
+                    </div>
                 )}
 
                 <div className="space-y-3">
