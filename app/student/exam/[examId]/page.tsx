@@ -67,13 +67,38 @@ export default function StudentExamPage() {
         fetchExam();
     }, [examId, userData]);
 
+    const handleSubmit = useCallback(async () => {
+        if (submitting) return;
+        setSubmitting(true);
+        try {
+            const startTime = (exam?.timeLimit || 30) * 60;
+            const finalUid = userData?.uid || guestUid;
+            const finalName = userData?.name || guestName || "Guest Student";
+
+            const r = await fetch(`/api/exams/${examId}/submit`, { 
+                method: "POST", 
+                headers: { "Content-Type": "application/json" }, 
+                body: JSON.stringify({ 
+                    studentUid: finalUid, 
+                    studentName: finalName,
+                    answers, 
+                    textAnswers,
+                    timeTaken: startTime - timeLeft 
+                }) 
+            });
+            const d = await r.json();
+            if (!r.ok) throw new Error(d.error);
+            router.push(`/student/exam/${examId}/result`);
+        } catch (e: any) { alert(e.message); setSubmitting(false); }
+    }, [answers, textAnswers, timeLeft, submitting, examId, userData, guestUid, guestName, exam, router]);
+
     // Timer — only starts after exam is loaded AND started
     useEffect(() => {
         if (!exam || timeLeft <= 0 || !hasStarted) return;
         if (timeLeft === 1) { handleSubmit(); return; }
         const t = setInterval(() => setTimeLeft(p => Math.max(0, p - 1)), 1000);
         return () => clearInterval(t);
-    }, [timeLeft, exam, hasStarted]);
+    }, [timeLeft, exam, hasStarted, handleSubmit]);
 
     // Anti-cheat mechanisms
     useEffect(() => {
@@ -116,31 +141,6 @@ export default function StudentExamPage() {
             document.removeEventListener("contextmenu", blockContext);
         };
     }, [hasStarted, handleSubmit]);
-
-    const handleSubmit = useCallback(async () => {
-        if (submitting) return;
-        setSubmitting(true);
-        try {
-            const startTime = (exam?.timeLimit || 30) * 60;
-            const finalUid = userData?.uid || guestUid;
-            const finalName = userData?.name || guestName || "Guest Student";
-
-            const r = await fetch(`/api/exams/${examId}/submit`, { 
-                method: "POST", 
-                headers: { "Content-Type": "application/json" }, 
-                body: JSON.stringify({ 
-                    studentUid: finalUid, 
-                    studentName: finalName,
-                    answers, 
-                    textAnswers,
-                    timeTaken: startTime - timeLeft 
-                }) 
-            });
-            const d = await r.json();
-            if (!r.ok) throw new Error(d.error);
-            router.push(`/student/exam/${examId}/result`);
-        } catch (e: any) { alert(e.message); setSubmitting(false); }
-    }, [answers, textAnswers, timeLeft, submitting, examId, userData, guestUid, guestName, exam, router]);
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full" /></div>;
 
