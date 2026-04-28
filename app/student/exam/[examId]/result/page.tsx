@@ -98,8 +98,8 @@ export default function ExamResultPage() {
                                                     {eval_q?.awardedMarks || 0} / {q.marks || 1} Marks
                                                 </span>
                                             </div>
-                                            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                                                <p className="text-sm text-slate-700 whitespace-pre-wrap">{eval_q?.textAnswer || "No answer provided."}</p>
+                                            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 prose prose-sm max-w-none prose-slate">
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{eval_q?.textAnswer || "No answer provided."}</ReactMarkdown>
                                             </div>
                                             {eval_q?.feedback && (
                                                 <div className="bg-indigo-50/50 border border-indigo-100 p-3 rounded-lg mt-2">

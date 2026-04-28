@@ -285,6 +285,10 @@ export default function StudentExamPage() {
     const secs = timeLeft % 60;
     const isLow = timeLeft < 120;
 
+    const insertMarkdown = (index: number, markdown: string) => {
+        setAnswers(prev => ({ ...prev, [index]: (prev[index] || "") + markdown }));
+    };
+
     if (exam?.type === "paper") {
         return (
             <div className={`min-h-screen bg-slate-50 flex flex-col select-none transition-all ${isBlurred ? "blur-xl grayscale pointer-events-none" : ""}`}>
@@ -339,11 +343,20 @@ export default function StudentExamPage() {
 
                                         {q.type === "subjective" && (
                                             <div className="mt-4">
+                                                <div className="flex flex-wrap gap-2 mb-2 bg-slate-50 p-2 rounded-t-xl border border-b-0 border-slate-200 items-center">
+                                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-2">Formatting:</span>
+                                                    <button onClick={() => insertMarkdown(i, "**Bold Text** ")} className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-100">B</button>
+                                                    <button onClick={() => insertMarkdown(i, "*Italic Text* ")} className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs italic text-slate-700 shadow-sm hover:bg-slate-100">I</button>
+                                                    <button onClick={() => insertMarkdown(i, "\n- Bullet Point 1\n- Bullet Point 2\n")} className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs text-slate-700 shadow-sm hover:bg-slate-100 flex items-center gap-1">
+                                                        <span className="text-lg leading-none mt-[-2px]">•</span> List
+                                                    </button>
+                                                    <button onClick={() => insertMarkdown(i, "\n| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |\n")} className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs text-slate-700 shadow-sm hover:bg-slate-100">Table</button>
+                                                </div>
                                                 <textarea 
                                                     value={answers[i] || ""} 
                                                     onChange={e => setAnswers(prev => ({ ...prev, [i]: e.target.value }))}
-                                                    className="w-full h-48 resize-y p-4 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-mono text-sm leading-relaxed"
-                                                    placeholder="Type your answer here..."
+                                                    className="w-full h-48 resize-y p-4 rounded-b-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-mono text-sm leading-relaxed"
+                                                    placeholder="Type your answer here... You can use the formatting toolbar above to add bold text, lists, and tables."
                                                 />
                                             </div>
                                         )}

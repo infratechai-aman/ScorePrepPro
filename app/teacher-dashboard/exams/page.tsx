@@ -79,7 +79,7 @@ export default function ExamsPage() {
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900 font-serif">Your Exams</h1>
                         <p className="text-slate-500 mt-1">
-                            Create MCQ exams from your content. <span className="text-indigo-600 font-medium">{publishedCount}/10 published</span>
+                            Create and manage exams from your content.
                         </p>
                     </div>
                     <Link href="/teacher-dashboard/exams/create">

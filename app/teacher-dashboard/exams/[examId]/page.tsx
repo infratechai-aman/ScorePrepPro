@@ -5,11 +5,14 @@ import { useParams } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Copy, Check, Send, BarChart3, Loader2, Clock, Users, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, Copy, Check, Send, BarChart3, Loader2, Clock, Users, CheckCircle2, XCircle, Sparkles, Trash2 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 
 export default function ExamDetailPage() {
     const { examId } = useParams() as { examId: string };
@@ -25,6 +28,7 @@ export default function ExamDetailPage() {
     const [viewedSubmission, setViewedSubmission] = useState<any>(null);
     const [overridingMap, setOverridingMap] = useState<{[key: number]: number}>({});
     const [savingOverride, setSavingOverride] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => { fetchExam(); }, [examId]);
     useEffect(() => { if (userData?.uid) fetchClassrooms(); }, [userData?.uid]);
@@ -64,6 +68,19 @@ export default function ExamDetailPage() {
             const d = await r.json(); if (!r.ok) throw new Error(d.error);
             fetchExam();
         } catch (e: any) { alert(e.message); } finally { setPublishing(false); }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm("Are you sure you want to delete this exam and all its submissions? This cannot be undone.")) return;
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/exams/${examId}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Failed to delete exam");
+            window.location.href = "/teacher-dashboard/exams";
+        } catch (e: any) {
+            alert(e.message);
+            setDeleting(false);
+        }
     };
 
     const handleSaveOverride = async () => {
@@ -127,12 +144,17 @@ export default function ExamDetailPage() {
                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${exam?.status === "published" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{exam?.status}</span>
                         </div>
                     </div>
-                    {exam?.status === "published" && (
-                        <div className="flex gap-2">
-                            <Button variant="outline" onClick={copyLink} className="rounded-xl gap-2">{copied ? <Check size={16} /> : <Copy size={16} />} {copied ? "Copied!" : "Copy Link"}</Button>
-                            <Link href={`/teacher-dashboard/exams/${examId}/analytics`}><Button className="bg-purple-600 hover:bg-purple-700 rounded-xl gap-2"><BarChart3 size={16} /> Analytics</Button></Link>
-                        </div>
-                    )}
+                    <div className="flex gap-2">
+                        {exam?.status === "published" && (
+                            <>
+                                <Button variant="outline" onClick={copyLink} className="rounded-xl gap-2">{copied ? <Check size={16} /> : <Copy size={16} />} {copied ? "Copied!" : "Copy Link"}</Button>
+                                <Link href={`/teacher-dashboard/exams/${examId}/analytics`}><Button className="bg-purple-600 hover:bg-purple-700 rounded-xl gap-2"><BarChart3 size={16} /> Analytics</Button></Link>
+                            </>
+                        )}
+                        <Button variant="outline" onClick={handleDelete} isLoading={deleting} className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl gap-2">
+                            <Trash2 size={16} /> Delete Exam
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -257,8 +279,8 @@ export default function ExamDetailPage() {
                                                     <p className="font-semibold text-slate-800">Q{i + 1}. {q.question}</p>
                                                     <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded">[{q.marks} Marks]</span>
                                                 </div>
-                                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                                                    <p className="text-sm text-slate-700 whitespace-pre-wrap font-mono">{eval_q?.textAnswer || "No answer provided."}</p>
+                                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 prose prose-sm max-w-none prose-slate">
+                                                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{eval_q?.textAnswer || "No answer provided."}</ReactMarkdown>
                                                 </div>
                                                 
                                                 {eval_q?.feedback && (
