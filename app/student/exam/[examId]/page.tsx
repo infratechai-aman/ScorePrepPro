@@ -228,24 +228,24 @@ export default function StudentExamPage() {
                     </div>
                 </div>
 
-                <div className="flex-1 pt-14 flex flex-col lg:flex-row h-screen">
+                <div className="pt-14 flex flex-col lg:flex-row h-[100dvh]">
                     {/* Left: Question Paper */}
-                    <div className="flex-1 overflow-y-auto border-r border-slate-200 bg-white p-6 md:p-10">
-                        <div className="notes-content prose prose-slate max-w-none prose-headings:font-serif prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg">
+                    <div className="h-1/2 lg:h-full lg:flex-1 overflow-y-auto border-b lg:border-b-0 lg:border-r border-slate-200 bg-white p-4 md:p-10">
+                        <div className="notes-content prose prose-slate max-w-none prose-headings:font-serif prose-h1:text-xl lg:prose-h1:text-2xl prose-h2:text-lg lg:prose-h2:text-xl prose-h3:text-base lg:prose-h3:text-lg text-sm lg:text-base">
                             <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{exam.content}</ReactMarkdown>
                         </div>
                     </div>
                     {/* Right: Answer Box */}
-                    <div className="flex-1 flex flex-col bg-slate-50">
-                        <div className="p-4 border-b border-slate-200 bg-white flex justify-between items-center">
-                            <h3 className="font-bold text-slate-800">Your Answers</h3>
-                            <Button onClick={handleSubmit} isLoading={submitting} className="bg-indigo-600 hover:bg-indigo-700">Submit Exam</Button>
+                    <div className="h-1/2 lg:h-full lg:flex-1 flex flex-col bg-slate-50">
+                        <div className="p-3 lg:p-4 border-b border-slate-200 bg-white flex justify-between items-center">
+                            <h3 className="font-bold text-slate-800 text-sm lg:text-base">Your Answers</h3>
+                            <Button onClick={handleSubmit} isLoading={submitting} className="bg-indigo-600 hover:bg-indigo-700 text-xs lg:text-sm h-8 lg:h-10 px-3 lg:px-4">Submit Exam</Button>
                         </div>
-                        <div className="flex-1 p-6">
+                        <div className="flex-1 p-3 lg:p-6 overflow-hidden">
                             <textarea 
                                 value={textAnswers} 
                                 onChange={e => setTextAnswers(e.target.value)} 
-                                className="w-full h-full resize-none p-6 rounded-xl border border-slate-200 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-mono text-sm leading-relaxed"
+                                className="w-full h-full resize-none p-4 lg:p-6 rounded-xl border border-slate-200 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-mono text-xs lg:text-sm leading-relaxed"
                                 placeholder="Type your answers here...&#10;&#10;e.g.&#10;Q1: My answer...&#10;Q2: Another answer..."
                             />
                         </div>
