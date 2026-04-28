@@ -8,7 +8,7 @@ export async function POST(
 ) {
     try {
         const { examId } = await params;
-        const { studentUid, answers, timeTaken } = await req.json();
+        const { studentUid, studentName, answers, timeTaken } = await req.json();
 
         if (!studentUid || !answers) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -46,6 +46,7 @@ export async function POST(
         const percentage = Math.round((score / totalMarks) * 100);
 
         await submissionRef.set({
+            studentName: studentName || "Guest Student",
             answers,
             evaluation,
             score,

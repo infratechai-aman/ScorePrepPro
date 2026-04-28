@@ -36,8 +36,12 @@ export default function ExamDetailPage() {
             
             const subsData = await Promise.all(subs.docs.map(async (subDoc) => {
                 const data = subDoc.data();
-                const userDoc = await getDoc(doc(db, "users", subDoc.id));
-                return { uid: subDoc.id, ...data, studentName: userDoc.exists() ? userDoc.data().name : "Unknown Student" };
+                let studentName = data.studentName;
+                if (!studentName) {
+                    const userDoc = await getDoc(doc(db, "users", subDoc.id));
+                    studentName = userDoc.exists() ? userDoc.data().name : "Guest Student";
+                }
+                return { uid: subDoc.id, ...data, studentName };
             }));
             setSubmissionsList(subsData);
         } catch (e) { console.error(e); } finally { setLoading(false); }

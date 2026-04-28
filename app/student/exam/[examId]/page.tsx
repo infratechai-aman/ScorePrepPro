@@ -18,34 +18,27 @@ export default function StudentExamPage() {
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
     const [errorMsg, setErrorMsg] = useState("");
+    
+    // Guest states
+    const [guestName, setGuestName] = useState("");
+    const [hasStarted, setHasStarted] = useState(false);
+    const [guestUid, setGuestUid] = useState("");
 
     useEffect(() => {
+        // Initialize guest uid
+        if (typeof window !== "undefined") {
+            let uid = localStorage.getItem(`exam_guest_uid_${examId}`);
+            if (!uid) {
+                uid = "guest_" + Math.random().toString(36).substring(2, 15);
+                localStorage.setItem(`exam_guest_uid_${examId}`, uid);
+            }
+            setGuestUid(uid);
+        }
+
         const fetchExam = async () => {
-            if (userData === undefined) return; // Wait for auth to resolve
-            
-            if (!userData) {
-                setErrorMsg("Please log in to take this exam.");
-                setLoading(false);
-                return;
-            }
-
-            if (userData.role !== "student") {
-                setErrorMsg("Only students are authorized to take exams.");
-                setLoading(false);
-                return;
-            }
-
             const d = await getDoc(doc(db, "exams", examId));
             if (d.exists()) { 
                 const examData = d.data();
-                
-                // Classroom access check
-                if (examData.classroomId && !userData.classrooms?.[examData.classroomId]) {
-                    setErrorMsg("You are not enrolled in the classroom for this exam.");
-                    setLoading(false);
-                    return;
-                }
-
                 setExam(examData); 
                 setTimeLeft((examData.timeLimit || 30) * 60); 
             } else {
@@ -55,17 +48,20 @@ export default function StudentExamPage() {
             }
 
             // Check if already submitted
-            const sub = await getDoc(doc(db, "exams", examId, "submissions", userData.uid));
-            if (sub.exists()) router.push(`/student/exam/${examId}/result`);
+            const uidToCheck = userData?.uid || localStorage.getItem(`exam_guest_uid_${examId}`);
+            if (uidToCheck) {
+                const sub = await getDoc(doc(db, "exams", examId, "submissions", uidToCheck));
+                if (sub.exists()) router.push(`/student/exam/${examId}/result`);
+            }
             
             setLoading(false);
         };
         fetchExam();
     }, [examId, userData]);
 
-    // Timer — only starts after exam is loaded
+    // Timer — only starts after exam is loaded AND started
     useEffect(() => {
-        if (!exam || timeLeft <= 0) return;
+        if (!exam || timeLeft <= 0 || !hasStarted) return;
         if (timeLeft === 1) { handleSubmit(); return; }
         const t = setInterval(() => setTimeLeft(p => Math.max(0, p - 1)), 1000);
         return () => clearInterval(t);
@@ -76,12 +72,24 @@ export default function StudentExamPage() {
         setSubmitting(true);
         try {
             const startTime = (exam?.timeLimit || 30) * 60;
-            const r = await fetch(`/api/exams/${examId}/submit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ studentUid: userData?.uid, answers, timeTaken: startTime - timeLeft }) });
+            const finalUid = userData?.uid || guestUid;
+            const finalName = userData?.name || guestName || "Guest Student";
+
+            const r = await fetch(`/api/exams/${examId}/submit`, { 
+                method: "POST", 
+                headers: { "Content-Type": "application/json" }, 
+                body: JSON.stringify({ 
+                    studentUid: finalUid, 
+                    studentName: finalName,
+                    answers, 
+                    timeTaken: startTime - timeLeft 
+                }) 
+            });
             const d = await r.json();
             if (!r.ok) throw new Error(d.error);
             router.push(`/student/exam/${examId}/result`);
         } catch (e: any) { alert(e.message); setSubmitting(false); }
-    }, [answers, timeLeft, submitting, examId, userData?.uid]);
+    }, [answers, timeLeft, submitting, examId, userData, guestUid, guestName, exam]);
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full" /></div>;
 
@@ -93,12 +101,63 @@ export default function StudentExamPage() {
                 </div>
                 <h1 className="text-xl font-bold text-slate-900">Access Denied</h1>
                 <p className="text-slate-500">{errorMsg}</p>
-                <Button onClick={() => router.push(userData ? "/student" : "/login")} className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700">
-                    {userData ? "Return to Dashboard" : "Go to Login"}
+                <Button onClick={() => router.push("/")} className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700">
+                    Return to Home
                 </Button>
             </div>
         </div>
     );
+
+    if (!hasStarted) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+                <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-6">
+                    <div className="text-center space-y-2">
+                        <h1 className="text-2xl font-bold text-slate-900 font-serif">{exam?.title}</h1>
+                        <p className="text-slate-500">Please enter your name to begin the exam.</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-100">
+                        <div className="text-center">
+                            <p className="text-2xl font-bold text-slate-800">{exam?.mcqs?.length}</p>
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Questions</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-2xl font-bold text-slate-800">{exam?.timeLimit}</p>
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Minutes</p>
+                        </div>
+                    </div>
+
+                    {!userData?.uid && (
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Full Name</label>
+                            <input 
+                                type="text" 
+                                value={guestName} 
+                                onChange={(e) => setGuestName(e.target.value)} 
+                                placeholder="Enter your name" 
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition-all"
+                                required
+                            />
+                        </div>
+                    )}
+
+                    <Button 
+                        onClick={() => {
+                            if (!userData?.uid && !guestName.trim()) {
+                                alert("Please enter your name");
+                                return;
+                            }
+                            setHasStarted(true);
+                        }} 
+                        className="w-full py-6 text-lg rounded-xl bg-indigo-600 hover:bg-indigo-700"
+                    >
+                        Start Exam
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     const mcqs = exam?.mcqs || [];
     const mcq = mcqs[currentQ];
