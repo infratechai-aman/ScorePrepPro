@@ -168,7 +168,7 @@ function CustomGenerateContent() {
             if (!pubRes.ok) throw new Error(pubData.error);
 
             // 3. Set the link
-            const link = `${window.location.origin}/exam/${examId}`;
+            const link = `${window.location.origin}/student/exam/${examId}`;
             setPublishedExamLink(link);
         } catch (err: any) {
             alert("Failed to publish exam: " + err.message);
