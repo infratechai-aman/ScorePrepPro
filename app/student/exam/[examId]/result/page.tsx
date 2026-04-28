@@ -53,16 +53,14 @@ export default function ExamResultPage() {
                 <GlassCard className="p-8 text-center space-y-4 border-t-4 border-t-indigo-500">
                     <CheckCircle className="mx-auto text-indigo-500" size={48} />
                     <h1 className="text-3xl font-bold font-serif text-slate-900">Exam Submitted!</h1>
-                    {hasSubjective ? (
-                        <p className="text-slate-600">Your answers have been saved and sent to your teacher for manual grading.</p>
-                    ) : (
-                        <>
-                            <div className={`inline-block px-6 py-3 rounded-2xl bg-emerald-50`}>
-                                <span className={`text-5xl font-extrabold text-emerald-600`}>{submission?.percentage}%</span>
-                            </div>
-                            <p className="text-slate-600">{submission?.score}/{submission?.totalMarks} correct answers</p>
-                        </>
+                    {hasSubjective && (
+                        <p className="text-sm font-medium text-indigo-600 bg-indigo-50 py-1.5 px-3 rounded-full inline-block mb-2">Theory questions auto-graded by AI Smart Grader</p>
                     )}
+                    <div className={`inline-block px-6 py-3 rounded-2xl bg-emerald-50`}>
+                        <span className={`text-5xl font-extrabold text-emerald-600`}>{submission?.percentage}%</span>
+                    </div>
+                    <p className="text-slate-600">{submission?.score}/{submission?.totalMarks} marks scored</p>
+                    {hasSubjective && <p className="text-xs text-slate-500 mt-2">Note: Your teacher may review and override these AI-generated marks.</p>}
                 </GlassCard>
 
                 <div className="space-y-3">
@@ -91,15 +89,24 @@ export default function ExamResultPage() {
                                     );
                                 } else {
                                     return (
-                                        <GlassCard key={i} className="p-4 border-l-4 border-l-amber-400">
-                                            <div className="flex items-start gap-2 mb-2">
-                                                <Clock size={18} className="text-amber-500 mt-0.5" />
-                                                <p className="font-semibold text-slate-800">Q{i + 1}. {q.question}</p>
+                                        <GlassCard key={i} className="p-4 border-l-4 border-l-indigo-400 space-y-3">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex items-start gap-2">
+                                                    <p className="font-semibold text-slate-800">Q{i + 1}. {q.question}</p>
+                                                </div>
+                                                <span className="text-xs font-bold bg-indigo-50 text-indigo-700 px-2 py-1 rounded whitespace-nowrap">
+                                                    {eval_q?.awardedMarks || 0} / {q.marks || 1} Marks
+                                                </span>
                                             </div>
-                                            <div className="ml-6 mt-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
                                                 <p className="text-sm text-slate-700 whitespace-pre-wrap">{eval_q?.textAnswer || "No answer provided."}</p>
                                             </div>
-                                            <p className="text-xs text-amber-600 mt-2 ml-6 font-medium">Pending manual review</p>
+                                            {eval_q?.feedback && (
+                                                <div className="bg-indigo-50/50 border border-indigo-100 p-3 rounded-lg mt-2">
+                                                    <p className="text-xs font-bold text-indigo-800 uppercase tracking-wider mb-1">AI Feedback</p>
+                                                    <p className="text-sm text-slate-700 italic">{eval_q.feedback}</p>
+                                                </div>
+                                            )}
                                         </GlassCard>
                                     );
                                 }

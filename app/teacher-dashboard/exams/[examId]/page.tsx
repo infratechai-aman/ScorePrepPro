@@ -23,6 +23,8 @@ export default function ExamDetailPage() {
     const [submissionCount, setSubmissionCount] = useState(0);
     const [submissionsList, setSubmissionsList] = useState<any[]>([]);
     const [viewedSubmission, setViewedSubmission] = useState<any>(null);
+    const [overridingMap, setOverridingMap] = useState<{[key: number]: number}>({});
+    const [savingOverride, setSavingOverride] = useState(false);
 
     useEffect(() => { fetchExam(); }, [examId]);
     useEffect(() => { if (userData?.uid) fetchClassrooms(); }, [userData?.uid]);
@@ -62,6 +64,49 @@ export default function ExamDetailPage() {
             const d = await r.json(); if (!r.ok) throw new Error(d.error);
             fetchExam();
         } catch (e: any) { alert(e.message); } finally { setPublishing(false); }
+    };
+
+    const handleSaveOverride = async () => {
+        if (!viewedSubmission) return;
+        setSavingOverride(true);
+        try {
+            // Recalculate total score
+            const newEvaluation = [...viewedSubmission.evaluation];
+            Object.keys(overridingMap).forEach(qIndex => {
+                const idx = parseInt(qIndex);
+                if (newEvaluation[idx]) {
+                    newEvaluation[idx].awardedMarks = overridingMap[idx];
+                }
+            });
+
+            const newScore = newEvaluation.reduce((sum, item) => sum + (item.awardedMarks || 0), 0);
+            const newPercentage = viewedSubmission.totalMarks ? Math.round((newScore / viewedSubmission.totalMarks) * 100) : 0;
+
+            const res = await fetch(`/api/exams/${examId}/override`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    studentUid: viewedSubmission.uid,
+                    evaluation: newEvaluation,
+                    score: newScore,
+                    percentage: newPercentage
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            // Update local state
+            const updatedSubmission = { ...viewedSubmission, evaluation: newEvaluation, score: newScore, percentage: newPercentage };
+            setViewedSubmission(updatedSubmission);
+            setSubmissionsList(prev => prev.map(s => s.uid === updatedSubmission.uid ? updatedSubmission : s));
+            setOverridingMap({}); // clear overrides after save
+            alert("Score overridden successfully!");
+        } catch (e: any) {
+            alert(e.message);
+        } finally {
+            setSavingOverride(false);
+        }
     };
 
     const copyLink = () => { navigator.clipboard.writeText(`${window.location.origin}/student/exam/${examId}`); setCopied(true); setTimeout(() => setCopied(false), 2000); };
@@ -177,7 +222,12 @@ export default function ExamDetailPage() {
                                 <h3 className="font-bold text-slate-900 font-serif">Submission by {viewedSubmission.studentName} {viewedSubmission.rollNo ? `(${viewedSubmission.rollNo})` : ""}</h3>
                                 <p className="text-xs text-slate-500">Time Taken: {Math.floor((viewedSubmission.timeTaken || 0) / 60)}m {(viewedSubmission.timeTaken || 0) % 60}s</p>
                             </div>
-                            <Button variant="ghost" onClick={() => setViewedSubmission(null)} className="h-8 px-3 rounded-lg text-sm">Close</Button>
+                            <div className="flex gap-2">
+                                {Object.keys(overridingMap).length > 0 && (
+                                    <Button onClick={handleSaveOverride} isLoading={savingOverride} className="h-8 px-3 rounded-lg text-sm bg-emerald-600 hover:bg-emerald-700">Save Overrides</Button>
+                                )}
+                                <Button variant="ghost" onClick={() => { setViewedSubmission(null); setOverridingMap({}); }} className="h-8 px-3 rounded-lg text-sm">Close</Button>
+                            </div>
                         </div>
                         <div className="p-6 overflow-y-auto space-y-4 bg-slate-50">
                             {exam?.structuredPaper ? (
@@ -202,11 +252,38 @@ export default function ExamDetailPage() {
                                         );
                                     } else {
                                         return (
-                                            <div key={i} className="p-4 bg-white rounded-xl border-l-4 border-l-amber-400 shadow-sm">
-                                                <p className="font-semibold text-slate-800 mb-2">Q{i + 1}. {q.question}</p>
-                                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 mt-2">
+                                            <div key={i} className="p-4 bg-white rounded-xl border-l-4 border-l-amber-400 shadow-sm space-y-3">
+                                                <div className="flex justify-between items-start">
+                                                    <p className="font-semibold text-slate-800">Q{i + 1}. {q.question}</p>
+                                                    <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded">[{q.marks} Marks]</span>
+                                                </div>
+                                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
                                                     <p className="text-sm text-slate-700 whitespace-pre-wrap font-mono">{eval_q?.textAnswer || "No answer provided."}</p>
                                                 </div>
+                                                
+                                                {eval_q?.feedback && (
+                                                    <div className="bg-indigo-50 border border-indigo-100 p-3 rounded-lg flex flex-col gap-2">
+                                                        <div className="flex justify-between items-center">
+                                                            <div className="flex items-center gap-2">
+                                                                <Sparkles className="text-indigo-600" size={16} />
+                                                                <span className="text-xs font-bold text-indigo-800 uppercase tracking-wider">AI Evaluation</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-sm font-semibold text-slate-700">Marks:</span>
+                                                                <input 
+                                                                    type="number" 
+                                                                    min={0}
+                                                                    max={q.marks || 1}
+                                                                    value={overridingMap[i] !== undefined ? overridingMap[i] : (eval_q?.awardedMarks || 0)}
+                                                                    onChange={(e) => setOverridingMap({ ...overridingMap, [i]: Number(e.target.value) })}
+                                                                    className="w-16 px-2 py-1 bg-white border border-slate-300 rounded text-center text-sm font-bold text-indigo-700 focus:outline-none focus:border-indigo-500"
+                                                                />
+                                                                <span className="text-sm text-slate-500 font-medium">/ {q.marks || 1}</span>
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-sm text-indigo-900/80 italic">{eval_q.feedback}</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     }

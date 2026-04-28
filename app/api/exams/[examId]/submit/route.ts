@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
+import { evaluateSubjectiveAnswer } from "@/lib/gradingEngine";
 
 export async function POST(
     req: Request,
@@ -59,18 +60,27 @@ export async function POST(
             totalMarks = mcqs.length;
         }
 
-        let score = 0;
-        const evaluation: { questionIndex: number; selectedAnswer?: number; correctAnswer?: number; isCorrect?: boolean; textAnswer?: string; isSubjective?: boolean }[] = [];
-
-        for (let i = 0; i < mcqs.length; i++) {
-            if (isPaper && examData.structuredPaper && mcqs[i] === null) {
+        const evaluationPromises = mcqs.map(async (mcq: any, i: number) => {
+            if (isPaper && examData.structuredPaper && mcq === null) {
                 // It's a subjective question in a structured paper
-                evaluation.push({
+                const subjectiveQ = examData.structuredPaper.questions[i];
+                const studentAnswer = answers?.[i] || "";
+                
+                // AI Grading
+                const { awardedMarks, feedback } = await evaluateSubjectiveAnswer(
+                    subjectiveQ.question,
+                    subjectiveQ.explanation || "",
+                    studentAnswer,
+                    subjectiveQ.marks || 1
+                );
+
+                return {
                     questionIndex: i,
                     isSubjective: true,
-                    textAnswer: answers?.[i] || ""
-                });
-                continue;
+                    textAnswer: studentAnswer,
+                    awardedMarks,
+                    feedback
+                };
             }
 
             // MCQ evaluation
@@ -78,30 +88,30 @@ export async function POST(
             let correctAnswer = isPaper ? mcqs[i]?.correctAnswer : examData.mcqs[i].correctAnswer;
             if (correctAnswer === undefined) correctAnswer = -1; // Fallback to prevent undefined in firestore
             const isCorrect = selectedAnswer === correctAnswer;
-            if (isCorrect && !hasSubjective) score++; // Only accumulate score if no subjective questions (otherwise handled manually later)
+            const mcqMarks = isPaper ? (mcqs[i]?.marks || 1) : 1;
+            const awardedMarks = isCorrect ? mcqMarks : 0;
             
-            evaluation.push({ questionIndex: i, selectedAnswer, correctAnswer, isCorrect, isSubjective: false });
-        }
+            return { questionIndex: i, selectedAnswer, correctAnswer, isCorrect, isSubjective: false, awardedMarks };
+        });
 
-        const percentage = hasSubjective ? null : Math.round((score / totalMarks) * 100);
+        const evaluatedResults = await Promise.all(evaluationPromises);
+        
+        let score = evaluatedResults.reduce((sum, item) => sum + (item.awardedMarks || 0), 0);
+        const percentage = Math.round((score / totalMarks) * 100);
 
         await submissionRef.set({
             studentName: studentName || "Guest Student",
             rollNo: rollNo || "",
             answers: answers || {},
-            evaluation,
-            score: hasSubjective ? null : score,
+            evaluation: evaluatedResults,
+            score,
             totalMarks,
             percentage,
             timeTaken: timeTaken || 0,
             submittedAt: FieldValue.serverTimestamp()
         });
 
-        if (hasSubjective) {
-            return NextResponse.json({ evaluation, message: "Exam submitted! Subjective questions pending review." });
-        }
-
-        return NextResponse.json({ score: hasSubjective ? null : score, totalMarks, percentage, evaluation, message: "Exam submitted and evaluated!" });
+        return NextResponse.json({ score, totalMarks, percentage, evaluation: evaluatedResults, message: "Exam submitted and evaluated using AI Smart Grader!" });
     } catch (error: any) {
         console.error("Error submitting exam:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
