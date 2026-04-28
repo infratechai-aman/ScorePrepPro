@@ -15,7 +15,7 @@ export default function StudentExamPage() {
     const { userData } = useAuth();
     const router = useRouter();
     const [exam, setExam] = useState<any>(null);
-    const [answers, setAnswers] = useState<Record<number, number>>({});
+    const [answers, setAnswers] = useState<Record<number, any>>({});
     const [textAnswers, setTextAnswers] = useState("");
     const [currentQ, setCurrentQ] = useState(0);
     const [timeLeft, setTimeLeft] = useState(0);
@@ -82,7 +82,7 @@ export default function StudentExamPage() {
                     studentUid: finalUid, 
                     studentName: finalName,
                     answers, 
-                    textAnswers,
+                    textAnswers, // Keep for backwards compatibility with old unstructured papers
                     timeTaken: startTime - timeLeft 
                 }) 
             });
@@ -230,28 +230,84 @@ export default function StudentExamPage() {
 
                 <div className="pt-14 min-h-screen pb-20">
                     <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
-                        {/* Question Paper */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-12 overflow-hidden">
-                            <div className="notes-content prose prose-slate max-w-none prose-headings:font-serif prose-h1:text-xl lg:prose-h1:text-2xl prose-h2:text-lg lg:prose-h2:text-xl prose-h3:text-base lg:prose-h3:text-lg text-sm lg:text-base">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{exam.content}</ReactMarkdown>
-                            </div>
-                        </div>
+                        {exam.structuredPaper ? (
+                            <div className="space-y-8">
+                                <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm sticky top-14 z-40">
+                                    <h3 className="font-bold text-slate-800">Exam Questions</h3>
+                                    <Button onClick={handleSubmit} isLoading={submitting} className="bg-indigo-600 hover:bg-indigo-700">Submit Exam</Button>
+                                </div>
+                                {exam.structuredPaper.instructions && (
+                                    <div className="bg-blue-50 text-blue-800 p-6 rounded-2xl border border-blue-100 shadow-sm">
+                                        <h4 className="font-bold mb-2">Instructions</h4>
+                                        <p className="text-sm">{exam.structuredPaper.instructions}</p>
+                                    </div>
+                                )}
+                                {exam.structuredPaper.questions?.map((q: any, i: number) => (
+                                    <div key={i} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                                        <div className="flex justify-between items-start mb-6">
+                                            <p className="font-semibold text-slate-800 text-lg"><span className="text-indigo-600">Q{i + 1}.</span> {q.question}</p>
+                                            {q.marks && <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded whitespace-nowrap">[{q.marks} Marks]</span>}
+                                        </div>
+                                        
+                                        {q.type === "mcq" && q.options && (
+                                            <div className="space-y-3">
+                                                {q.options.map((opt: string, j: number) => (
+                                                    <button 
+                                                        key={j}
+                                                        onClick={() => setAnswers(prev => ({ ...prev, [i]: j }))}
+                                                        className={`w-full text-left p-4 rounded-xl border-2 transition-all ${answers[i] === j ? "border-indigo-600 bg-indigo-50/50" : "border-slate-100 hover:border-indigo-200 hover:bg-slate-50"}`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${answers[i] === j ? "border-indigo-600" : "border-slate-300"}`}>
+                                                                {answers[i] === j && <div className="w-2.5 h-2.5 rounded-full bg-indigo-600" />}
+                                                            </div>
+                                                            <span className={`text-sm md:text-base ${answers[i] === j ? "text-indigo-900 font-medium" : "text-slate-700"}`}>{opt}</span>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
 
-                        {/* Answer Box */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[60vh] min-h-[400px]">
-                            <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center sticky top-0">
-                                <h3 className="font-bold text-slate-800">Your Answers</h3>
-                                <Button onClick={handleSubmit} isLoading={submitting} className="bg-indigo-600 hover:bg-indigo-700">Submit Exam</Button>
+                                        {q.type === "subjective" && (
+                                            <div className="mt-4">
+                                                <textarea 
+                                                    value={answers[i] || ""} 
+                                                    onChange={e => setAnswers(prev => ({ ...prev, [i]: e.target.value }))}
+                                                    className="w-full h-48 resize-y p-4 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-mono text-sm leading-relaxed"
+                                                    placeholder="Type your answer here..."
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-                            <div className="flex-1">
-                                <textarea 
-                                    value={textAnswers} 
-                                    onChange={e => setTextAnswers(e.target.value)} 
-                                    className="w-full h-full resize-none p-6 outline-none font-mono text-sm leading-relaxed text-slate-700 bg-white"
-                                    placeholder="Type your answers here...&#10;&#10;e.g.&#10;Q1: My answer...&#10;Q2: Another answer..."
-                                />
-                            </div>
-                        </div>
+                        ) : (
+                            <>
+                                {/* Legacy Unstructured Paper Format */}
+                                {/* Question Paper */}
+                                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-12 overflow-hidden">
+                                    <div className="notes-content prose prose-slate max-w-none prose-headings:font-serif prose-h1:text-xl lg:prose-h1:text-2xl prose-h2:text-lg lg:prose-h2:text-xl prose-h3:text-base lg:prose-h3:text-lg text-sm lg:text-base">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{exam.content}</ReactMarkdown>
+                                    </div>
+                                </div>
+
+                                {/* Answer Box */}
+                                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[60vh] min-h-[400px]">
+                                    <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center sticky top-0">
+                                        <h3 className="font-bold text-slate-800">Your Answers</h3>
+                                        <Button onClick={handleSubmit} isLoading={submitting} className="bg-indigo-600 hover:bg-indigo-700">Submit Exam</Button>
+                                    </div>
+                                    <div className="flex-1">
+                                        <textarea 
+                                            value={textAnswers} 
+                                            onChange={e => setTextAnswers(e.target.value)} 
+                                            className="w-full h-full resize-none p-6 outline-none font-mono text-sm leading-relaxed text-slate-700 bg-white"
+                                            placeholder="Type your answers here...&#10;&#10;e.g.&#10;Q1: My answer...&#10;Q2: Another answer..."
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
                 

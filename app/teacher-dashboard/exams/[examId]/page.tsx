@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Copy, Check, Send, BarChart3, Loader2, Clock, Users } from "lucide-react";
+import { ArrowLeft, Copy, Check, Send, BarChart3, Loader2, Clock, Users, CheckCircle2, XCircle } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
@@ -177,8 +177,41 @@ export default function ExamDetailPage() {
                             </div>
                             <Button variant="ghost" onClick={() => setViewedSubmission(null)} className="h-8 px-3 rounded-lg text-sm">Close</Button>
                         </div>
-                        <div className="p-6 overflow-y-auto">
-                            <pre className="whitespace-pre-wrap font-mono text-sm text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200">{viewedSubmission.textAnswers}</pre>
+                        <div className="p-6 overflow-y-auto space-y-4 bg-slate-50">
+                            {exam?.structuredPaper ? (
+                                exam.structuredPaper.questions.map((q: any, i: number) => {
+                                    const eval_q = viewedSubmission.evaluation?.[i];
+                                    if (q.type === "mcq") {
+                                        const isCorrect = eval_q?.isCorrect;
+                                        return (
+                                            <div key={i} className={`p-4 bg-white rounded-xl border-l-4 shadow-sm ${isCorrect ? "border-l-emerald-400" : "border-l-red-400"}`}>
+                                                <div className="flex items-start gap-2 mb-2">
+                                                    {isCorrect ? <CheckCircle2 size={18} className="text-emerald-500 mt-0.5" /> : <XCircle size={18} className="text-red-500 mt-0.5" />}
+                                                    <p className="font-semibold text-slate-800">Q{i + 1}. {q.question}</p>
+                                                </div>
+                                                <div className="space-y-1 ml-6">
+                                                    {q.options?.map((opt: string, j: number) => (
+                                                        <p key={j} className={`text-sm ${j === q.correctAnswer ? "text-emerald-700 font-semibold" : j === eval_q?.selectedAnswer && !isCorrect ? "text-red-600 line-through" : "text-slate-500"}`}>
+                                                            {j === q.correctAnswer ? "✅ " : j === eval_q?.selectedAnswer && !isCorrect ? "❌ " : ""}{opt}
+                                                        </p>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    } else {
+                                        return (
+                                            <div key={i} className="p-4 bg-white rounded-xl border-l-4 border-l-amber-400 shadow-sm">
+                                                <p className="font-semibold text-slate-800 mb-2">Q{i + 1}. {q.question}</p>
+                                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 mt-2">
+                                                    <p className="text-sm text-slate-700 whitespace-pre-wrap font-mono">{eval_q?.textAnswer || "No answer provided."}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                })
+                            ) : (
+                                <pre className="whitespace-pre-wrap font-mono text-sm text-slate-700 leading-relaxed bg-white p-4 rounded-xl border border-slate-200">{viewedSubmission.textAnswers}</pre>
+                            )}
                         </div>
                     </GlassCard>
                 </div>

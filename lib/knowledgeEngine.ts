@@ -101,7 +101,7 @@ export async function generateFromKnowledge(
     let userPrompt = "";
 
     if (generationType === "paper") {
-        systemPrompt = `You are an expert examiner. Generate a professional question paper STRICTLY from the provided unit content. Do NOT use any outside knowledge. Every question must come from the content provided.`;
+        systemPrompt = `You are an expert examiner. Generate a professional question paper STRICTLY from the provided unit content in JSON format. Do NOT use any outside knowledge.`;
         userPrompt = `Generate a ${questionType} question paper for:
 Subject: ${subjectName}
 Unit: ${unitTitle}
@@ -112,8 +112,32 @@ Duration: ${duration} minutes
 UNIT CONTENT (Generate ONLY from this):
 ${knowledgeText}
 
-Format the paper professionally with proper sections, question numbering (Q.1, Q.2...), marks allocation, and general instructions. ${questionType === "MCQ" ? "All questions should be MCQ with 4 options." : questionType === "Theory" ? "All questions should be descriptive/theory type." : "Mix MCQ and theory questions."}
-${includeAnswerKey ? "IMPORTANT: You MUST include a clear 'Answer Key' section at the very end of the output, separated by a horizontal rule (---)." : "IMPORTANT: DO NOT include any answers or hints."}`;
+Output format MUST be a JSON object:
+{
+  "instructions": "General instructions for the exam",
+  "questions": [
+    {
+      "type": "mcq",
+      "question": "...",
+      "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
+      "correctAnswer": 0,
+      "marks": 2,
+      "explanation": "..."
+    },
+    {
+      "type": "subjective",
+      "question": "...",
+      "marks": 5,
+      "explanation": "..."
+    }
+  ]
+}
+
+- For "mcq" type, correctAnswer is the index (0-3) of the correct option.
+- For "subjective" type, do not include "options" or "correctAnswer".
+- Ensure the total marks roughly equal ${marks}.
+- ${questionType === "MCQ" ? "Make ALL questions 'mcq' type." : questionType === "Theory" ? "Make ALL questions 'subjective' type." : "Mix 'mcq' and 'subjective' types."}
+ONLY output the JSON object, nothing else.`;
     } else if (generationType === "notes") {
         systemPrompt = `You are a premium educational content creator. Generate beautiful, well-structured study notes STRICTLY from the provided content. Use rich markdown formatting.`;
         userPrompt = `Generate ${notesType} notes for:

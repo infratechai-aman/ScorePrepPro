@@ -44,7 +44,7 @@ export async function GET(req: Request) {
 
     export async function POST(req: Request) {
     try {
-        const { teacherUid, classroomId, subjectId, unitId, title, type, content, mcqs, totalQuestions, difficulty, timeLimit } = await req.json();
+        const { teacherUid, classroomId, subjectId, unitId, title, type, content, structuredPaper, mcqs, totalQuestions, difficulty, timeLimit } = await req.json();
 
         const isPaper = type === "paper";
 
@@ -55,8 +55,8 @@ export async function GET(req: Request) {
         if (!isPaper && (!mcqs || mcqs.length === 0)) {
             return NextResponse.json({ error: "MCQs required for MCQ exam" }, { status: 400 });
         }
-        if (isPaper && !content) {
-            return NextResponse.json({ error: "Content required for Paper exam" }, { status: 400 });
+        if (isPaper && !content && !structuredPaper) {
+            return NextResponse.json({ error: "Content or Structured Paper required for Paper exam" }, { status: 400 });
         }
 
         const docRef = await adminDb.collection("exams").add({
@@ -67,6 +67,7 @@ export async function GET(req: Request) {
             title,
             type: type || "mcq",
             content: content || "",
+            structuredPaper: structuredPaper || null,
             mcqs: mcqs || [],
             totalQuestions: totalQuestions || (mcqs ? mcqs.length : 0),
             difficulty: difficulty || "medium",

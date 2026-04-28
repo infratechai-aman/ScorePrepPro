@@ -41,6 +41,7 @@ function CustomGenerateContent() {
     const [generating, setGenerating] = useState(false);
     const [result, setResult] = useState("");
     const [mcqResult, setMcqResult] = useState<any[]>([]);
+    const [paperResult, setPaperResult] = useState<{instructions?: string, questions: any[]} | null>(null);
     const [savedNoteId, setSavedNoteId] = useState("");
     const [pipelineStep, setPipelineStep] = useState(0);
     const [publishedExamLink, setPublishedExamLink] = useState("");
@@ -75,7 +76,7 @@ function CustomGenerateContent() {
 
     const handleGenerate = async () => {
         if (!selectedSubject || selectedUnits.length === 0) { alert("Select a subject and units."); return; }
-        setGenerating(true); setResult(""); setMcqResult([]); setSavedNoteId(""); setPipelineStep(0); setPublishedExamLink("");
+        setGenerating(true); setResult(""); setMcqResult([]); setPaperResult(null); setSavedNoteId(""); setPipelineStep(0); setPublishedExamLink("");
 
         const subjectName = subjects.find(s => s.id === selectedSubject)?.name || "Custom Subject";
 
@@ -115,9 +116,11 @@ function CustomGenerateContent() {
 
                 if (genType === "mcqs" && data.mcqs) {
                     setMcqResult(data.mcqs);
+                } else if (genType === "paper" && data.content) {
+                    setPaperResult(data.content);
                 } else {
                     setResult(data.content || "");
-                    // Auto-save paper to repository
+                    // Auto-save plain content to repository
                     if (user && data.content) {
                         try {
                             await addDoc(collection(db, "users", user.uid, "papers"), {
@@ -136,7 +139,7 @@ function CustomGenerateContent() {
     const handlePublishExam = async () => {
         if (!selectedSubject) return;
         if (genType === "mcqs" && mcqResult.length === 0) return;
-        if (genType === "paper" && !result) return;
+        if (genType === "paper" && !paperResult) return;
         
         setPublishingExam(true);
         try {
@@ -153,9 +156,10 @@ function CustomGenerateContent() {
                     subjectId: selectedSubject,
                     title: finalTitle,
                     type: genType === "paper" ? "paper" : "mcq",
-                    content: genType === "paper" ? result : "",
+                    content: genType === "paper" ? "" : result, // no longer sending raw string for paper
+                    structuredPaper: genType === "paper" ? paperResult : null, // send structured paper
                     mcqs: genType === "mcqs" ? mcqResult : [],
-                    totalQuestions: genType === "mcqs" ? mcqResult.length : 1,
+                    totalQuestions: genType === "mcqs" ? mcqResult.length : (genType === "paper" ? paperResult?.questions?.length || 1 : 1),
                     difficulty,
                     timeLimit: genType === "paper" ? duration : mcqCount * 2,
                 }),
@@ -210,6 +214,7 @@ function CustomGenerateContent() {
                             setGenType(t.id);
                             setResult("");
                             setMcqResult([]);
+                            setPaperResult(null);
                             setSavedNoteId("");
                             setPublishedExamLink("");
                             setPipelineStep(0);
@@ -335,7 +340,7 @@ function CustomGenerateContent() {
                     {/* Result Panel */}
                     <GlassCard className="lg:col-span-2 p-0 min-h-[400px] overflow-hidden">
                         {/* Action bar */}
-                        {(result || mcqResult.length > 0) && !generating && (
+                        {(result || mcqResult.length > 0 || paperResult) && !generating && (
                             <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50 print:hidden">
                                 <div className="flex items-center gap-2 text-sm text-slate-600">
                                     {savedNoteId && <span className="flex items-center gap-1 text-emerald-600 font-medium"><CheckCircle2 size={14} /> Saved to Repository</span>}
@@ -379,6 +384,33 @@ function CustomGenerateContent() {
                                     <Loader2 className="text-indigo-600 animate-spin" size={40} />
                                     <p className="text-slate-600 font-medium">{genType === "notes" ? "Running premium 7-step pipeline..." : "AI is generating..."}</p>
                                     <p className="text-xs text-slate-400">{genType === "notes" ? "This takes 1-3 minutes for maximum quality" : "This may take up to a minute"}</p>
+                                </div>
+                            ) : paperResult ? (
+                                <div className="space-y-6">
+                                    <h3 className="font-bold text-slate-900 font-serif text-2xl text-center mb-6">Generated Question Paper</h3>
+                                    {paperResult.instructions && (
+                                        <div className="p-4 bg-blue-50 text-blue-800 rounded-xl mb-6">
+                                            <strong>Instructions:</strong> {paperResult.instructions}
+                                        </div>
+                                    )}
+                                    {paperResult.questions?.map((q: any, i: number) => (
+                                        <div key={i} className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <p className="font-semibold text-slate-800"><span className="text-indigo-600">Q{i + 1}.</span> {q.question}</p>
+                                                {q.marks && <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded">[{q.marks} Marks]</span>}
+                                            </div>
+                                            {q.type === "mcq" && q.options && (
+                                                <div className="space-y-1.5 ml-4 mb-3">
+                                                    {q.options.map((opt: string, j: number) => (
+                                                        <p key={j} className={`text-sm ${j === q.correctAnswer ? "text-emerald-700 font-semibold" : "text-slate-600"}`}>{j === q.correctAnswer ? "✅ " : ""}{opt}</p>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {q.explanation && (
+                                                <p className="text-xs text-slate-500 italic ml-4">Explanation: {q.explanation}</p>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             ) : result ? (
                                 <div className="notes-content prose prose-slate max-w-none prose-headings:font-serif prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg">

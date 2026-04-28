@@ -34,7 +34,7 @@ export async function POST(req: Request) {
             );
         }
 
-        const content = await generateFromKnowledge(
+        const contentString = await generateFromKnowledge(
             combinedKnowledge,
             subjectName || "Custom Subject",
             unitNames.join(", "),
@@ -48,7 +48,19 @@ export async function POST(req: Request) {
             }
         );
 
-        return NextResponse.json({ content });
+        let parsedContent;
+        try {
+            let cleanStr = contentString.trim();
+            if (cleanStr.startsWith("```")) {
+                cleanStr = cleanStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+            }
+            parsedContent = JSON.parse(cleanStr);
+        } catch (e) {
+            console.error("Failed to parse paper JSON:", e, contentString);
+            return NextResponse.json({ error: "AI generated invalid structured data. Try again." }, { status: 500 });
+        }
+
+        return NextResponse.json({ content: parsedContent });
     } catch (error: any) {
         console.error("Error generating custom paper:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });

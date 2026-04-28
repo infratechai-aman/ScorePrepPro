@@ -30,8 +30,8 @@ export async function POST(
         const examData = examDoc.data()!;
         const isPaper = examData.type === "paper";
 
-        if (isPaper) {
-            // Subjective exam - no auto evaluation
+        if (isPaper && !examData.structuredPaper) {
+            // Legacy Subjective exam - no auto evaluation
             await submissionRef.set({
                 studentName: studentName || "Guest Student",
                 textAnswers: textAnswers || "",
@@ -44,34 +44,61 @@ export async function POST(
             return NextResponse.json({ message: "Subjective exam submitted successfully!" });
         }
 
-        // MCQ auto-evaluation
-        const mcqs = examData.mcqs || [];
-        let score = 0;
-        const totalMarks = mcqs.length;
-        const evaluation: { questionIndex: number; selectedAnswer: number; correctAnswer: number; isCorrect: boolean }[] = [];
+        let mcqs = [];
+        let totalMarks = 0;
+        let hasSubjective = false;
 
-        for (let i = 0; i < mcqs.length; i++) {
-            const selectedAnswer = answers && answers[i] !== undefined ? answers[i] : -1;
-            const correctAnswer = mcqs[i].correctAnswer;
-            const isCorrect = selectedAnswer === correctAnswer;
-            if (isCorrect) score++;
-            evaluation.push({ questionIndex: i, selectedAnswer, correctAnswer, isCorrect });
+        if (isPaper && examData.structuredPaper) {
+            const questions = examData.structuredPaper.questions || [];
+            hasSubjective = questions.some((q: any) => q.type === "subjective");
+            mcqs = questions.map((q: any) => q.type === "mcq" ? q : null);
+            totalMarks = questions.reduce((sum: number, q: any) => sum + (q.marks || 1), 0);
+        } else {
+            mcqs = examData.mcqs || [];
+            totalMarks = mcqs.length;
         }
 
-        const percentage = Math.round((score / totalMarks) * 100);
+        let score = 0;
+        const evaluation: { questionIndex: number; selectedAnswer?: number; correctAnswer?: number; isCorrect?: boolean; textAnswer?: string; isSubjective?: boolean }[] = [];
+
+        for (let i = 0; i < mcqs.length; i++) {
+            if (isPaper && examData.structuredPaper && mcqs[i] === null) {
+                // It's a subjective question in a structured paper
+                evaluation.push({
+                    questionIndex: i,
+                    isSubjective: true,
+                    textAnswer: answers ? answers[i] : ""
+                });
+                continue;
+            }
+
+            // MCQ evaluation
+            const selectedAnswer = answers && answers[i] !== undefined ? parseInt(answers[i]) : -1;
+            const correctAnswer = isPaper ? mcqs[i]?.correctAnswer : examData.mcqs[i].correctAnswer;
+            const isCorrect = selectedAnswer === correctAnswer;
+            if (isCorrect && !hasSubjective) score++; // Only accumulate score if no subjective questions (otherwise handled manually later)
+            
+            evaluation.push({ questionIndex: i, selectedAnswer, correctAnswer, isCorrect, isSubjective: false });
+        }
+
+        const percentage = hasSubjective ? null : Math.round((score / totalMarks) * 100);
 
         await submissionRef.set({
             studentName: studentName || "Guest Student",
             answers: answers || {},
             evaluation,
-            score,
+            score: hasSubjective ? null : score,
             totalMarks,
             percentage,
             timeTaken: timeTaken || 0,
             submittedAt: FieldValue.serverTimestamp()
         });
 
-        return NextResponse.json({ score, totalMarks, percentage, evaluation, message: "Exam submitted and evaluated!" });
+        if (hasSubjective) {
+            return NextResponse.json({ evaluation, message: "Exam submitted! Subjective questions pending review." });
+        }
+
+        return NextResponse.json({ score: hasSubjective ? null : score, totalMarks, percentage, evaluation, message: "Exam submitted and evaluated!" });
     } catch (error: any) {
         console.error("Error submitting exam:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
