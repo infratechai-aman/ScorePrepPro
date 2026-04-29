@@ -9,6 +9,7 @@ import { doc, getDoc } from "firebase/firestore";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 
 export default function StudentExamPage() {
     const { examId } = useParams() as { examId: string };
@@ -114,15 +115,43 @@ export default function StudentExamPage() {
     useEffect(() => {
         if (!hasStarted) return;
         
+        // Force Fullscreen
+        const enterFullscreen = async () => {
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
+                }
+            } catch (e) {
+                console.log("Fullscreen request denied or not supported.");
+            }
+        };
+        enterFullscreen();
+
         const handleVisibilityChange = () => {
             if (document.hidden) {
                 setWarnings(prev => {
                     const newWarnings = prev + 1;
-                    if (newWarnings >= 2) {
-                        alert("Exam auto-submitted due to multiple tab switches.");
+                    if (newWarnings >= 3) {
+                        alert("Exam auto-submitted due to multiple tab switches or exiting full-screen.");
                         handleSubmit();
                     } else {
-                        alert("Warning: Do not switch tabs during the exam. One more warning and your exam will be auto-submitted.");
+                        alert(`Warning ${newWarnings}/3: Do not switch tabs or minimize the window during the exam. On the 3rd warning, your exam will be auto-submitted.`);
+                    }
+                    return newWarnings;
+                });
+            }
+        };
+
+        const handleFullscreenChange = () => {
+            if (!document.fullscreenElement) {
+                setWarnings(prev => {
+                    const newWarnings = prev + 1;
+                    if (newWarnings >= 3) {
+                        alert("Exam auto-submitted due to exiting full-screen.");
+                        handleSubmit();
+                    } else {
+                        alert(`Warning ${newWarnings}/3: You must stay in full-screen mode. On the 3rd warning, your exam will be auto-submitted.`);
+                        enterFullscreen();
                     }
                     return newWarnings;
                 });
@@ -135,11 +164,14 @@ export default function StudentExamPage() {
             }
             if (e.key === 'PrintScreen') {
                 navigator.clipboard.writeText('');
-                alert("Screenshots are disabled.");
+                alert("Screenshots are disabled. Warning strike recorded.");
+                setWarnings(prev => prev + 1);
             }
         };
 
         const blockContext = (e: MouseEvent) => e.preventDefault();
+        const blockCopy = (e: ClipboardEvent) => e.preventDefault();
+        const blockPaste = (e: ClipboardEvent) => e.preventDefault();
 
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             e.preventDefault();
@@ -150,16 +182,22 @@ export default function StudentExamPage() {
         const handleFocus = () => setIsBlurred(false);
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
         document.addEventListener("keydown", blockKeys);
         document.addEventListener("contextmenu", blockContext);
+        document.addEventListener("copy", blockCopy);
+        document.addEventListener("paste", blockPaste);
         window.addEventListener("beforeunload", handleBeforeUnload);
         window.addEventListener("blur", handleBlur);
         window.addEventListener("focus", handleFocus);
 
         return () => {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
             document.removeEventListener("keydown", blockKeys);
             document.removeEventListener("contextmenu", blockContext);
+            document.removeEventListener("copy", blockCopy);
+            document.removeEventListener("paste", blockPaste);
             window.removeEventListener("beforeunload", handleBeforeUnload);
             window.removeEventListener("blur", handleBlur);
             window.removeEventListener("focus", handleFocus);
@@ -343,20 +381,9 @@ export default function StudentExamPage() {
 
                                         {q.type === "subjective" && (
                                             <div className="mt-4">
-                                                <div className="flex flex-wrap gap-2 mb-2 bg-slate-50 p-2 rounded-t-xl border border-b-0 border-slate-200 items-center">
-                                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-2">Formatting:</span>
-                                                    <button onClick={() => insertMarkdown(i, "**Bold Text** ")} className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-100">B</button>
-                                                    <button onClick={() => insertMarkdown(i, "*Italic Text* ")} className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs italic text-slate-700 shadow-sm hover:bg-slate-100">I</button>
-                                                    <button onClick={() => insertMarkdown(i, "\n- Bullet Point 1\n- Bullet Point 2\n")} className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs text-slate-700 shadow-sm hover:bg-slate-100 flex items-center gap-1">
-                                                        <span className="text-lg leading-none mt-[-2px]">•</span> List
-                                                    </button>
-                                                    <button onClick={() => insertMarkdown(i, "\n| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |\n")} className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs text-slate-700 shadow-sm hover:bg-slate-100">Table</button>
-                                                </div>
-                                                <textarea 
-                                                    value={answers[i] || ""} 
-                                                    onChange={e => setAnswers(prev => ({ ...prev, [i]: e.target.value }))}
-                                                    className="w-full h-48 resize-y p-4 rounded-b-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-mono text-sm leading-relaxed"
-                                                    placeholder="Type your answer here... You can use the formatting toolbar above to add bold text, lists, and tables."
+                                                <RichTextEditor
+                                                    value={answers[i] || ""}
+                                                    onChange={(val) => setAnswers(prev => ({ ...prev, [i]: val }))}
                                                 />
                                             </div>
                                         )}
@@ -379,12 +406,11 @@ export default function StudentExamPage() {
                                         <h3 className="font-bold text-slate-800">Your Answers</h3>
                                         <Button onClick={handleSubmit} isLoading={submitting} className="bg-indigo-600 hover:bg-indigo-700">Submit Exam</Button>
                                     </div>
-                                    <div className="flex-1">
-                                        <textarea 
-                                            value={textAnswers} 
-                                            onChange={e => setTextAnswers(e.target.value)} 
-                                            className="w-full h-full resize-none p-6 outline-none font-mono text-sm leading-relaxed text-slate-700 bg-white"
-                                            placeholder="Type your answers here...&#10;&#10;e.g.&#10;Q1: My answer...&#10;Q2: Another answer..."
+                                    <div className="flex-1 bg-white">
+                                        <RichTextEditor
+                                            value={textAnswers}
+                                            onChange={(val) => setTextAnswers(val)}
+                                            placeholder="Type your answers here... e.g. Q1: My answer..."
                                         />
                                     </div>
                                 </div>

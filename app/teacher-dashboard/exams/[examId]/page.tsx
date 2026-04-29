@@ -279,9 +279,9 @@ export default function ExamDetailPage() {
                                                     <p className="font-semibold text-slate-800">Q{i + 1}. {q.question}</p>
                                                     <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded">[{q.marks} Marks]</span>
                                                 </div>
-                                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 prose prose-sm max-w-none prose-slate">
-                                                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{eval_q?.textAnswer || "No answer provided."}</ReactMarkdown>
-                                                </div>
+                                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 prose prose-sm max-w-none prose-slate"
+                                                    dangerouslySetInnerHTML={{ __html: eval_q?.textAnswer || "No answer provided." }}
+                                                />
                                                 
                                                 {eval_q?.feedback && (
                                                     <div className="bg-indigo-50 border border-indigo-100 p-3 rounded-lg flex flex-col gap-2">

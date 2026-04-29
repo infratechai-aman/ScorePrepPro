@@ -98,9 +98,9 @@ export default function ExamResultPage() {
                                                     {eval_q?.awardedMarks || 0} / {q.marks || 1} Marks
                                                 </span>
                                             </div>
-                                            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 prose prose-sm max-w-none prose-slate">
-                                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{eval_q?.textAnswer || "No answer provided."}</ReactMarkdown>
-                                            </div>
+                                            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 prose prose-sm max-w-none prose-slate"
+                                                dangerouslySetInnerHTML={{ __html: eval_q?.textAnswer || "No answer provided." }}
+                                            />
                                             {eval_q?.feedback && (
                                                 <div className="bg-indigo-50/50 border border-indigo-100 p-3 rounded-lg mt-2">
                                                     <p className="text-xs font-bold text-indigo-800 uppercase tracking-wider mb-1">AI Feedback</p>
@@ -114,7 +114,7 @@ export default function ExamResultPage() {
                         </div>
                     ) : (
                         <GlassCard className="p-6">
-                            <pre className="whitespace-pre-wrap font-mono text-sm text-slate-700">{submission?.textAnswers}</pre>
+                            <div className="prose prose-sm max-w-none prose-slate" dangerouslySetInnerHTML={{ __html: submission?.textAnswers || "" }} />
                         </GlassCard>
                     )}
                 </div>
