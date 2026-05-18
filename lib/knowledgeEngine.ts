@@ -186,6 +186,29 @@ Make questions varied: recall, application, analysis.
 ONLY output the JSON object, nothing else.`;
     }
 
+    // Dynamic max_tokens: allocate only what's needed, not a flat maximum
+    let dynamicMaxTokens: number;
+    if (generationType === "mcqs") {
+        // ~120 tokens per MCQ (question + 4 options + explanation)
+        dynamicMaxTokens = Math.max(mcqCount * 150, 2000);
+    } else if (generationType === "paper") {
+        // Estimate based on total marks: MCQ questions ~100 tokens, subjective ~200 tokens
+        // Rough estimate: each mark of the paper ≈ 120 tokens of JSON output
+        dynamicMaxTokens = Math.max(marks * 120, 3000);
+    } else {
+        // Notes: depends on type
+        const notesTokenMap: Record<string, number> = {
+            "short": 3000,
+            "summary": 4000,
+            "revision": 3500,
+            "worksheet": 5000,
+            "detailed": 8000,
+        };
+        dynamicMaxTokens = notesTokenMap[notesType] || 8000;
+    }
+    // Cap at 16384 (model limit) but never go above what's actually needed
+    dynamicMaxTokens = Math.min(dynamicMaxTokens, 16384);
+
     const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -193,7 +216,7 @@ ONLY output the JSON object, nothing else.`;
             { role: "user", content: userPrompt }
         ],
         temperature: generationType === "mcqs" ? 0.3 : 0.7,
-        max_tokens: generationType === "mcqs" ? 6000 : 16384,
+        max_tokens: dynamicMaxTokens,
         ...((generationType === "paper" || generationType === "mcqs") ? { response_format: { type: "json_object" } } : {})
     });
 

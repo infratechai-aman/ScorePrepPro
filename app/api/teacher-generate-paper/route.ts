@@ -110,7 +110,8 @@ CRITICAL: Generate ALL ${section.count} questions. DO NOT stop early. Output ONL
                     { role: "user", content: `Generate a concise Answer Key for this question paper. For MCQs, just give the answer letter. For short/long answers, give key points.\n\nPAPER:\n${fullPaper.substring(0, 12000)}` }
                 ],
                 temperature: 0.3,
-                max_tokens: 8000,
+                // Scale answer key tokens based on question count: MCQ answers ~20 tokens, subjective ~80 tokens
+                max_tokens: Math.min(Math.max(totalExpectedQuestions * 80, 2000), 8000),
             });
 
             const answerKey = answerKeyCompletion.choices[0].message.content || "";
