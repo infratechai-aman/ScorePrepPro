@@ -193,7 +193,7 @@ ONLY output the JSON object, nothing else.`;
             { role: "user", content: userPrompt }
         ],
         temperature: generationType === "mcqs" ? 0.3 : 0.7,
-        max_tokens: generationType === "mcqs" ? 6000 : 10000,
+        max_tokens: generationType === "mcqs" ? 6000 : 16384,
         ...((generationType === "paper" || generationType === "mcqs") ? { response_format: { type: "json_object" } } : {})
     });
 
