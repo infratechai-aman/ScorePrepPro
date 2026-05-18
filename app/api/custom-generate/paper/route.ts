@@ -171,9 +171,10 @@ CRITICAL RULES:
             // Estimate tokens based on question type and count
             let maxTokens: number;
             if (section.type === "mcq") {
-                maxTokens = Math.max(section.count * 150, 2000);
+                // JSON MCQs need more tokens: question + 4 options + correctAnswer + explanation
+                maxTokens = Math.max(section.count * 250, 2500);
             } else {
-                maxTokens = Math.max(section.count * 250, 2000);
+                maxTokens = Math.max(section.count * 350, 2500);
             }
 
             console.log(`[Custom Paper] Generating ${section.name}: ${section.count} questions, max_tokens=${maxTokens}`);

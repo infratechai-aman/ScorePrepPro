@@ -61,11 +61,11 @@ CRITICAL: Generate ALL ${section.count} questions. DO NOT stop early. Output ONL
             const typeLower = section.type.toLowerCase();
             let maxTokens = 4000;
             if (typeLower.includes("mcq") || typeLower.includes("objective")) {
-                maxTokens = Math.max(section.count * 100, 1500);
+                maxTokens = Math.max(section.count * 200, 2000);
             } else if (section.marksPerQuestion >= 5) {
-                maxTokens = Math.max(section.count * 250, 1500);
+                maxTokens = Math.max(section.count * 350, 2000);
             } else {
-                maxTokens = Math.max(section.count * 150, 1200);
+                maxTokens = Math.max(section.count * 200, 1500);
             }
 
             const completion = await openai.chat.completions.create({

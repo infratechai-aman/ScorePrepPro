@@ -189,8 +189,8 @@ ONLY output the JSON object, nothing else.`;
     // Dynamic max_tokens: allocate only what's needed, not a flat maximum
     let dynamicMaxTokens: number;
     if (generationType === "mcqs") {
-        // ~120 tokens per MCQ (question + 4 options + explanation)
-        dynamicMaxTokens = Math.max(mcqCount * 150, 2000);
+        // ~150-200 tokens per MCQ in JSON (question + 4 options + explanation)
+        dynamicMaxTokens = Math.max(mcqCount * 250, 2500);
     } else if (generationType === "paper") {
         // Estimate based on total marks: MCQ questions ~100 tokens, subjective ~200 tokens
         // Rough estimate: each mark of the paper ≈ 120 tokens of JSON output

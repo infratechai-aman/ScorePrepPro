@@ -187,24 +187,24 @@ function estimateMaxTokens(section: PatternSection): number {
         if (match) generateCount = parseInt(match[1], 10);
     }
 
-    // MCQs: ~80 tokens each (question + 4 options)
+    // MCQs: ~120-150 tokens each (question + 4 options + marks label)
     if (typeLower.includes("mcq") || typeLower.includes("objective") || typeLower.includes("assertion")) {
-        return Math.max(generateCount * 100, 1500);
+        return Math.max(generateCount * 200, 1500);
     }
-    // Case Based / Source Based: ~500 tokens each (passage + sub-questions)
+    // Case Based / Source Based: ~500-600 tokens each (passage + sub-questions)
     if (typeLower.includes("case") || typeLower.includes("source") || typeLower.includes("passage") || typeLower.includes("paragraph")) {
-        return Math.max(generateCount * 600, 2000);
+        return Math.max(generateCount * 700, 2500);
     }
-    // Long Answer (5 marks): ~200 tokens each
+    // Long Answer (5 marks): ~250 tokens each
     if (marskPerQuestion >= 5) {
-        return Math.max(generateCount * 250, 1500);
+        return Math.max(generateCount * 350, 2000);
     }
-    // Short Answer (2-3 marks): ~120 tokens each
+    // Short Answer (2-3 marks): ~150 tokens each
     if (marskPerQuestion >= 2) {
-        return Math.max(generateCount * 150, 1200);
+        return Math.max(generateCount * 200, 1500);
     }
     // Match the following, fill blanks etc.
-    return Math.max(generateCount * 120, 1000);
+    return Math.max(generateCount * 150, 1200);
 }
 
 // ─── Helper: Count questions in markdown ────────────────────────────────────
