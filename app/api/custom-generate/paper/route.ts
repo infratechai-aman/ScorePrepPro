@@ -115,22 +115,34 @@ Return format:
             }
         }
 
-        // 3. PHASE 2: Generate each section independently (MULTI-PASS)
+        // 3. PHASE 2: Generate each section independently (MULTI-PASS with BATCHING)
+        // Large sections (>15 questions) are split into batches to avoid OpenAI's loop detection
+        const MAX_BATCH_SIZE = 12; // Max questions per API call to avoid repetition filter
         const allQuestions: any[] = [];
         let currentQId = 1;
 
         for (const section of blueprint.sections) {
             if (section.count <= 0) continue;
 
-            const endQId = currentQId + section.count - 1;
+            const totalForSection = section.count;
+            const sectionQuestions: any[] = [];
 
-            const sectionPrompt = `Generate EXACTLY ${section.count} questions for ONE section of a ${subjectName} exam.
+            // Split into batches if section is large
+            const batchCount = Math.ceil(totalForSection / MAX_BATCH_SIZE);
+
+            for (let batchIdx = 0; batchIdx < batchCount; batchIdx++) {
+                const batchStart = batchIdx * MAX_BATCH_SIZE;
+                const batchSize = Math.min(MAX_BATCH_SIZE, totalForSection - batchStart);
+                const batchStartId = currentQId + batchStart;
+                const batchEndId = batchStartId + batchSize - 1;
+
+                const sectionPrompt = `Generate EXACTLY ${batchSize} questions for a ${subjectName} exam.
 
 SECTION: ${section.name}
 TYPE: ${section.type}
 MARKS PER QUESTION: ${section.marksPerQuestion}
-QUESTIONS TO GENERATE: ${section.count}
-QUESTION IDs: ${currentQId} to ${endQId}
+QUESTIONS TO GENERATE: ${batchSize}${batchCount > 1 ? ` (Batch ${batchIdx + 1} of ${batchCount})` : ''}
+QUESTION IDs: ${batchStartId} to ${batchEndId}
 SECTION INSTRUCTIONS: ${section.instructions}
 DIFFICULTY: ${difficulty}
 
@@ -146,7 +158,9 @@ For MCQ questions, use this format:
   "correctAnswer": 0,
   "marks": ${section.marksPerQuestion},
   "explanation": "Brief explanation"
-}` : `
+}
+
+IMPORTANT: Each question MUST test a DIFFERENT concept/topic. Do NOT repeat similar questions. Vary the style — mix factual recall, application, and analytical questions.` : `
 For subjective questions, use this format:
 {
   "type": "subjective",
@@ -158,74 +172,72 @@ For subjective questions, use this format:
 Return a JSON object:
 {
   "questions": [
-    ... exactly ${section.count} question objects, IDs ${currentQId} to ${endQId}
+    ... exactly ${batchSize} question objects, IDs ${batchStartId} to ${batchEndId}
   ]
 }
 
-CRITICAL RULES:
-1. Generate EXACTLY ${section.count} questions. NOT MORE, NOT LESS. This is NON-NEGOTIABLE.
-2. Each question object must have an "id" field starting from ${currentQId}.
-3. All questions must come from the provided UNIT CONTENT only.
-4. DO NOT stop early. You must output all ${section.count} questions.`;
+CRITICAL: Generate EXACTLY ${batchSize} UNIQUE questions. Each must test a different concept.`;
 
-            // Estimate tokens based on question type and count
-            let maxTokens: number;
-            if (section.type === "mcq") {
-                // JSON MCQs need more tokens: question + 4 options + correctAnswer + explanation
-                maxTokens = Math.max(section.count * 250, 2500);
-            } else {
-                maxTokens = Math.max(section.count * 350, 2500);
-            }
+                // Estimate tokens for this batch
+                let maxTokens: number;
+                if (section.type === "mcq") {
+                    maxTokens = Math.max(batchSize * 250, 2500);
+                } else {
+                    maxTokens = Math.max(batchSize * 350, 2500);
+                }
 
-            console.log(`[Custom Paper] Generating ${section.name}: ${section.count} questions, max_tokens=${maxTokens}`);
+                console.log(`[Custom Paper] Generating ${section.name} batch ${batchIdx + 1}/${batchCount}: ${batchSize} questions (IDs ${batchStartId}-${batchEndId}), max_tokens=${maxTokens}`);
 
-            let bestQuestions: any[] = [];
-            const MAX_RETRIES = 2;
+                let batchQuestions: any[] = [];
+                const MAX_RETRIES = 2;
 
-            for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-                try {
-                    const completion = await openai.chat.completions.create({
-                        model: "gpt-4o",
-                        messages: [
-                            { role: "system", content: `You are an expert examiner. You ALWAYS generate the EXACT number of questions requested. You never stop early. Output valid JSON only.` },
-                            { role: "user", content: sectionPrompt }
-                        ],
-                        response_format: { type: "json_object" },
-                        temperature: 0.7,
-                        max_tokens: Math.min(maxTokens, 16384),
-                    });
+                for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+                    try {
+                        const completion = await openai.chat.completions.create({
+                            model: "gpt-4o",
+                            messages: [
+                                { role: "system", content: `You are an expert examiner. Generate EXACTLY ${batchSize} UNIQUE questions. Each question must cover a DIFFERENT topic/concept. Never repeat. Output valid JSON only.` },
+                                { role: "user", content: sectionPrompt }
+                            ],
+                            response_format: { type: "json_object" },
+                            temperature: 0.8,
+                            max_tokens: Math.min(maxTokens, 16384),
+                        });
 
-                    const sectionContent = JSON.parse(completion.choices[0].message.content || "{}");
-                    const questions = sectionContent.questions || [];
+                        const batchContent = JSON.parse(completion.choices[0].message.content || "{}");
+                        const questions = batchContent.questions || [];
 
-                    console.log(`[Custom Paper] ${section.name} attempt ${attempt + 1}: Expected ${section.count}, Got ${questions.length}`);
+                        console.log(`[Custom Paper] ${section.name} batch ${batchIdx + 1} attempt ${attempt + 1}: Expected ${batchSize}, Got ${questions.length}`);
 
-                    // Add section info to each question
-                    const enrichedQuestions = questions.map((q: any, i: number) => ({
-                        ...q,
-                        id: currentQId + i,
-                        section: section.name,
-                        sectionInstruction: i === 0 ? section.instructions : undefined,
-                    }));
+                        // Add section info to each question
+                        const enrichedQuestions = questions.map((q: any, i: number) => ({
+                            ...q,
+                            id: batchStartId + i,
+                            section: section.name,
+                            sectionInstruction: (batchIdx === 0 && i === 0) ? section.instructions : undefined,
+                        }));
 
-                    if (enrichedQuestions.length > bestQuestions.length) {
-                        bestQuestions = enrichedQuestions;
-                    }
+                        if (enrichedQuestions.length > batchQuestions.length) {
+                            batchQuestions = enrichedQuestions;
+                        }
 
-                    // Accept if we got at least 80% of expected
-                    if (questions.length >= Math.ceil(section.count * 0.8)) {
-                        break;
-                    }
-                } catch (err) {
-                    console.error(`[Custom Paper] Error generating ${section.name} attempt ${attempt + 1}:`, err);
-                    if (attempt === MAX_RETRIES && bestQuestions.length === 0) {
-                        throw err;
+                        // Accept if we got at least 80% of expected
+                        if (questions.length >= Math.ceil(batchSize * 0.8)) {
+                            break;
+                        }
+                    } catch (err: any) {
+                        console.error(`[Custom Paper] Error batch ${batchIdx + 1} attempt ${attempt + 1}:`, err?.message || err);
+                        if (attempt === MAX_RETRIES && batchQuestions.length === 0) {
+                            throw err;
+                        }
                     }
                 }
+
+                sectionQuestions.push(...batchQuestions);
             }
 
-            allQuestions.push(...bestQuestions);
-            currentQId = endQId + 1;
+            allQuestions.push(...sectionQuestions);
+            currentQId += totalForSection;
         }
 
         // 4. Calculate totals and assemble
