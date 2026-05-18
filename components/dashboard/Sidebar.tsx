@@ -18,7 +18,6 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import Image from "next/image";
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -49,9 +48,16 @@ export function Sidebar() {
         <aside className="fixed left-0 top-0 h-screen w-64 bg-[#0f172a] text-white flex flex-col border-r border-slate-800 z-50 print:hidden">
             {/* Logo */}
             <div className="h-20 flex items-center gap-3 px-6 border-b border-slate-800">
-                <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={48} height={48} className="rounded-xl object-contain" />
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-900/40 flex-shrink-0">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 19.5C4 19.5 5 18.5 8 18.5C11 18.5 13 20.5 16 20.5C19 20.5 20 19.5 20 19.5V3.5C20 3.5 19 4.5 16 4.5C13 4.5 11 2.5 8 2.5C5 2.5 4 3.5 4 3.5V19.5Z" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M4 19.5C4 19.5 5 18.5 8 18.5C11 18.5 13 20.5 16 20.5C19 20.5 20 19.5 20 19.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M9 8L11 10L15 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M9 13H15" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                    </svg>
+                </div>
                 <div>
-                    <h1 className="font-bold text-lg font-serif tracking-tight">ScorePrepPro</h1>
+                    <h1 className="font-bold text-lg tracking-tight" style={{ fontFamily: "'Inter', sans-serif", background: "linear-gradient(135deg, #c7d2fe, #e0e7ff, #ffffff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>ScorePrepPro</h1>
                     <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">{isTheTeacher ? 'THE TEACHER' : isTeacher ? 'Teacher Mode' : 'Premium'}</p>
                 </div>
             </div>
