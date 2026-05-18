@@ -71,6 +71,15 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
     const [flippingIdx, setFlippingIdx] = useState<number | null>(null);
     const [savedPaperId, setSavedPaperId] = useState<string | null>(null);
 
+    // Paper validation metadata from multi-pass engine
+    const [paperMetadata, setPaperMetadata] = useState<{
+        totalQuestions: number;
+        expectedQuestions: number;
+        totalMarks: number;
+        sections: { name: string; expected: number; actual: number }[];
+        isComplete: boolean;
+    } | null>(null);
+
     // Flip Feature State
     const [flippingQNum, setFlippingQNum] = useState<string | null>(null);
 
@@ -344,6 +353,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
         setLoading(true);
         setGeneratedPaper("");
         setGeneratedSolution("");
+        setPaperMetadata(null);
         setError("");
 
         try {
@@ -365,6 +375,12 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Failed to generate");
             setGeneratedPaper(data.content);
+
+            // Store validation metadata from multi-pass engine
+            if (data.metadata) {
+                setPaperMetadata(data.metadata);
+                console.log(`[Generate] Paper validation: ${data.metadata.totalQuestions}/${data.metadata.expectedQuestions} questions, complete: ${data.metadata.isComplete}`);
+            }
 
             // INCREMENT USAGE
             if (user) {
@@ -1023,6 +1039,54 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                     {/* Result Section (Full Width) */}
                     {(generatedPaper || generatedSolution) && (
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="md:col-span-3 space-y-6 mt-8">
+                            {/* Paper Validation Banner */}
+                            {paperMetadata && (
+                                <div className={`p-4 rounded-xl border flex items-center justify-between ${
+                                    paperMetadata.isComplete
+                                        ? 'bg-emerald-50 border-emerald-200'
+                                        : 'bg-amber-50 border-amber-200'
+                                }`}>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                            paperMetadata.isComplete
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-amber-100 text-amber-700'
+                                        }`}>
+                                            {paperMetadata.isComplete
+                                                ? <CheckCircle className="h-5 w-5" />
+                                                : <RefreshCw className="h-5 w-5" />
+                                            }
+                                        </div>
+                                        <div>
+                                            <p className={`font-semibold text-sm ${
+                                                paperMetadata.isComplete ? 'text-emerald-800' : 'text-amber-800'
+                                            }`}>
+                                                {paperMetadata.isComplete
+                                                    ? `✅ ${paperMetadata.totalQuestions}/${paperMetadata.expectedQuestions} questions generated | ${paperMetadata.totalMarks} marks`
+                                                    : `⚠️ ${paperMetadata.totalQuestions}/${paperMetadata.expectedQuestions} questions generated — some sections may be incomplete`
+                                                }
+                                            </p>
+                                            <div className="flex flex-wrap gap-2 mt-1">
+                                                {paperMetadata.sections.map((s, i) => (
+                                                    <span key={i} className={`text-xs px-2 py-0.5 rounded-full ${
+                                                        s.actual >= s.expected
+                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                            : 'bg-amber-100 text-amber-700'
+                                                    }`}>
+                                                        {s.name}: {s.actual}/{s.expected}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {!paperMetadata.isComplete && (
+                                        <Button size="sm" onClick={handleGenerate} isLoading={loading} className="bg-amber-600 hover:bg-amber-700 text-white">
+                                            <RefreshCw className="mr-1 h-3 w-3" /> Regenerate
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="flex items-center justify-between">
                                 <h2 className="text-2xl font-serif font-bold text-slate-800">Generated Question Paper</h2>
                                 <div className="flex gap-2">
@@ -1042,7 +1106,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                     )}
                                     <Button variant="outline" size="sm" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4" /> PDF</Button>
                                     <Button variant="outline" size="sm" onClick={handleDownloadDOCX}><Download className="mr-2 h-4 w-4" /> Word</Button>
-                                    <Button variant="ghost" size="sm" onClick={() => { setStep(1); setGeneratedPaper(""); setGeneratedSolution(""); }} className="text-slate-500 hover:text-slate-800">
+                                    <Button variant="ghost" size="sm" onClick={() => { setStep(1); setGeneratedPaper(""); setGeneratedSolution(""); setPaperMetadata(null); }} className="text-slate-500 hover:text-slate-800">
                                         <ArrowLeft className="mr-2 h-4 w-4" /> Start Over
                                     </Button>
                                 </div>

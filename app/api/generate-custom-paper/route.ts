@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 
 export const runtime = "edge";
+// Allow up to 120 seconds for multi-pass generation
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
     try {
@@ -12,6 +14,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
+        // --- Phase 1: Blueprint Planning ---
         const planningPrompt = `
         You are an expert ${subject} examiner. Design a question paper blueprint.
         
@@ -44,48 +47,116 @@ export async function POST(req: Request) {
 
         const blueprint = JSON.parse(planCompletion.choices[0].message.content || "{}");
 
-        const generationPrompt = `
-        Create the actual custom question paper based EXACLTY on this blueprint:
-        ${JSON.stringify(blueprint, null, 2)}
-        
-        **Subject**: ${subject}
-        **Units**: ${units.join(", ")}
-
-        **CRITICAL SOURCING RULES**:
-        - Questions MUST primarily come from textbook chapter exercises.
-        - Use end-of-chapter exercise questions, matching tables, and numericals.
-        - **NO IMAGES OR DIAGRAMS**: ABSOLUTELY DO NOT generate any question that requires a figure, diagram, graph, map, or image.
-
-        **CRITICAL FORMATTING RULES**:
-        1. For Sections with "questionsToGenerate" > "questionsToAttempt", you MUST generate the higher number of questions.
-        2. In those sections, add a special field to the FIRST QUESTION of that section called "sectionInstruction": "Attempt any ${"N"} of the following ${"M"} questions. Give scientific reasons where applicable."
-        3. **CASE STUDY/PASSAGE LENGTH**: For any "Case Based", "Source Based", or "Passage" sections, you MUST provide a massive, highly detailed reading passage of AT LEAST 150-250 words total. Do NOT provide 1-2 sentence snippets.
-        4. **CASE STUDY SUB-QUESTIONS**: Every Case Based or Source Based question MUST be broken down into multiple distinctly numbered sub-questions (e.g., (i), (ii), (iii), (iv)) inside the general text.
-
-        Return pure JSON:
-        {
-            "title": "Subject: ${subject}...",
-            "instructions": "General instructions...",
-            "questions": [
-                { "id": 1, "section": "Section A: MCQs", "sectionInstruction": "All questions compulsory", "text": "Question text...", "marks": 1, "type": "MCQ" }
-            ]
+        if (!blueprint.sections || blueprint.sections.length === 0) {
+            return NextResponse.json({ error: "Failed to create paper blueprint" }, { status: 500 });
         }
-        `;
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                { role: "system", content: "You are an expert examiner who outputs only valid JSON representing the paper." },
-                { role: "user", content: generationPrompt }
-            ],
-            response_format: { type: "json_object" },
-            temperature: 0.7,
-        });
+        // --- Phase 2: Multi-Pass Section-by-Section Generation ---
+        const allQuestions: any[] = [];
+        let currentQId = 1;
 
-        const content = completion.choices[0].message.content;
+        for (const section of blueprint.sections) {
+            const genCount = section.questionsToGenerate || section.questionsToAttempt;
 
-        // Parse JSON to ensure validity
-        const jsonContent = JSON.parse(content || "{}");
+            const sectionPrompt = `
+            Generate EXACTLY ${genCount} questions for ONE section of a ${subject} exam paper.
+
+            **SECTION**: ${section.name}
+            **MARKS PER QUESTION**: ${section.marksPerQuestion}
+            **QUESTIONS TO GENERATE**: ${genCount}
+            **SECTION INSTRUCTIONS**: ${section.instructions}
+            **Units**: ${units.join(", ")}
+            **Difficulty**: ${difficulty}
+
+            **CRITICAL SOURCING RULES**:
+            - Questions MUST primarily come from textbook chapter exercises.
+            - Use end-of-chapter exercise questions, matching tables, and numericals.
+            - **NO IMAGES OR DIAGRAMS**: ABSOLUTELY DO NOT generate any question that requires a figure, diagram, graph, map, or image.
+
+            **FORMATTING RULES**:
+            1. Generate EXACTLY ${genCount} questions. NOT MORE, NOT LESS.
+            2. For "Case Based"/"Source Based" sections: provide a passage of AT LEAST 150-250 words with sub-questions (i), (ii), (iii), (iv).
+            3. Question IDs must start from ${currentQId} and go to ${currentQId + genCount - 1}.
+
+            Return pure JSON:
+            {
+                "questions": [
+                    { "id": ${currentQId}, "section": "${section.name}", "sectionInstruction": "${section.instructions}", "text": "Question text...", "marks": ${section.marksPerQuestion}, "type": "${section.name.includes("MCQ") ? "MCQ" : "Subjective"}" }
+                ]
+            }
+
+            CRITICAL: You MUST output EXACTLY ${genCount} question objects. Do NOT stop early.
+            `;
+
+            // Estimate max tokens needed
+            let maxTokens = 4000;
+            if (section.marksPerQuestion <= 1) {
+                maxTokens = Math.max(genCount * 120, 2000);
+            } else if (section.marksPerQuestion >= 5) {
+                maxTokens = Math.max(genCount * 300, 2000);
+            } else {
+                maxTokens = Math.max(genCount * 200, 2000);
+            }
+
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [
+                    { role: "system", content: `You are an expert examiner who outputs only valid JSON. You ALWAYS generate the EXACT number of questions requested. Never stop early.` },
+                    { role: "user", content: sectionPrompt }
+                ],
+                response_format: { type: "json_object" },
+                temperature: 0.7,
+                max_tokens: Math.min(maxTokens, 16384),
+            });
+
+            const sectionContent = JSON.parse(completion.choices[0].message.content || "{}");
+            const sectionQuestions = sectionContent.questions || [];
+
+            console.log(`[Custom Paper] ${section.name}: Expected ${genCount}, Got ${sectionQuestions.length}`);
+
+            // If we didn't get enough questions, retry once
+            if (sectionQuestions.length < genCount) {
+                console.log(`[Custom Paper] ${section.name}: Retrying...`);
+                const retryCompletion = await openai.chat.completions.create({
+                    model: "gpt-4o",
+                    messages: [
+                        { role: "system", content: `You are an expert examiner. You MUST generate EXACTLY ${genCount} questions. This is your second attempt because the first didn't produce enough. Output valid JSON only.` },
+                        { role: "user", content: sectionPrompt }
+                    ],
+                    response_format: { type: "json_object" },
+                    temperature: 0.7,
+                    max_tokens: Math.min(maxTokens * 1.5, 16384),
+                });
+
+                const retryContent = JSON.parse(retryCompletion.choices[0].message.content || "{}");
+                const retryQuestions = retryContent.questions || [];
+
+                if (retryQuestions.length > sectionQuestions.length) {
+                    allQuestions.push(...retryQuestions);
+                } else {
+                    allQuestions.push(...sectionQuestions);
+                }
+            } else {
+                allQuestions.push(...sectionQuestions);
+            }
+
+            currentQId += genCount;
+        }
+
+        // --- Phase 3: Assemble Final Paper ---
+        const totalExpected = blueprint.sections.reduce((sum: number, s: any) => sum + (s.questionsToGenerate || s.questionsToAttempt), 0);
+        console.log(`[Custom Paper] FINAL: ${allQuestions.length}/${totalExpected} questions generated`);
+
+        const jsonContent = {
+            title: `Subject: ${subject} | Total Marks: ${marks} | Difficulty: ${difficulty}`,
+            instructions: "General Instructions:\n1. All questions are compulsory unless stated otherwise.\n2. Marks are indicated against each question.",
+            questions: allQuestions,
+            metadata: {
+                totalQuestions: allQuestions.length,
+                expectedQuestions: totalExpected,
+                isComplete: allQuestions.length >= Math.ceil(totalExpected * 0.8)
+            }
+        };
 
         return NextResponse.json({ paper: jsonContent });
 

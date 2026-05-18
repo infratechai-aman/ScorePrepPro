@@ -1,7 +1,9 @@
 
 import { NextResponse } from "next/server";
-import { openai } from "@/lib/openai";
-import { constructPrompt } from "@/lib/prompts";
+import { generatePaperComplete } from "@/lib/generatePaperComplete";
+
+// Allow up to 120 seconds for multi-pass generation
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
     try {
@@ -14,29 +16,27 @@ export async function POST(req: Request) {
             );
         }
 
-        const systemPrompt = constructPrompt(board, grade, subject, chapters, { difficulty, chapterWeights, totalMarks: marks, instituteName });
+        const chaptersStr = Array.isArray(chapters) ? chapters.join(", ") : chapters;
 
-        if (!systemPrompt) {
-            const errorMsg = `Pattern not found for ${board.toUpperCase()} Class ${grade} ${subject}. Please check if this combination is supported.`;
-            console.error(errorMsg);
-            return NextResponse.json(
-                { error: errorMsg },
-                { status: 400 }
-            );
-        }
+        const result = await generatePaperComplete(
+            board,
+            grade,
+            subject,
+            chaptersStr,
+            {
+                difficulty,
+                chapterWeights,
+                totalMarks: marks,
+                instituteName
+            }
+        );
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini", // Correct model name for 4o mini
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: "Generate the question paper now." },
-            ],
-            temperature: 0.7,
+        console.log(`[/api/generate] Paper generated: ${result.metadata.totalQuestions}/${result.metadata.expectedQuestions} questions, ${result.metadata.totalMarks} marks, complete: ${result.metadata.isComplete}`);
+
+        return NextResponse.json({
+            content: result.content,
+            metadata: result.metadata
         });
-
-        const content = completion.choices[0].message.content;
-
-        return NextResponse.json({ content });
     } catch (error: any) {
         console.error("Error generating paper:", error);
         return NextResponse.json(

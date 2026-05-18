@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 
 export const runtime = "edge";
+// Allow up to 120 seconds for large paper generation
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
     try {
@@ -11,84 +13,111 @@ export async function POST(req: Request) {
         // pattern: [{ name: "Section A", type: "MCQ", count: 5, marksPerQuestion: 1 }, ...]
 
         const unitList = units.map((u: any) => `- ${u.name} (Approx. ${u.weight}% weightage)`).join("\n");
-        const patternList = pattern.map((s: any) =>
-            `- **${s.name}**: ${s.count} Questions (${s.type}). ${s.marksPerQuestion} Marks each.`
-        ).join("\n");
 
-        const prompt = `
-        You are an expert examiner for ${subject}. Create a professional, flawless question paper.
+        // Calculate total expected questions
+        const totalExpectedQuestions = pattern.reduce((sum: number, s: any) => sum + s.count, 0);
 
-        **College/Institute**: ${collegeName ? collegeName : "Your Institute Name"}
-        
-        **Paper Details**:
-        - **Title**: ${title}
-        - **Subject**: ${subject}
-        - **Time**: ${duration} Minutes
-        - **Max Marks**: ${totalMarks}
+        // --- MULTI-PASS: Generate section by section ---
+        const sectionResults: string[] = [];
+        let currentQNum = 1;
 
-        **Syllabus & Weightage (STRICTLY ADHERE)**:
-        ${unitList}
-        *(IMPORTANT: Do NOT ask questions from topics outside these units.)*
+        for (const section of pattern) {
+            const questionEndNum = currentQNum + section.count - 1;
 
-        **Question Paper Pattern (STRICTLY FOLLOW THIS)**:
-        ${patternList}
+            const sectionPrompt = `You are an expert examiner for ${subject}. Generate EXACTLY ${section.count} questions for ONE section of an exam paper.
 
-        **MANDATORY GOLDEN RULES FOR FORMATTING (NON-NEGOTIABLE)**:
-        1. **Spacing**: You MUST leave exactly ONE blank line between EVERY single question. Do not clump questions together.
-        2. **Numbering**: 
-           - Use strictly **Q.1**, **Q.2**, **Q.3** for main questions. 
-           - Use **(i)**, **(ii)**, **(iii)** for sub-questions or options (like MCQs). 
-        3. **Marks Display**: Always display marks at the end of the question or section header in bold, e.g., **[1 Mark]** or **[1x5=5 Marks]**.
-        4. **Matching Questions**: If you generate a "Match the following" question, you MUST use a Markdown table.
-        5. **Layout**: Center the College Name and Title at the top using HTML center tags.
-        6. **Source**: You MUST extract **80% to 90%** of the questions directly from the standard textbook's **end-of-chapter exercises**. Do not invent original questions unless absolutely necessary to fill the paper. Users specifically requested: "80-90% questions exercise wale chahiye."
-        ${includeAnswerKey ? "7. **Answer Key**: Add a clear 'Answer Key' section at the end, separated by a horizontal rule." : "7. **No Answers**: DO NOT include any answers or hints."}
+**SECTION**: ${section.name}
+**QUESTION TYPE**: ${section.type}
+**MARKS PER QUESTION**: ${section.marksPerQuestion}
+**QUESTIONS TO GENERATE**: ${section.count}
+**NUMBERING**: Q.${currentQNum} to Q.${questionEndNum}
 
-        **OUTPUT FORMAT TEMPLATE**:
-        
-        <center>
-        <h1>${collegeName ? collegeName : "EXAMINATION PAPER"}</h1>
-        <h3>${title}</h3>
-        </center>
-        
-        **Subject**: ${subject} | **Time**: ${duration} Mins | **Max Marks**: ${totalMarks}
-        
-        ---
-        
-        **General Instructions:**
-        1. All questions are compulsory unless specified otherwise.
-        2. Marks are indicated against each question.
-        
-        ---
-        
-        ### [Section Name]
-        *(If the section requires internal choices, write the instruction here in italics, e.g., "Attempt any 4 of the following 6. Give scientific reasons where applicable.")*
-        
-        **Q.1 [Question Text]** **[X Mark(s)]**
-        
-        (a) [Option 1]
-        (b) [Option 2]
-        (c) [Option 3]
-        (d) [Option 4]
+**Syllabus & Weightage (STRICTLY ADHERE)**:
+${unitList}
+*(IMPORTANT: Do NOT ask questions from topics outside these units.)*
 
-        **Q.2 [Next Question Text]** **[X Mark(s)]**
-        
-        ...
-        `;
+**MANDATORY FORMATTING RULES**:
+1. **Spacing**: Leave ONE blank line between EVERY question.
+2. **Numbering**: Use **Q.${currentQNum}**, **Q.${currentQNum + 1}**, etc.
+3. **Marks Display**: Show marks at end: **[${section.marksPerQuestion} Mark(s)]**
+4. For MCQs, use (a), (b), (c), (d) on separate lines.
+5. For "Match the following", use a Markdown table.
+6. Source 80-90% from standard textbook end-of-chapter exercises.
+7. **NO IMAGES OR DIAGRAMS**: All questions must be text-based only.
 
+**OUTPUT FORMAT**:
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                { role: "system", content: "You are a professional examiner. Generate high-quality exam papers with precise formatting." },
-                { role: "user", content: prompt }
-            ],
-            temperature: 0.7,
-        });
+### ${section.name}
 
-        const content = completion.choices[0].message.content;
+**Q.${currentQNum}** [Question text] **[${section.marksPerQuestion} Mark(s)]**
 
-        return NextResponse.json({ content });
+**Q.${currentQNum + 1}** [Next question] **[${section.marksPerQuestion} Mark(s)]**
+
+... continue until Q.${questionEndNum}
+
+CRITICAL: Generate ALL ${section.count} questions. DO NOT stop early. Output ONLY the section content, no preamble.`;
+
+            // Estimate tokens needed
+            const typeLower = section.type.toLowerCase();
+            let maxTokens = 4000;
+            if (typeLower.includes("mcq") || typeLower.includes("objective")) {
+                maxTokens = Math.max(section.count * 100, 1500);
+            } else if (section.marksPerQuestion >= 5) {
+                maxTokens = Math.max(section.count * 250, 1500);
+            } else {
+                maxTokens = Math.max(section.count * 150, 1200);
+            }
+
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [
+                    { role: "system", content: `You are a professional examiner. Generate the EXACT number of questions requested. Never stop early.` },
+                    { role: "user", content: sectionPrompt }
+                ],
+                temperature: 0.7,
+                max_tokens: Math.min(maxTokens, 16384),
+            });
+
+            const sectionContent = completion.choices[0].message.content || "";
+            sectionResults.push(sectionContent);
+            currentQNum = questionEndNum + 1;
+        }
+
+        // --- Build paper header ---
+        let header = "";
+        if (collegeName) {
+            header += `<center>\n<h1>${collegeName}</h1>\n<h3>${title}</h3>\n</center>\n\n`;
+        } else {
+            header += `<center>\n<h1>EXAMINATION PAPER</h1>\n<h3>${title}</h3>\n</center>\n\n`;
+        }
+        header += `**Subject**: ${subject} | **Time**: ${duration} Mins | **Max Marks**: ${totalMarks}\n\n`;
+        header += `---\n\n`;
+        header += `**General Instructions:**\n`;
+        header += `1. All questions are compulsory unless specified otherwise.\n`;
+        header += `2. Marks are indicated against each question.\n\n`;
+        header += `---\n\n`;
+
+        // --- Assemble full paper ---
+        const fullPaper = header + sectionResults.join("\n\n");
+
+        // --- Optional Answer Key ---
+        let finalContent = fullPaper;
+        if (includeAnswerKey) {
+            const answerKeyCompletion = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: "You are an expert marking scheme creator. Generate concise, accurate answers." },
+                    { role: "user", content: `Generate a concise Answer Key for this question paper. For MCQs, just give the answer letter. For short/long answers, give key points.\n\nPAPER:\n${fullPaper.substring(0, 12000)}` }
+                ],
+                temperature: 0.3,
+                max_tokens: 8000,
+            });
+
+            const answerKey = answerKeyCompletion.choices[0].message.content || "";
+            finalContent += `\n\n---\n\n## ANSWER KEY / MARKING SCHEME\n\n${answerKey}`;
+        }
+
+        return NextResponse.json({ content: finalContent });
 
     } catch (error) {
         console.error("Error generating teacher paper:", error);
