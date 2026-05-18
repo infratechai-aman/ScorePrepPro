@@ -1,16 +1,21 @@
 import Link from "next/link";
 import { BookOpen, Twitter, Linkedin, Youtube } from "lucide-react";
-import Image from "next/image";
 
 export function Footer() {
     return (
         <footer className="bg-slate-50 pt-20 pb-10 px-4 md:px-6 border-t border-slate-200">
             <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12 mb-16">
                 <div className="col-span-1 md:col-span-1">
-                    <Link href="/" className="flex items-center gap-2 mb-6">
-                        <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={48} height={48} className="rounded-xl object-contain" />
-                        <span className="text-xl font-bold text-slate-900 font-serif">
-                            ScorePrepPro
+                    <Link href="/" className="flex items-center gap-2.5 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-400 flex items-center justify-center shadow-md">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 19.5C4 19.5 5 18.5 8 18.5C11 18.5 13 20.5 16 20.5C19 20.5 20 19.5 20 19.5V3.5C20 3.5 19 4.5 16 4.5C13 4.5 11 2.5 8 2.5C5 2.5 4 3.5 4 3.5V19.5Z" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M9 8L11 10L15 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M9 13H15" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                            </svg>
+                        </div>
+                        <span className="text-xl font-bold text-slate-900" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            Score<span className="text-indigo-600">Prep</span>Pro
                         </span>
                     </Link>
                     <p className="text-slate-500 text-sm mb-6">

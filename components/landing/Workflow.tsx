@@ -1,112 +1,106 @@
 "use client";
 
-import { MousePointerClick, Sparkles, FileDown, ArrowRight } from "lucide-react";
+import { MousePointerClick, Sparkles, FileDown, Check } from "lucide-react";
 
 export function Workflow() {
-    const steps = [
-        {
-            num: "01",
-            icon: <MousePointerClick className="w-6 h-6" />,
-            title: "Select Your Blueprint",
-            desc: "Choose your Board (CBSE, ICSE, Maharashtra SSC), Class, Subject, and specific chapters. Set difficulty level and total marks — all in under 30 seconds.",
-            accent: "blue",
-            gradient: "from-blue-500 to-cyan-400",
-            bgLight: "bg-blue-50",
-            borderLight: "border-blue-100",
-            textAccent: "text-blue-600",
-        },
-        {
-            num: "02",
-            icon: <Sparkles className="w-6 h-6" />,
-            title: "AI Generates Instantly",
-            desc: "Our advanced AI engine crafts a complete, syllabus-aligned question paper with proper section structure, marks distribution, and a detailed answer key — in one click.",
-            accent: "indigo",
-            gradient: "from-indigo-500 to-purple-500",
-            bgLight: "bg-indigo-50",
-            borderLight: "border-indigo-100",
-            textAccent: "text-indigo-600",
-        },
-        {
-            num: "03",
-            icon: <FileDown className="w-6 h-6" />,
-            title: "Export & Print",
-            desc: "Download your watermark-free, perfectly formatted question paper as a print-ready PDF. Add your school logo, customize headers, and it's ready for the classroom.",
-            accent: "emerald",
-            gradient: "from-emerald-500 to-teal-400",
-            bgLight: "bg-emerald-50",
-            borderLight: "border-emerald-100",
-            textAccent: "text-emerald-600",
-        }
-    ];
-
     return (
-        <section className="py-24 bg-slate-50 relative overflow-hidden">
-            {/* Background Decorative Elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3"></div>
+        <section className="py-28 bg-[#0f172a] relative overflow-hidden">
+            {/* Ambient glow effects */}
+            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px]"></div>
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent"></div>
 
             <div className="max-w-6xl mx-auto px-4 md:px-6 relative z-10">
-                <div className="text-center mb-16 space-y-4">
-                    <p className="inline-block px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 font-bold tracking-wider text-xs uppercase shadow-sm">
-                        The Workflow
+                {/* Header */}
+                <div className="text-center mb-20 space-y-5">
+                    <p className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-semibold tracking-wider text-xs uppercase">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                        How It Works
                     </p>
-                    <h2 className="text-4xl md:text-5xl font-bold font-serif text-slate-900 tracking-tight">
-                        How ScorePrepPro Works
+                    <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        Three steps. <span className="bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">Zero effort.</span>
                     </h2>
-                    <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-                        From blueprint to print-ready PDF in three effortless steps. No typing, no formatting, no stress.
+                    <p className="text-slate-400 text-lg max-w-xl mx-auto leading-relaxed">
+                        From selecting your syllabus to holding a print-ready PDF — everything happens in under 60 seconds.
                     </p>
                 </div>
 
-                {/* Steps Grid */}
-                <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mb-12">
-                    {steps.map((step, i) => (
-                        <div key={i} className="group relative">
-                            {/* Connector Arrow (between cards on desktop) */}
-                            {i < steps.length - 1 && (
-                                <div className="hidden md:flex absolute -right-4 lg:-right-5 top-1/2 -translate-y-1/2 z-20">
-                                    <ArrowRight className="w-5 h-5 text-slate-300" />
-                                </div>
-                            )}
+                {/* Steps — Vertical timeline layout */}
+                <div className="relative">
+                    {/* Vertical connecting line */}
+                    <div className="hidden md:block absolute left-[72px] top-8 bottom-8 w-px bg-gradient-to-b from-indigo-500/50 via-blue-500/50 to-cyan-500/50"></div>
 
-                            <div className="h-full p-8 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
-                                {/* Background number watermark */}
-                                <span className="absolute -top-4 -right-2 text-[120px] font-black text-slate-50 leading-none select-none pointer-events-none transition-all duration-500 group-hover:text-slate-100/80">
-                                    {step.num}
-                                </span>
-
-                                <div className="relative z-10">
-                                    {/* Icon */}
-                                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center mb-6 shadow-lg transition-transform duration-300 group-hover:scale-110`}>
-                                        <span className="text-white">{step.icon}</span>
-                                    </div>
-
-                                    {/* Step label */}
-                                    <p className={`text-xs font-bold tracking-widest uppercase ${step.textAccent} mb-2`}>
-                                        Step {step.num}
-                                    </p>
-
-                                    {/* Title */}
-                                    <h3 className="text-xl font-bold text-slate-900 mb-3">
-                                        {step.title}
-                                    </h3>
-
-                                    {/* Description */}
-                                    <p className="text-slate-500 leading-relaxed text-sm">
-                                        {step.desc}
-                                    </p>
-                                </div>
+                    {/* Step 1 */}
+                    <div className="flex gap-8 mb-16 group">
+                        <div className="flex-shrink-0 relative">
+                            <div className="w-[80px] h-[80px] rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-2xl shadow-indigo-500/30 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                                <MousePointerClick className="w-8 h-8 text-white" />
+                            </div>
+                            <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-[#0f172a] border-2 border-indigo-500 flex items-center justify-center text-[11px] font-black text-indigo-400">1</span>
+                        </div>
+                        <div className="pt-2 flex-1">
+                            <h3 className="text-2xl font-bold text-white mb-3">Configure Your Blueprint</h3>
+                            <p className="text-slate-400 leading-relaxed text-[15px] mb-5 max-w-lg">
+                                Select your Board, Class, and Subject. Pick specific chapters, set difficulty, and define total marks. The entire setup takes less than 30 seconds.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {["CBSE", "ICSE", "Maharashtra SSC", "State Boards"].map(tag => (
+                                    <span key={tag} className="px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                                        {tag}
+                                    </span>
+                                ))}
                             </div>
                         </div>
-                    ))}
+                    </div>
+
+                    {/* Step 2 */}
+                    <div className="flex gap-8 mb-16 group">
+                        <div className="flex-shrink-0 relative">
+                            <div className="w-[80px] h-[80px] rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-2xl shadow-blue-500/30 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
+                                <Sparkles className="w-8 h-8 text-white" />
+                            </div>
+                            <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-[#0f172a] border-2 border-blue-500 flex items-center justify-center text-[11px] font-black text-blue-400">2</span>
+                        </div>
+                        <div className="pt-2 flex-1">
+                            <h3 className="text-2xl font-bold text-white mb-3">AI Generates Everything</h3>
+                            <p className="text-slate-400 leading-relaxed text-[15px] mb-5 max-w-lg">
+                                Our engine crafts a complete exam paper — proper sections, marks distribution, choice questions, and a detailed marking scheme. One click, full paper.
+                            </p>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                {["Sections & Marks", "Answer Keys", "Difficulty Balanced", "Board Accurate"].map(item => (
+                                    <div key={item} className="flex items-center gap-1.5 text-xs text-blue-300">
+                                        <Check className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                                        <span>{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Step 3 */}
+                    <div className="flex gap-8 group">
+                        <div className="flex-shrink-0 relative">
+                            <div className="w-[80px] h-[80px] rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center shadow-2xl shadow-cyan-500/30 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                                <FileDown className="w-8 h-8 text-white" />
+                            </div>
+                            <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-[#0f172a] border-2 border-cyan-500 flex items-center justify-center text-[11px] font-black text-cyan-400">3</span>
+                        </div>
+                        <div className="pt-2 flex-1">
+                            <h3 className="text-2xl font-bold text-white mb-3">Export & Print</h3>
+                            <p className="text-slate-400 leading-relaxed text-[15px] mb-5 max-w-lg">
+                                Download a perfectly formatted, watermark-free PDF. Add your school branding, customize headers — it's ready for the classroom. No formatting nightmares, ever.
+                            </p>
+                            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500/10 to-teal-500/10 border border-cyan-500/20">
+                                <span className="text-xs font-bold text-cyan-300 tracking-wider uppercase">Output</span>
+                                <span className="text-slate-400 text-xs">→</span>
+                                <span className="text-sm font-medium text-white">Print-Ready PDF</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Bottom highlight bar */}
-                <div className="flex items-center justify-center gap-3 pt-4">
-                    <div className="h-1 w-16 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"></div>
-                    <div className="h-1 w-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-                    <div className="h-1 w-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"></div>
-                </div>
+                {/* Bottom gradient divider */}
+                <div className="mt-20 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
             </div>
         </section>
     );

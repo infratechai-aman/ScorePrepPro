@@ -7,7 +7,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 
 export function Navbar() {
     const { user, userData, loading } = useAuth();
@@ -26,10 +25,17 @@ export function Navbar() {
             <nav className="fixed top-0 left-0 right-0 z-50 h-20 transition-all duration-300 bg-white/80 backdrop-blur-xl border-b border-slate-100">
                 <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 md:px-6">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <Image src="/ScorePrepPro_Logo.png" alt="ScorePrepPro Logo" width={52} height={52} className="rounded-xl object-contain" />
-                        <span className="text-2xl font-bold text-slate-900 font-serif tracking-tight">
-                            ScorePrepPro
+                    <Link href="/" className="flex items-center gap-2.5 group">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-200/50 transition-transform duration-300 group-hover:scale-105">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 19.5C4 19.5 5 18.5 8 18.5C11 18.5 13 20.5 16 20.5C19 20.5 20 19.5 20 19.5V3.5C20 3.5 19 4.5 16 4.5C13 4.5 11 2.5 8 2.5C5 2.5 4 3.5 4 3.5V19.5Z" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M4 19.5C4 19.5 5 18.5 8 18.5C11 18.5 13 20.5 16 20.5C19 20.5 20 19.5 20 19.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M9 8L11 10L15 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M9 13H15" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                            </svg>
+                        </div>
+                        <span className="text-xl font-bold text-slate-900 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            Score<span className="text-indigo-600">Prep</span>Pro
                         </span>
                     </Link>
 
