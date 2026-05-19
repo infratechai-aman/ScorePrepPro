@@ -83,10 +83,10 @@ export async function POST(
                 };
             }
 
-            // MCQ evaluation
-            const selectedAnswer = answers && answers[i] !== undefined ? parseInt(answers[i]) : -1;
+            // MCQ evaluation — ensure both are numbers for safe === comparison
+            const selectedAnswer = answers && answers[i] !== undefined ? Number(answers[i]) : -1;
             let correctAnswer = isPaper ? mcqs[i]?.correctAnswer : examData.mcqs[i].correctAnswer;
-            if (correctAnswer === undefined) correctAnswer = -1; // Fallback to prevent undefined in firestore
+            correctAnswer = correctAnswer !== undefined && correctAnswer !== null ? Number(correctAnswer) : -1;
             const isCorrect = selectedAnswer === correctAnswer;
             const mcqMarks = isPaper ? (mcqs[i]?.marks || 1) : 1;
             const awardedMarks = isCorrect ? mcqMarks : 0;

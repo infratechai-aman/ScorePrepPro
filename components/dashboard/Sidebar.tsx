@@ -12,8 +12,7 @@ import {
     Sparkles,
     GraduationCap,
     Users,
-    ClipboardList,
-    BarChart3
+    ClipboardList
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

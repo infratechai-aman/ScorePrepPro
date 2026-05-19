@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, UserCircle, Menu, X } from "lucide-react";
+import { UserCircle, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/Button";
 import { useAuth } from "@/contexts/AuthContext";
