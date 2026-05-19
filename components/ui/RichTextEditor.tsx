@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 
 interface RichTextEditorProps {
     value: string;
@@ -10,6 +10,15 @@ interface RichTextEditorProps {
 
 export const RichTextEditor = ({ value, onChange, placeholder }: RichTextEditorProps) => {
     const editorRef = useRef<HTMLDivElement>(null);
+    const isInitialized = useRef(false);
+
+    // Set initial value ONCE on mount — never re-render from parent state
+    useEffect(() => {
+        if (editorRef.current && !isInitialized.current) {
+            editorRef.current.innerHTML = value || "";
+            isInitialized.current = true;
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleInput = useCallback(() => {
         if (editorRef.current) {
@@ -17,15 +26,17 @@ export const RichTextEditor = ({ value, onChange, placeholder }: RichTextEditorP
         }
     }, [onChange]);
 
-    const execCommand = useCallback((command: string, value?: string) => {
-        document.execCommand(command, false, value);
+    const execCommand = useCallback((command: string, val?: string) => {
+        // Re-focus the editor before executing command
+        editorRef.current?.focus();
+        document.execCommand(command, false, val);
         handleInput();
     }, [handleInput]);
 
     return (
         <div className="rich-text-editor-container">
             {/* Toolbar */}
-            <div className="rte-toolbar">
+            <div className="rte-toolbar" onMouseDown={(e) => e.preventDefault()}>
                 <button type="button" onClick={() => execCommand("bold")} title="Bold" className="rte-btn"><b>B</b></button>
                 <button type="button" onClick={() => execCommand("italic")} title="Italic" className="rte-btn"><i>I</i></button>
                 <button type="button" onClick={() => execCommand("underline")} title="Underline" className="rte-btn"><u>U</u></button>
@@ -40,14 +51,13 @@ export const RichTextEditor = ({ value, onChange, placeholder }: RichTextEditorP
                 <button type="button" onClick={() => execCommand("removeFormat")} title="Clear Formatting" className="rte-btn">✕</button>
             </div>
 
-            {/* Editable Area */}
+            {/* Editable Area — NO dangerouslySetInnerHTML, content set via ref */}
             <div
                 ref={editorRef}
                 contentEditable
                 suppressContentEditableWarning
                 onInput={handleInput}
                 className="rte-editor"
-                dangerouslySetInnerHTML={{ __html: value || "" }}
                 data-placeholder={placeholder || "Type your answer here..."}
             />
 

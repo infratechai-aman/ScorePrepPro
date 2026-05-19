@@ -157,10 +157,15 @@ For MCQ questions, use this format:
   "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
   "correctAnswer": 0,
   "marks": ${section.marksPerQuestion},
-  "explanation": "Brief explanation"
+  "explanation": "Step-by-step solution proving why this is correct"
 }
 
-IMPORTANT: Each question MUST test a DIFFERENT concept/topic. Do NOT repeat similar questions. Vary the style — mix factual recall, application, and analytical questions.` : `
+ANSWER ACCURACY (CRITICAL):
+- correctAnswer is the INDEX: 0=A, 1=B, 2=C, 3=D
+- You MUST solve each question BEFORE setting correctAnswer
+- For math/number questions: calculate the answer, find which option matches, then set that index
+- NEVER guess the index. Verify: if correctAnswer=2, then option C MUST be the actual correct answer
+- Each question MUST test a DIFFERENT concept. Vary the style — mix factual recall, application, and analytical questions.` : `
 For subjective questions, use this format:
 {
   "type": "subjective",

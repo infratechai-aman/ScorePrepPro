@@ -159,7 +159,7 @@ notesType === "summary" ? "Create a one-page summary covering all major points."
 
 Use markdown formatting: headings, bold, blockquotes for definitions, tables for comparisons, bullet points.`;
     } else if (generationType === "mcqs") {
-        systemPrompt = `You are an MCQ question generator. Generate high-quality MCQs STRICTLY from the provided content. Each MCQ must have exactly 4 options with one correct answer.`;
+        systemPrompt = `You are an MCQ question generator. Generate high-quality MCQs STRICTLY from the provided content. Each MCQ must have exactly 4 options with one correct answer. You MUST verify every answer is correct before outputting.`;
         userPrompt = `Generate ${mcqCount} MCQs for:
 Subject: ${subjectName}
 Unit: ${unitTitle}
@@ -176,12 +176,18 @@ Return a JSON object:
       "question": "...",
       "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
       "correctAnswer": 0,
-      "explanation": "..."
+      "explanation": "Step-by-step solution proving why this is correct"
     }
   ]
 }
 
-correctAnswer is the index (0-3) of the correct option.
+ANSWER ACCURACY RULES (CRITICAL):
+1. correctAnswer is the INDEX (0=A, 1=B, 2=C, 3=D) of the correct option.
+2. Before setting correctAnswer, you MUST mentally solve the question and verify the answer.
+3. For math/number questions: show the calculation in the explanation and double-check the result matches the option at that index.
+4. NEVER guess. If you set correctAnswer to 1, option at index 1 (B) MUST be the actual correct answer.
+5. After generating all MCQs, do a final pass: re-read each question, re-solve it, and confirm correctAnswer index points to the right option text.
+
 Make questions varied: recall, application, analysis.
 ONLY output the JSON object, nothing else.`;
     }
