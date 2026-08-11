@@ -47,15 +47,17 @@ export function Sidebar() {
     return (
         <aside className="fixed left-0 top-0 h-screen w-64 bg-[#0f172a] text-white flex flex-col border-r border-slate-800 z-50 print:hidden">
             {/* Logo */}
-            <div className="h-40 flex items-center gap-3 px-4 border-b border-slate-800">
-                <Image
-                    src="/ScorePrepPro_Logo.png"
-                    alt="ScorePrepPro"
-                    width={480}
-                    height={135}
-                    className="h-[132px] w-auto object-contain brightness-0 invert"
-                    priority
-                />
+            <div className="h-40 flex items-center justify-center px-4 border-b border-slate-800">
+                <div className="bg-white rounded-xl p-2">
+                    <Image
+                        src="/ScorePrepPro_Logo.png"
+                        alt="ScorePrepPro"
+                        width={480}
+                        height={135}
+                        className="h-[120px] w-auto object-contain"
+                        priority
+                    />
+                </div>
             </div>
 
             {/* Menu */}

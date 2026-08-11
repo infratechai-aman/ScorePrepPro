@@ -13,7 +13,7 @@ export function Footer() {
                             alt="ScorePrepPro"
                             width={480}
                             height={135}
-                            className="h-[120px] w-auto object-contain"
+                            className="h-[120px] w-auto object-contain mix-blend-multiply"
                         />
                     </Link>
                     <p className="text-slate-500 text-sm mb-6">

@@ -32,7 +32,7 @@ export function Navbar() {
                             alt="ScorePrepPro"
                             width={540}
                             height={150}
-                            className="h-36 w-auto object-contain"
+                            className="h-36 w-auto object-contain mix-blend-multiply"
                             priority
                         />
                     </Link>
