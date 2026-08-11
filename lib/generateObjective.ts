@@ -9,6 +9,7 @@
  */
 
 import { openai } from "./openai";
+import { calculateChapterQuestionMap, buildWeightagePromptBlock } from "./weightageUtils";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -143,13 +144,15 @@ function buildObjectivePrompt(
         case "challenging": diffInstruction = "CHALLENGING: High reasoning, multi-concept, tricky distractors. Olympiad/Foundation level."; break;
     }
 
-    let weightageInstruction = "";
-    if (options.chapterWeights) {
-        weightageInstruction = "\nCHAPTER WEIGHTAGE (distribute questions proportionally):\n";
-        Object.entries(options.chapterWeights).forEach(([chap, weight]) => {
-            if (weight > 0) weightageInstruction += `- ${chap}: ${weight}%\n`;
-        });
-    }
+    // Hard-enforce weightage: calculate exact question counts per chapter
+    const chapterList = chapters.split(",").map(c => c.trim()).filter(Boolean);
+    const totalQ = Object.values(formatDistribution).reduce((a, b) => a + b, 0);
+    const allocations = calculateChapterQuestionMap(
+        chapterList,
+        options.chapterWeights || {},
+        totalQ
+    );
+    const weightageInstruction = buildWeightagePromptBlock(allocations);
 
     const formatInstructions: string[] = [];
     
@@ -193,8 +196,6 @@ Generate ${formatDistribution["fill_blank"]} Fill in the Blank questions.
 - The answer should be a single word or short phrase
 - Format: "_________ is the process by which..."`);
     }
-
-    const totalQ = Object.values(formatDistribution).reduce((a, b) => a + b, 0);
 
     const textbookContextBlock = textbookContent ? `\n## SOURCE MATERIAL (CRITICAL)\nYou MUST base your questions strictly on the following excerpt from the official textbook. Do not use outside knowledge if it conflicts with or goes beyond this material:\n\n${textbookContent}\n` : "";
 

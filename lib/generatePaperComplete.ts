@@ -12,6 +12,7 @@ import { openai } from "./openai";
 import { BOARD_PATTERNS } from "./patterns";
 import { DifficultyLevel } from "./prompts";
 import { getChaptersContent } from "./textbookLookup";
+import { calculateChapterQuestionMap, buildWeightagePromptBlock } from "./weightageUtils";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -164,15 +165,11 @@ function getBoardContext(board: string, grade: string, subject: string, chapters
         boardSpecific = `ICSE BOARD PAPER. Section I compulsory, Section II has internal choice. Use Selina/Frank textbook style.`;
     }
 
-    let weightageInstruction = "";
-    if (options.chapterWeights) {
-        weightageInstruction = "CHAPTER WEIGHTAGE:\n";
-        Object.entries(options.chapterWeights).forEach(([chap, weight]) => {
-            if (weight > 0) weightageInstruction += `- ${chap}: ${weight}%\n`;
-        });
-    }
+    // Weightage is now computed per-section at generation time using weightageUtils
+    // We store the raw weights here for use by generateSection
+    const chapterWeights = options.chapterWeights || {};
 
-    return { difficultyInstruction, toneInstruction, textbookSourcing, boardSpecific, isMathSubject, weightageInstruction };
+    return { difficultyInstruction, toneInstruction, textbookSourcing, boardSpecific, isMathSubject, chapterWeights };
 }
 
 // ─── Helper: Estimate max_tokens per section ────────────────────────────────
@@ -301,12 +298,16 @@ SECTION TOTAL MARKS: ${sectionMarks}
 QUESTION NUMBERING: Start from **Q.${questionStartNum}** to **Q.${questionEndNum}**
 
 CHAPTERS (ONLY use these): ${chapters}
-${context.weightageInstruction}
+${(() => {
+    const chapterList = chapters.split(",").map(c => c.trim()).filter(Boolean);
+    const allocations = calculateChapterQuestionMap(chapterList, context.chapterWeights, generateCount);
+    return buildWeightagePromptBlock(allocations);
+})()}
 ${textbookContent ? `
 ## SOURCE MATERIAL (CRITICAL)
 You MUST base your questions strictly on the following excerpt from the official textbook. Do not use outside knowledge if it conflicts with or goes beyond this material:
 
-${textbookContent.slice(0, 8000)}
+${textbookContent.slice(0, 20000)}
 ` : ''}
 
 RULES:

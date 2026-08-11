@@ -10,6 +10,7 @@
  */
 
 import { openai } from "./openai";
+import { calculateChapterQuestionMap, buildWeightagePromptBlock } from "./weightageUtils";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -128,13 +129,15 @@ function buildWorksheetPrompt(
         case "challenging": diffInstruction = "CHALLENGING: High reasoning, multi-step problems."; break;
     }
 
-    let weightageInstruction = "";
-    if (options.chapterWeights) {
-        weightageInstruction = "\nCHAPTER WEIGHTAGE:\n";
-        Object.entries(options.chapterWeights).forEach(([chap, weight]) => {
-            if (weight > 0) weightageInstruction += `- ${chap}: ${weight}%\n`;
-        });
-    }
+    // Hard-enforce weightage: calculate exact question counts per chapter
+    const totalQs = sections.reduce((sum, s) => sum + s.count, 0);
+    const chapterList = chapters.split(",").map(c => c.trim()).filter(Boolean);
+    const allocations = calculateChapterQuestionMap(
+        chapterList,
+        options.chapterWeights || {},
+        totalQs
+    );
+    const weightageInstruction = buildWeightagePromptBlock(allocations);
 
     const sectionInstructions = sections.map(s => {
         if (s.type === "mcq") {

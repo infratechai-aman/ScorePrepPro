@@ -90,13 +90,29 @@ export function getTextbookContent(board: string, grade: string, subject: string
 }
 
 /**
- * Get combined textbook content for multiple chapters.
+ * Get combined textbook content for multiple chapters, smartly distributing 
+ * the maximum character limit evenly across all selected chapters so none are left out.
  */
-export function getChaptersContent(board: string, grade: string, subject: string, chapters: string[]): string {
+export function getChaptersContent(
+    board: string, 
+    grade: string, 
+    subject: string, 
+    chapters: string[], 
+    maxTotalChars: number = 20000
+): string {
+    if (!chapters || chapters.length === 0) return "";
+
+    const charsPerChapter = Math.floor(maxTotalChars / chapters.length);
+
     return chapters
         .map(ch => {
             const content = getTextbookContent(board, grade, subject, ch);
-            return content ? `## ${ch}\n${content}` : "";
+            if (!content) return "";
+            // Take an even slice of each chapter so the AI gets context for everything
+            const slicedContent = content.length > charsPerChapter 
+                ? content.slice(0, charsPerChapter) + "... (content truncated)"
+                : content;
+            return `## ${ch}\n${slicedContent}`;
         })
         .filter(Boolean)
         .join("\n\n");
