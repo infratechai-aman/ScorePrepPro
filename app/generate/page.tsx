@@ -6,7 +6,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft, Lock, Crown, RefreshCw, Trash2 } from "lucide-react";
+import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft, Lock, Crown, RefreshCw, Trash2, ClipboardList, ListChecks } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -38,6 +38,20 @@ const saveBlob = (blob: Blob, filename: string) => {
 export default function GeneratorPage({ embedded = false }: { embedded?: boolean }) {
     // Wizard State
     const [step, setStep] = useState(1);
+
+    // Question Type State (subjective/objective/worksheet)
+    const [questionType, setQuestionType] = useState<"subjective" | "objective" | "worksheet">("subjective");
+
+    // Objective-specific State
+    const [objectiveCount, setObjectiveCount] = useState(20);
+    const [objectiveFormats, setObjectiveFormats] = useState<string[]>(["mcq", "assertion_reason", "statement_based", "fill_blank"]);
+    const [objectiveQuestions, setObjectiveQuestions] = useState<any[]>([]);
+    const [objectiveAnswerKey, setObjectiveAnswerKey] = useState("");
+
+    // Worksheet-specific State
+    const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
+    const [worksheetAnswerKey, setWorksheetAnswerKey] = useState("");
+    const [worksheetMetadata, setWorksheetMetadata] = useState<any>(null);
 
     // Auth & Usage Hook
     const { user, userData, loading: authLoading } = useAuth();
@@ -389,6 +403,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                 // SAVE PAPER TO FIREBASE HISTORY
                 try {
                     const docRef = await addDoc(collection(db, "users", user.uid, "papers"), {
+                        type: "subjective",
                         board,
                         grade,
                         subject,
@@ -408,6 +423,163 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                 localStorage.setItem("free_preview_used", "true");
             }
 
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ─── OBJECTIVE GENERATE HANDLER ─────────────────────────────────────────
+    const handleGenerateObjective = async () => {
+        if (totalWeight !== 100) {
+            setError("Total weightage must equal 100%");
+            return;
+        }
+        if (!user) {
+            router.push("/login");
+            return;
+        }
+        if (!checkLimit("paper")) {
+            setError("Monthly paper quota reached. Upgrade plan.");
+            return;
+        }
+
+        setLoading(true);
+        setGeneratedPaper("");
+        setGeneratedSolution("");
+        setObjectiveAnswerKey("");
+        setObjectiveQuestions([]);
+        setWorksheetAnswerKey("");
+        setWorksheetMetadata(null);
+        setPaperMetadata(null);
+        setError("");
+
+        try {
+            const res = await fetch("/api/generate-objective", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    board,
+                    grade,
+                    subject,
+                    chapters: selectedChapters,
+                    chapterWeights,
+                    difficulty,
+                    questionCount: objectiveCount,
+                    formats: objectiveFormats,
+                    instituteName
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to generate");
+            
+            setGeneratedPaper(data.content);
+            setObjectiveAnswerKey(data.answerKey);
+            setObjectiveQuestions(data.questions || []);
+
+            // INCREMENT USAGE
+            await incrementUsage("paper");
+
+            // SAVE TO FIREBASE
+            try {
+                const docRef = await addDoc(collection(db, "users", user.uid, "papers"), {
+                    type: "objective",
+                    board,
+                    grade,
+                    subject,
+                    chapters: selectedChapters,
+                    totalMarks: objectiveCount, // 1 mark per question
+                    difficulty,
+                    content: data.content,
+                    questions: data.questions,
+                    solution: data.answerKey,
+                    createdAt: serverTimestamp(),
+                });
+                setSavedPaperId(docRef.id);
+            } catch (saveError) {
+                console.error("Failed to save objective paper:", saveError);
+            }
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ─── WORKSHEET GENERATE HANDLER ─────────────────────────────────────────
+    const handleGenerateWorksheet = async () => {
+        if (totalWeight !== 100) {
+            setError("Total weightage must equal 100%");
+            return;
+        }
+        if (!user) {
+            router.push("/login");
+            return;
+        }
+        if (!checkLimit("paper")) {
+            setError("Monthly paper quota reached. Upgrade plan.");
+            return;
+        }
+
+        setLoading(true);
+        setGeneratedPaper("");
+        setGeneratedSolution("");
+        setObjectiveAnswerKey("");
+        setObjectiveQuestions([]);
+        setWorksheetAnswerKey("");
+        setWorksheetMetadata(null);
+        setPaperMetadata(null);
+        setError("");
+
+        try {
+            const res = await fetch("/api/generate-worksheet", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    board,
+                    grade,
+                    subject,
+                    chapters: selectedChapters,
+                    chapterWeights,
+                    difficulty,
+                    totalMarks: parseInt(totalMarks),
+                    includeAnswerKey,
+                    instituteName
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to generate");
+            
+            setGeneratedPaper(data.content);
+            setWorksheetAnswerKey(data.answerKey || "");
+            setWorksheetMetadata(data.metadata || null);
+
+            // INCREMENT USAGE
+            await incrementUsage("paper");
+
+            // SAVE TO FIREBASE
+            try {
+                const docRef = await addDoc(collection(db, "users", user.uid, "papers"), {
+                    type: "worksheet",
+                    board,
+                    grade,
+                    subject,
+                    chapters: selectedChapters,
+                    totalMarks: parseInt(totalMarks),
+                    difficulty,
+                    content: data.content,
+                    solution: data.answerKey || null,
+                    includeAnswerKey,
+                    worksheetMetadata: data.metadata,
+                    createdAt: serverTimestamp(),
+                });
+                setSavedPaperId(docRef.id);
+            } catch (saveError) {
+                console.error("Failed to save worksheet:", saveError);
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -777,7 +949,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                     <h1 className="text-3xl md:text-5xl font-bold font-serif text-slate-900">
                         Smart Paper <span className="text-primary">Wizard</span>
                     </h1>
-                    <p className="text-slate-600">Step {step} of 3: {step === 1 ? "Subject Selection" : step === 2 ? "Chapter Selection" : "Weightage & Config"}</p>
+                    <p className="text-slate-600">Step {step} of 3: {step === 1 ? "Subject & Type" : step === 2 ? "Chapter Selection" : "Config & Generate"}</p>
                 </motion.div>
 
                 {/* Wizard Steps */}
@@ -855,6 +1027,76 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                         </div>
                                     )}
 
+                                    {/* Question Type Selector - Premium/Teacher only */}
+                                    {subject && (
+                                        <div className="space-y-3 pt-2">
+                                            <label className="text-sm font-semibold text-slate-700">Question Type</label>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {/* Subjective - always available */}
+                                                <button
+                                                    onClick={() => setQuestionType("subjective")}
+                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
+                                                        questionType === "subjective"
+                                                            ? "border-indigo-500 bg-indigo-50 shadow-md shadow-indigo-100"
+                                                            : "border-slate-200 bg-white hover:border-slate-300"
+                                                    }`}
+                                                >
+                                                    <FileText className={`h-6 w-6 mx-auto mb-2 ${questionType === "subjective" ? "text-indigo-600" : "text-slate-400"}`} />
+                                                    <p className={`text-sm font-semibold ${questionType === "subjective" ? "text-indigo-700" : "text-slate-700"}`}>Subjective</p>
+                                                    <p className="text-[10px] text-slate-500 mt-1">Board-style paper</p>
+                                                </button>
+
+                                                {/* Objective - Premium/Teacher only */}
+                                                <button
+                                                    onClick={() => {
+                                                        if (userData?.plan === 'premium' || userData?.plan === 'teacher') {
+                                                            setQuestionType("objective");
+                                                        }
+                                                    }}
+                                                    disabled={!(userData?.plan === 'premium' || userData?.plan === 'teacher')}
+                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 relative ${
+                                                        questionType === "objective"
+                                                            ? "border-emerald-500 bg-emerald-50 shadow-md shadow-emerald-100"
+                                                            : !(userData?.plan === 'premium' || userData?.plan === 'teacher')
+                                                                ? "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
+                                                                : "border-slate-200 bg-white hover:border-slate-300"
+                                                    }`}
+                                                >
+                                                    {!(userData?.plan === 'premium' || userData?.plan === 'teacher') && (
+                                                        <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">PRO</div>
+                                                    )}
+                                                    <ListChecks className={`h-6 w-6 mx-auto mb-2 ${questionType === "objective" ? "text-emerald-600" : "text-slate-400"}`} />
+                                                    <p className={`text-sm font-semibold ${questionType === "objective" ? "text-emerald-700" : "text-slate-700"}`}>Objective</p>
+                                                    <p className="text-[10px] text-slate-500 mt-1">MCQ, A-R, Fill</p>
+                                                </button>
+
+                                                {/* Worksheet - Premium/Teacher only */}
+                                                <button
+                                                    onClick={() => {
+                                                        if (userData?.plan === 'premium' || userData?.plan === 'teacher') {
+                                                            setQuestionType("worksheet");
+                                                        }
+                                                    }}
+                                                    disabled={!(userData?.plan === 'premium' || userData?.plan === 'teacher')}
+                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 relative ${
+                                                        questionType === "worksheet"
+                                                            ? "border-purple-500 bg-purple-50 shadow-md shadow-purple-100"
+                                                            : !(userData?.plan === 'premium' || userData?.plan === 'teacher')
+                                                                ? "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
+                                                                : "border-slate-200 bg-white hover:border-slate-300"
+                                                    }`}
+                                                >
+                                                    {!(userData?.plan === 'premium' || userData?.plan === 'teacher') && (
+                                                        <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">PRO</div>
+                                                    )}
+                                                    <ClipboardList className={`h-6 w-6 mx-auto mb-2 ${questionType === "worksheet" ? "text-purple-600" : "text-slate-400"}`} />
+                                                    <p className={`text-sm font-semibold ${questionType === "worksheet" ? "text-purple-700" : "text-slate-700"}`}>Worksheet</p>
+                                                    <p className="text-[10px] text-slate-500 mt-1">Mixed sections</p>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="mt-auto pt-8">
                                         <Button className="w-full" onClick={nextStep} disabled={!board || !subject}>
                                             Next: Select Chapters <ChevronRight className="ml-2 h-4 w-4" />
@@ -917,11 +1159,14 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                             {step === 3 && (
                                 <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6 flex-1 flex flex-col">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <div className="h-8 w-1 bg-green-500 rounded-full"></div>
-                                        <h2 className="text-xl font-semibold text-slate-800">3. Weightage & Settings</h2>
+                                        <div className={`h-8 w-1 rounded-full ${questionType === 'objective' ? 'bg-emerald-500' : questionType === 'worksheet' ? 'bg-purple-500' : 'bg-green-500'}`}></div>
+                                        <h2 className="text-xl font-semibold text-slate-800">
+                                            3. {questionType === 'objective' ? 'Objective Settings' : questionType === 'worksheet' ? 'Worksheet Settings' : 'Weightage & Settings'}
+                                        </h2>
                                     </div>
 
                                     <div className="flex-1 overflow-y-auto max-h-[400px] space-y-4 pr-2">
+                                        {/* Chapter Weightage - show for all types */}
                                         {selectedChapters.map((chap) => (
                                             <div key={chap} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                                                 <div className="flex justify-between mb-2">
@@ -938,57 +1183,173 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                             </div>
                                         ))}
 
-                                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mt-4">
-                                            <h3 className="text-sm font-semibold text-blue-900 mb-3">Difficulty & Controls</h3>
-                                            <div className="grid gap-4">
-                                                <Select label="Difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)} options={[
-                                                    { value: "easy", label: "Easy" },
-                                                    { value: "moderate", label: "Moderate" },
-                                                    { value: "hard", label: "Hard" },
-                                                    { value: "replica", label: "Exam Replica" },
-                                                    { value: "challenging", label: "Challenging" },
-                                                ]} />
-                                                <Switch label="Teacher Mode" checked={isTeacherMode} onCheckedChange={setIsTeacherMode} />
-                                                
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-medium text-slate-700 block">Paper Watermark (Optional)</label>
-                                                    <div className="flex items-center gap-2">
-                                                        <input 
-                                                            type="file" 
-                                                            accept="image/*" 
-                                                            onChange={handleWatermarkUpload}
-                                                            className="hidden" 
-                                                            id="watermark-upload" 
-                                                        />
-                                                        <label 
-                                                            htmlFor="watermark-upload"
-                                                            className="flex-1 cursor-pointer p-2 border-2 border-dashed border-slate-300 rounded-lg text-center text-xs text-slate-500 hover:border-primary hover:text-primary transition-all"
-                                                        >
-                                                            {watermark ? "Image Selected (Click to change)" : "Upload Logo/Watermark"}
-                                                        </label>
-                                                        {watermark && (
-                                                            <button 
-                                                                onClick={() => setWatermark(null)}
-                                                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                                title="Remove Watermark"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
+                                        {/* ─── OBJECTIVE CONFIG ─── */}
+                                        {questionType === 'objective' && (
+                                            <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 mt-4">
+                                                <h3 className="text-sm font-semibold text-emerald-900 mb-3">Objective Settings</h3>
+                                                <div className="grid gap-4">
+                                                    <Select label="Number of Questions" value={String(objectiveCount)} onChange={(e) => setObjectiveCount(parseInt(e.target.value))} options={[
+                                                        { value: "10", label: "10 Questions" },
+                                                        { value: "15", label: "15 Questions" },
+                                                        { value: "20", label: "20 Questions" },
+                                                        { value: "25", label: "25 Questions" },
+                                                        { value: "30", label: "30 Questions" },
+                                                    ]} />
+                                                    <Select label="Difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)} options={[
+                                                        { value: "easy", label: "Easy" },
+                                                        { value: "moderate", label: "Moderate" },
+                                                        { value: "hard", label: "Hard" },
+                                                        { value: "replica", label: "Exam Replica" },
+                                                        { value: "challenging", label: "Challenging" },
+                                                    ]} />
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium text-slate-700 block">Question Formats</label>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {[
+                                                                { value: "mcq", label: "Standard MCQ" },
+                                                                { value: "assertion_reason", label: "Assertion-Reason" },
+                                                                { value: "statement_based", label: "Statement Based" },
+                                                                { value: "fill_blank", label: "Fill in Blanks" },
+                                                            ].map(fmt => (
+                                                                <label key={fmt.value} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
+                                                                    objectiveFormats.includes(fmt.value) ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'
+                                                                }`}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="w-4 h-4 text-emerald-600 rounded"
+                                                                        checked={objectiveFormats.includes(fmt.value)}
+                                                                        onChange={(e) => {
+                                                                            if (e.target.checked) {
+                                                                                setObjectiveFormats([...objectiveFormats, fmt.value]);
+                                                                            } else if (objectiveFormats.length > 1) {
+                                                                                setObjectiveFormats(objectiveFormats.filter(f => f !== fmt.value));
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                    <span className="text-xs font-medium text-slate-700">{fmt.label}</span>
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* ─── WORKSHEET CONFIG ─── */}
+                                        {questionType === 'worksheet' && (
+                                            <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 mt-4">
+                                                <h3 className="text-sm font-semibold text-purple-900 mb-3">Worksheet Settings</h3>
+                                                <div className="grid gap-4">
+                                                    <Select label="Total Marks" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} options={[
+                                                        { value: "10", label: "10 Marks" },
+                                                        { value: "20", label: "20 Marks" },
+                                                        { value: "40", label: "40 Marks" },
+                                                        { value: "80", label: "80 Marks" },
+                                                    ]} />
+                                                    <Select label="Difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)} options={[
+                                                        { value: "easy", label: "Easy" },
+                                                        { value: "moderate", label: "Moderate" },
+                                                        { value: "hard", label: "Hard" },
+                                                        { value: "replica", label: "Exam Replica" },
+                                                        { value: "challenging", label: "Challenging" },
+                                                    ]} />
+                                                    <Switch label="Include Answer Key" checked={includeAnswerKey} onCheckedChange={setIncludeAnswerKey} />
+                                                    
+                                                    {/* Auto-calculated preview */}
+                                                    <div className="bg-white p-3 rounded-lg border border-purple-200">
+                                                        <p className="text-xs font-bold text-purple-800 mb-2">Auto-Generated Structure:</p>
+                                                        {parseInt(totalMarks) <= 10 && (
+                                                            <div className="text-xs text-purple-700 space-y-1">
+                                                                <p>📝 Section A: 5 MCQs (5 marks)</p>
+                                                                <p>✏️ Section B: 1 Short Answer (2 marks)</p>
+                                                                <p>📄 Section C: 1 Descriptive (3 marks)</p>
+                                                                <p className="font-semibold pt-1">⏱️ Time: {Math.ceil(10 * 1.5)} mins</p>
+                                                            </div>
+                                                        )}
+                                                        {parseInt(totalMarks) === 20 && (
+                                                            <div className="text-xs text-purple-700 space-y-1">
+                                                                <p>📝 Section A: 5 MCQs (5 marks)</p>
+                                                                <p>✏️ Section B: 5 Short Answer (10 marks)</p>
+                                                                <p>📄 Section C: 1 Long Answer (5 marks)</p>
+                                                                <p className="font-semibold pt-1">⏱️ Time: {Math.ceil(20 * 1.5)} mins</p>
+                                                            </div>
+                                                        )}
+                                                        {parseInt(totalMarks) === 40 && (
+                                                            <div className="text-xs text-purple-700 space-y-1">
+                                                                <p>📝 Section A: 10 MCQs (10 marks)</p>
+                                                                <p>✏️ Section B: 5 Short Answer (15 marks)</p>
+                                                                <p>📄 Section C: 3 Long Answer (15 marks)</p>
+                                                                <p className="font-semibold pt-1">⏱️ Time: {Math.ceil(40 * 1.5)} mins</p>
+                                                            </div>
+                                                        )}
+                                                        {parseInt(totalMarks) >= 80 && (
+                                                            <div className="text-xs text-purple-700 space-y-1">
+                                                                <p>📝 Section A: 20 MCQs (20 marks)</p>
+                                                                <p>✏️ Section B: 8 Short Answer (24 marks)</p>
+                                                                <p>📄 Section C: 4 Long Answer (20 marks)</p>
+                                                                <p>📋 Section D: 2 Very Long (16 marks)</p>
+                                                                <p className="font-semibold pt-1">⏱️ Time: {Math.ceil(80 * 1.5)} mins</p>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
-
-                                                {/* Feature Gate: Diagrams */}
-                                                {userData?.plan === 'basic' && (
-                                                    <div className="flex items-center justify-between opacity-50 cursor-not-allowed">
-                                                        <div className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                                                            <Lock className="h-3 w-3" /> Diagram/Map Questions
-                                                        </div>
-                                                        <div className="text-xs text-amber-600 bg-amber-100 px-2 py-0.5 rounded">Premium</div>
-                                                    </div>
-                                                )}
                                             </div>
-                                        </div>
+                                        )}
+
+                                        {/* ─── SUBJECTIVE CONFIG (existing) ─── */}
+                                        {questionType === 'subjective' && (
+                                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mt-4">
+                                                <h3 className="text-sm font-semibold text-blue-900 mb-3">Difficulty & Controls</h3>
+                                                <div className="grid gap-4">
+                                                    <Select label="Difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)} options={[
+                                                        { value: "easy", label: "Easy" },
+                                                        { value: "moderate", label: "Moderate" },
+                                                        { value: "hard", label: "Hard" },
+                                                        { value: "replica", label: "Exam Replica" },
+                                                        { value: "challenging", label: "Challenging" },
+                                                    ]} />
+                                                    <Switch label="Teacher Mode" checked={isTeacherMode} onCheckedChange={setIsTeacherMode} />
+                                                    
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium text-slate-700 block">Paper Watermark (Optional)</label>
+                                                        <div className="flex items-center gap-2">
+                                                            <input 
+                                                                type="file" 
+                                                                accept="image/*" 
+                                                                onChange={handleWatermarkUpload}
+                                                                className="hidden" 
+                                                                id="watermark-upload" 
+                                                            />
+                                                            <label 
+                                                                htmlFor="watermark-upload"
+                                                                className="flex-1 cursor-pointer p-2 border-2 border-dashed border-slate-300 rounded-lg text-center text-xs text-slate-500 hover:border-primary hover:text-primary transition-all"
+                                                            >
+                                                                {watermark ? "Image Selected (Click to change)" : "Upload Logo/Watermark"}
+                                                            </label>
+                                                            {watermark && (
+                                                                <button 
+                                                                    onClick={() => setWatermark(null)}
+                                                                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                    title="Remove Watermark"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Feature Gate: Diagrams */}
+                                                    {userData?.plan === 'basic' && (
+                                                        <div className="flex items-center justify-between opacity-50 cursor-not-allowed">
+                                                            <div className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                                                                <Lock className="h-3 w-3" /> Diagram/Map Questions
+                                                            </div>
+                                                            <div className="text-xs text-amber-600 bg-amber-100 px-2 py-0.5 rounded">Premium</div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="pt-4 mt-auto">
@@ -1000,8 +1361,19 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                         </div>
                                         <div className="flex gap-4">
                                             <Button variant="outline" onClick={prevStep}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>
-                                            <Button className="flex-1" size="lg" onClick={handleGenerate} isLoading={loading} disabled={totalWeight !== 100}>
-                                                <Sparkles className="mr-2 h-5 w-5" /> Generate Paper
+                                            <Button
+                                                className={`flex-1 ${questionType === 'objective' ? 'bg-emerald-600 hover:bg-emerald-700' : questionType === 'worksheet' ? 'bg-purple-600 hover:bg-purple-700' : ''}`}
+                                                size="lg"
+                                                onClick={() => {
+                                                    if (questionType === 'objective') handleGenerateObjective();
+                                                    else if (questionType === 'worksheet') handleGenerateWorksheet();
+                                                    else handleGenerate();
+                                                }}
+                                                isLoading={loading}
+                                                disabled={totalWeight !== 100}
+                                            >
+                                                <Sparkles className="mr-2 h-5 w-5" />
+                                                {questionType === 'objective' ? 'Generate Objective Paper' : questionType === 'worksheet' ? 'Generate Worksheet' : 'Generate Paper'}
                                             </Button>
                                         </div>
                                     </div>
@@ -1088,16 +1460,18 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                             )}
 
                             <div className="flex items-center justify-between">
-                                <h2 className="text-2xl font-serif font-bold text-slate-800">Generated Question Paper</h2>
+                                <h2 className="text-2xl font-serif font-bold text-slate-800">
+                                    {questionType === 'objective' ? 'Generated Objective Paper' : questionType === 'worksheet' ? 'Generated Worksheet' : 'Generated Question Paper'}
+                                </h2>
                                 <div className="flex gap-2">
-                                    {!generatedSolution && (
+                                    {/* Answer Key button - only for subjective type */}
+                                    {questionType === 'subjective' && !generatedSolution && (
                                         <Button
                                             variant="secondary"
                                             size="sm"
                                             onClick={handleGenerateSolution}
                                             isLoading={solutionLoading}
-                                            // Feature Gate: Answer Key
-                                            disabled={userData?.plan === 'basic' || (!user && !canGenerateKey)} // Disable if basic or not logged in (assuming free preview has no keys)
+                                            disabled={userData?.plan === 'basic' || (!user && !canGenerateKey)}
                                             className={userData?.plan === 'basic' ? "opacity-50 cursor-not-allowed" : ""}
                                         >
                                             {userData?.plan === 'basic' ? <Lock className="mr-2 h-4 w-4" /> : <CheckCircle className="mr-2 h-4 w-4" />}
@@ -1106,7 +1480,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                     )}
                                     <Button variant="outline" size="sm" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4" /> PDF</Button>
                                     <Button variant="outline" size="sm" onClick={handleDownloadDOCX}><Download className="mr-2 h-4 w-4" /> Word</Button>
-                                    <Button variant="ghost" size="sm" onClick={() => { setStep(1); setGeneratedPaper(""); setGeneratedSolution(""); setPaperMetadata(null); }} className="text-slate-500 hover:text-slate-800">
+                                    <Button variant="ghost" size="sm" onClick={() => { setStep(1); setGeneratedPaper(""); setGeneratedSolution(""); setPaperMetadata(null); setObjectiveAnswerKey(""); setObjectiveQuestions([]); setWorksheetAnswerKey(""); setWorksheetMetadata(null); }} className="text-slate-500 hover:text-slate-800">
                                         <ArrowLeft className="mr-2 h-4 w-4" /> Start Over
                                     </Button>
                                 </div>
@@ -1146,7 +1520,8 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                 {/* Flip Question Feature for Premium/Teacher users */}
 
 
-                                {generatedSolution && (
+                                {/* Answer Key Display - for ALL types */}
+                                {(generatedSolution || objectiveAnswerKey || worksheetAnswerKey) && (
                                     <div className="print:break-before-page" style={{ backgroundColor: "rgba(240, 253, 244, 0.5)", borderTop: "4px dotted #cbd5e1", padding: "24px", marginTop: "30px", borderRadius: "12px", position: "relative" }}>
                                         <div style={{ position: "absolute", top: "0", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#dcfce7", padding: "4px 16px", borderRadius: "999px", color: "#166534", fontWeight: "bold", fontSize: "14px", border: "1px solid #bbf7d0" }}>ANSWER KEY</div>
                                         <div className="prose prose-green max-w-none" style={{ color: "#166534" }}>
@@ -1161,7 +1536,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                 th: ({ node, ...props }) => <th className="border-b-2 border-[#bbf7d0] p-3 text-[#14532d] font-bold bg-[#dcfce7]/50" {...props} />,
                                                 td: ({ node, ...props }) => <td className="border-b border-[#bbf7d0]/50 p-3" {...props} />
                                             }}>
-                                                {generatedSolution}
+                                                {generatedSolution || objectiveAnswerKey || worksheetAnswerKey}
                                             </ReactMarkdown>
                                         </div>
                                     </div>
