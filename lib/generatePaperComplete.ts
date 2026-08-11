@@ -189,11 +189,36 @@ function getBoardContext(board: string, grade: string, subject: string, chapters
         boardSpecific = `ICSE BOARD PAPER. Section I compulsory, Section II has internal choice. Use Selina/Frank textbook style.`;
     }
 
+    // ── Math Diagram Instruction
+    let diagramInstruction = '';
+    if (isMathSubject) {
+        diagramInstruction = `
+DIAGRAM INSTRUCTION (MATHEMATICS ONLY):
+For questions that involve geometric figures, add a diagram tag ON ITS OWN LINE immediately after the question text, using this format:
+  [FIG: <type> | <params>]
+
+Supported diagram types and their params:
+  right_triangle  → params: a=Label b=Label c=Label ab=3cm bc=4cm ac=5cm right=b
+  triangle        → params: a=Label b=Label c=Label ab=6cm bc=5cm ca=4cm angle_a=60° angle_b=70° angle_c=50°
+  circle          → params: center=O radius=5cm points=A,B tangent=T chord=A,B
+  parallel_lines  → params: line1=l line2=m transversal=t angle=65deg
+  angle           → params: vertex=O ray1=OA ray2=OB measure=45°
+  coordinate_plane→ params: points=(2,3),(-1,4) labels=A,B
+  number_line     → params: from=0 to=10 mark=3,7
+
+RULES:
+- ONLY add [FIG:...] when the question REQUIRES a diagram to be solved.
+- NEVER add diagrams for algebra (equations, polynomials) or purely numerical questions.
+- ALWAYS on its own line, never inline within question text.
+- Parameters must use key=value format separated by spaces.
+Example: [FIG: right_triangle | a=A b=B c=C ab=6cm bc=8cm ac=10cm right=b]`;
+    }
+
     // Weightage is now computed per-section at generation time using weightageUtils
     // We store the raw weights here for use by generateSection
     const chapterWeights = options.chapterWeights || {};
 
-    return { difficultyInstruction, toneInstruction, textbookSourcing, boardSpecific, isMathSubject, chapterWeights };
+    return { difficultyInstruction, toneInstruction, textbookSourcing, boardSpecific, isMathSubject, chapterWeights, diagramInstruction };
 }
 
 // ─── Helper: Estimate max_tokens per section ────────────────────────────────
@@ -232,10 +257,20 @@ function estimateMaxTokens(section: PatternSection): number {
 // ─── Helper: Count questions in markdown ────────────────────────────────────
 
 function countQuestionsInMarkdown(content: string): number {
-    // Count lines that start with a question pattern like **Q.1**, Q.1, **1.**, etc.
-    const questionPattern = /(?:^|\n)\s*(?:\*\*)?(?:Q\.?\s*)?(\d+)\.(?:\*\*)?/gi;
-    const matches = content.match(questionPattern);
-    return matches ? matches.length : 0;
+    // Comprehensive pattern to count question starts across all board formats:
+    // - CBSE:  **Q.1** ..., Q.21 ..., **21.** 
+    // - SSC:   **Q.1 (A)**, Q.1 (B):
+    // - Worksheet: 1. ..., (1) ...
+    // Use a Set to avoid double-counting the same question number
+    const seen = new Set<string>();
+    const lines = content.split('\n');
+    for (const line of lines) {
+        const trimmed = line.trim();
+        // Match: **Q.1**, Q.1, Q.1 (A), Q1, 1., **1.**  at start of line
+        const m = trimmed.match(/^(?:\*{0,2})(?:Q\.?\s*)?(\d+)(?:\s*\([A-Za-z]\))?(?:\*{0,2})[\.:\)]\s/i);
+        if (m) seen.add(m[1]);
+    }
+    return seen.size;
 }
 
 // ─── Core: Generate a single section ────────────────────────────────────────
@@ -339,9 +374,10 @@ RULES:
 2. ${context.toneInstruction}
 3. ${context.textbookSourcing}
 4. ${context.boardSpecific}
-5. NO IMAGES OR DIAGRAMS. All questions must be purely text-based.
+5. ${context.isMathSubject ? 'For geometry/trigonometry questions ONLY, you MAY include [FIG:...] diagram tags (see DIAGRAM INSTRUCTION below). For algebra/arithmetic, NO diagrams.' : 'NO IMAGES OR DIAGRAMS. All questions must be purely text-based.'}
 6. GENERATE EXACTLY ${generateCount} QUESTIONS. Not more, not less. This is NON-NEGOTIABLE.
 
+${context.diagramInstruction || ''}
 ${formatRules}
 
 OUTPUT FORMAT (Markdown):
@@ -359,6 +395,7 @@ ${choiceInstruction ? choiceInstruction : `*(${section.type} — ${section.marsk
 CRITICAL: You MUST generate ALL ${generateCount} questions from Q.${questionStartNum} to Q.${questionEndNum}. DO NOT stop early. DO NOT skip any question number.
 
 Output ONLY the section content. No preamble, no "Here is...", no explanation.`;
+
 
     const maxTokens = estimateMaxTokens({ ...section, count: generateCount });
 

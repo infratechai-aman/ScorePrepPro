@@ -19,6 +19,7 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle, Alignm
 import { saveAs } from "file-saver";
 import { Switch } from "@/components/ui/Switch";
 import { SYLLABUS_DB, getSubjects, getChapters } from "@/lib/syllabus";
+import { buildPrintHTML } from "@/lib/buildPrintHTML";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUsage } from "@/hooks/useUsage";
 import { useRouter } from "next/navigation";
@@ -648,116 +649,37 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
             setError("Download is available in Basic & Premium plans only.");
             return;
         }
-        if (!contentRef.current) return;
+        if (!generatedPaper) return;
+
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
             alert("Please allow popups to download PDF.");
             return;
         }
-        const htmlContent = contentRef.current.innerHTML;
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>${board} - ${subject} Question Paper</title>
-                <style>
-                    * { margin: 0; padding: 0; box-sizing: border-box; }
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        color: #1e293b;
-                        padding: 40px;
-                        line-height: 1.6;
-                        max-width: 800px;
-                        margin: 0 auto;
-                        position: relative;
-                    }
-                    h1, h2, h3, h4 { margin-top: 20px; margin-bottom: 10px; }
-                    h1 { font-size: 24px; text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 10px; text-transform: uppercase; }
-                    h2 { font-size: 18px; background-color: #f8fafc; border-left: 4px solid #1e293b; padding: 10px; text-transform: uppercase; }
-                    h3 { font-size: 16px; background-color: #f8fafc; border-left: 4px solid #1e293b; padding: 8px; text-transform: uppercase; }
-                    p { margin-bottom: 10px; }
-                    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-                    th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
-                    th { background-color: #f8fafc; font-weight: bold; }
-                    hr { margin: 24px 0; border-top: 2px solid #cbd5e1; }
-                    ul, ol { padding-left: 24px; margin-bottom: 12px; }
-                    li { margin-bottom: 4px; }
-                    strong { font-weight: bold; }
-                    em { font-style: italic; }
-                    blockquote { background: #f1f5f9; border-left: 4px solid #334155; padding: 12px; margin: 16px 0; font-style: italic; }
-                    
-                    /* Print Watermark */
-                    .watermark-container-preview {
-                        position: fixed !important;
-                        top: 50% !important;
-                        left: 50% !important;
-                        transform: translate(-50%, -50%) !important;
-                        z-index: -1 !important;
-                        pointer-events: none !important;
-                        display: flex !important;
-                        justify-content: center !important;
-                        align-items: center !important;
-                        width: 100% !important;
-                        height: 100% !important;
-                    }
-                    .watermark-container-preview img {
-                        width: 90% !important;
-                        max-width: 800px !important;
-                        object-fit: contain !important;
-                        opacity: 1 !important;
-                    }
-                    
-                    /* Page border - repeats on every printed page */
-                    .page-border {
-                        position: fixed;
-                        top: 15px;
-                        left: 15px;
-                        right: 15px;
-                        bottom: 15px;
-                        border: 1.5px solid #94a3b8;
-                        pointer-events: none;
-                        z-index: 9999;
-                    }
 
-                    /* Pagination fixes */
-                    .print\\:break-before-page {
-                        page-break-before: always !important;
-                        break-before: page !important;
-                    }
-                    h2, h3 {
-                        page-break-after: avoid !important;
-                        break-after: avoid !important;
-                    }
-                    table, img {
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
-                    }
+        const paperToRender = generatedPaper + 
+            (generatedSolution ? `\n\n## ANSWER KEY / MARKING SCHEME\n\n${generatedSolution}` : "");
 
-                    /* Global Print Rules */
-                    @page { size: auto; margin: 0mm; }
+        const html = buildPrintHTML(paperToRender, {
+            instituteName: instituteName || undefined,
+            board,
+            grade,
+            subject,
+            chapters: selectedChapters,
+            totalMarks: parseInt(totalMarks) || 40,
+            paperType: questionType,
+            difficulty
+        });
 
-                    @media print { 
-                        body { padding: 0; margin: 0; max-width: 100%; } 
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="page-border"></div>
-                <table style="width: 100%; border-collapse: collapse; border: none;">
-                    <thead><tr><td style="height: 40px; border: none; padding: 0;"><div style="height:40px;color:transparent;">&nbsp;</div></td></tr></thead>
-                    <tbody><tr><td style="padding: 0 40px; border: none;">
-                        ${htmlContent}
-                    </td></tr></tbody>
-                    <tfoot><tr><td style="height: 40px; border: none; padding: 0;"><div style="height:40px;color:transparent;">&nbsp;</div></td></tr></tfoot>
-                </table>
-            </body>
-            </html>
-        `);
+        printWindow.document.open();
+        printWindow.document.write(html);
         printWindow.document.close();
+
+        // Allow images/SVGs to fully render before triggering print
         setTimeout(() => {
+            printWindow.focus();
             printWindow.print();
-            printWindow.close();
-        }, 500);
+        }, 600);
     };
 
     const handleDownloadDOCX = async () => {
