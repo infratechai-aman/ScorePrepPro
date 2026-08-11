@@ -53,12 +53,36 @@ interface PaperResult {
 // ─── Helper: Resolve pattern & scale ────────────────────────────────────────
 
 function resolvePattern(board: string, grade: string, subject: string, totalMarks?: number) {
-    let subjectKey = subject;
-    if (subject.startsWith("Social Science")) subjectKey = "Social Science";
-    if (subject === "EVS") subjectKey = "Science";
+    const classPatterns = BOARD_PATTERNS[board]?.[`class${grade}`] as Record<string, any> | undefined;
 
-    // @ts-ignore
-    let pattern = BOARD_PATTERNS[board]?.[`class${grade}`]?.[subjectKey];
+    // Strategy 1: Exact match
+    let pattern = classPatterns?.[subject];
+
+    // Strategy 2: Strip parentheses → "Social Science (History)" → "Social Science History"
+    if (!pattern) {
+        const withoutParens = subject.replace(/\s*\(([^)]+)\)\s*/g, " $1").trim();
+        if (withoutParens !== subject) pattern = classPatterns?.[withoutParens];
+    }
+
+    // Strategy 3: Parent only → "Social Science (History)" → "Social Science"
+    if (!pattern) {
+        const parentOnly = subject.replace(/\s*\([^)]+\)\s*/g, "").trim();
+        if (parentOnly !== subject) pattern = classPatterns?.[parentOnly];
+    }
+
+    // Strategy 4: EVS → Science
+    if (!pattern && subject === "EVS") pattern = classPatterns?.["Science"];
+
+    // Strategy 5: Case-insensitive fuzzy scan
+    if (!pattern && classPatterns) {
+        const subjectLower = subject.toLowerCase();
+        for (const key of Object.keys(classPatterns)) {
+            if (key.toLowerCase() === subjectLower) {
+                pattern = classPatterns[key];
+                break;
+            }
+        }
+    }
 
     if (!pattern) {
         if (["English", "Hindi", "Marathi", "Sanskrit"].includes(subject)) {

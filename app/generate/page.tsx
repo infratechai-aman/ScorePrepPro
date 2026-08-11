@@ -345,10 +345,12 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
     const totalWeight = Object.values(chapterWeights).reduce((a, b) => a + b, 0);
 
     const handleGenerate = async () => {
-        if (totalWeight !== 100) {
-            setError("Total weightage must equal 100%");
-            return;
-        }
+    // Allow generation if: (a) no weights set at all, or (b) weights sum to 100 (±1 for rounding)
+    const hasAnyWeight = Object.values(chapterWeights).some(w => w > 0);
+    if (hasAnyWeight && Math.abs(totalWeight - 100) > 1) {
+        setError(`Total weightage must equal 100% (currently ${totalWeight}%). Adjust the sliders or leave all at 0 for even distribution.`);
+        return;
+    }
 
         // AUTH & LIMIT CHECK
         if (!user) {
@@ -432,10 +434,12 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
     // ─── OBJECTIVE GENERATE HANDLER ─────────────────────────────────────────
     const handleGenerateObjective = async () => {
-        if (totalWeight !== 100) {
-            setError("Total weightage must equal 100%");
-            return;
-        }
+    // Allow generation if: (a) no weights set at all, or (b) weights sum to 100 (±1 for rounding)
+    const hasAnyWeight = Object.values(chapterWeights).some(w => w > 0);
+    if (hasAnyWeight && Math.abs(totalWeight - 100) > 1) {
+        setError(`Total weightage must equal 100% (currently ${totalWeight}%). Adjust the sliders or leave all at 0 for even distribution.`);
+        return;
+    }
         if (!user) {
             router.push("/login");
             return;
@@ -510,10 +514,12 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
     // ─── WORKSHEET GENERATE HANDLER ─────────────────────────────────────────
     const handleGenerateWorksheet = async () => {
-        if (totalWeight !== 100) {
-            setError("Total weightage must equal 100%");
-            return;
-        }
+    // Allow generation if: (a) no weights set at all, or (b) weights sum to 100 (±1 for rounding)
+    const hasAnyWeight = Object.values(chapterWeights).some(w => w > 0);
+    if (hasAnyWeight && Math.abs(totalWeight - 100) > 1) {
+        setError(`Total weightage must equal 100% (currently ${totalWeight}%). Adjust the sliders or leave all at 0 for even distribution.`);
+        return;
+    }
         if (!user) {
             router.push("/login");
             return;
@@ -1255,42 +1261,35 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                     ]} />
                                                     <Switch label="Include Answer Key" checked={includeAnswerKey} onCheckedChange={setIncludeAnswerKey} />
                                                     
-                                                    {/* Auto-calculated preview */}
+                                                     {/* Auto-calculated preview — dynamic based on totalMarks */}
                                                     <div className="bg-white p-3 rounded-lg border border-purple-200">
-                                                        <p className="text-xs font-bold text-purple-800 mb-2">Auto-Generated Structure:</p>
-                                                        {parseInt(totalMarks) <= 10 && (
-                                                            <div className="text-xs text-purple-700 space-y-1">
-                                                                <p>📝 Section A: 5 MCQs (5 marks)</p>
-                                                                <p>✏️ Section B: 1 Short Answer (2 marks)</p>
-                                                                <p>📄 Section C: 1 Descriptive (3 marks)</p>
-                                                                <p className="font-semibold pt-1">⏱️ Time: {Math.ceil(10 * 1.5)} mins</p>
-                                                            </div>
-                                                        )}
-                                                        {parseInt(totalMarks) === 20 && (
-                                                            <div className="text-xs text-purple-700 space-y-1">
-                                                                <p>📝 Section A: 5 MCQs (5 marks)</p>
-                                                                <p>✏️ Section B: 5 Short Answer (10 marks)</p>
-                                                                <p>📄 Section C: 1 Long Answer (5 marks)</p>
-                                                                <p className="font-semibold pt-1">⏱️ Time: {Math.ceil(20 * 1.5)} mins</p>
-                                                            </div>
-                                                        )}
-                                                        {parseInt(totalMarks) === 40 && (
-                                                            <div className="text-xs text-purple-700 space-y-1">
-                                                                <p>📝 Section A: 10 MCQs (10 marks)</p>
-                                                                <p>✏️ Section B: 5 Short Answer (15 marks)</p>
-                                                                <p>📄 Section C: 3 Long Answer (15 marks)</p>
-                                                                <p className="font-semibold pt-1">⏱️ Time: {Math.ceil(40 * 1.5)} mins</p>
-                                                            </div>
-                                                        )}
-                                                        {parseInt(totalMarks) >= 80 && (
-                                                            <div className="text-xs text-purple-700 space-y-1">
-                                                                <p>📝 Section A: 20 MCQs (20 marks)</p>
-                                                                <p>✏️ Section B: 8 Short Answer (24 marks)</p>
-                                                                <p>📄 Section C: 4 Long Answer (20 marks)</p>
-                                                                <p>📋 Section D: 2 Very Long (16 marks)</p>
-                                                                <p className="font-semibold pt-1">⏱️ Time: {Math.ceil(80 * 1.5)} mins</p>
-                                                            </div>
-                                                        )}
+                                                        <p className="text-xs font-bold text-purple-800 mb-2">Auto-Generated Structure (based on {board.toUpperCase()} {subject || "subject"} pattern):</p>
+                                                        <div className="text-xs text-purple-700 space-y-1">
+                                                            {board === "maharashtra" ? (
+                                                                <>
+                                                                    <p>📝 Q.1 (A): MCQ / Fill in the Blanks (5 marks)</p>
+                                                                    <p>📝 Q.1 (B): Objective / Match / True-False (5 marks)</p>
+                                                                    <p>✏️ Q.2 (A): Give Reasons / Short Answer (4–6 marks)</p>
+                                                                    <p>✏️ Q.2 (B): Short Answer / Solve (6–10 marks)</p>
+                                                                    <p>📄 Q.3: Conceptual / Distinguish / Solve (9–15 marks)</p>
+                                                                    <p>📋 Q.4: Long Answer / Detail (5 marks)</p>
+                                                                </>
+                                                            ) : board === "cbse" ? (
+                                                                <>
+                                                                    <p>📝 Section A: MCQ / Assertion-Reason (20 × 1 = 20 marks)</p>
+                                                                    <p>✏️ Section B: Very Short Answer (5-6 × 2 = 10-12 marks)</p>
+                                                                    <p>✏️ Section C: Short Answer (6-7 × 3 = 18-21 marks)</p>
+                                                                    <p>📄 Section D: Long Answer (3-4 × 5 = 15-20 marks)</p>
+                                                                    {parseInt(totalMarks) >= 80 && <p>📋 Section E: Case Based (3 × 4 = 12 marks)</p>}
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <p>📝 Section I: Short Answer — Compulsory (20 × 2 = 40 marks)</p>
+                                                                    <p>📄 Section II: Long Answer — Any 4 of 6 (4 × 10 = 40 marks)</p>
+                                                                </>
+                                                            )}
+                                                            <p className="font-semibold pt-1">⏱️ Est. Time: {Math.ceil(parseInt(totalMarks || "40") * 1.5)} mins</p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
