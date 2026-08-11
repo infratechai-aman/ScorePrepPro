@@ -128,7 +128,8 @@ function buildObjectivePrompt(
     subject: string,
     chapters: string,
     formatDistribution: Record<string, number>,
-    options: GenerateObjectiveOptions
+    options: GenerateObjectiveOptions,
+    textbookContent: string
 ): string {
     const boardContext = getObjectiveBoardContext(board, grade, subject);
     const diff = options.difficulty || "moderate";
@@ -195,6 +196,8 @@ Generate ${formatDistribution["fill_blank"]} Fill in the Blank questions.
 
     const totalQ = Object.values(formatDistribution).reduce((a, b) => a + b, 0);
 
+    const textbookContextBlock = textbookContent ? `\n## SOURCE MATERIAL (CRITICAL)\nYou MUST base your questions strictly on the following excerpt from the official textbook. Do not use outside knowledge if it conflicts with or goes beyond this material:\n\n${textbookContent}\n` : "";
+
     return `You are an expert ${board.toUpperCase()} Board exam question paper setter for Class ${grade} ${subject}.
 
 TASK: Generate EXACTLY ${totalQ} OBJECTIVE questions from these chapters: ${chapters}
@@ -205,7 +208,7 @@ DIFFICULTY: ${diffInstruction}
 ${weightageInstruction}
 
 ${formatInstructions.join("\n\n")}
-
+${textbookContextBlock}
 RESPOND IN THIS EXACT JSON FORMAT (no markdown, no code blocks, just pure JSON):
 {
   "questions": [
@@ -240,7 +243,8 @@ RULES:
 5. Explanations should be 1-2 sentences, concise and educational
 6. ALL content must be grade-appropriate for Class ${grade}
 7. For fill_blank type, set "options" to null
-8. RETURN ONLY VALID JSON — no additional text, no markdown wrapping`;
+8. If Source Material is provided, STRICTLY use it.
+9. RETURN ONLY VALID JSON — no additional text, no markdown wrapping`;
 }
 
 // ─── Markdown formatter ─────────────────────────────────────────────────────
@@ -355,6 +359,8 @@ function formatAnswerKey(questions: ObjectiveQuestion[]): string {
 
 // ─── Main generation function ───────────────────────────────────────────────
 
+import { getChaptersContent } from "./textbookLookup";
+
 export async function generateObjective(
     board: string,
     grade: string,
@@ -370,7 +376,16 @@ export async function generateObjective(
     console.log(`[Objective Engine] Generating ${questionCount} questions for ${board} Class ${grade} ${subject}`);
     console.log(`[Objective Engine] Format distribution:`, formatDistribution);
 
-    const prompt = buildObjectivePrompt(board, grade, subject, chapters, formatDistribution, options);
+    // Fetch scraped textbook content to ground the AI
+    const chapterList = chapters.split(",").map(c => c.trim());
+    const textbookContent = getChaptersContent(board, grade, subject, chapterList);
+    if (textbookContent) {
+        console.log(`[Objective Engine] Found scraped textbook content for grounding (${textbookContent.length} chars)`);
+    } else {
+        console.log(`[Objective Engine] No scraped textbook content found, relying on AI knowledge`);
+    }
+
+    const prompt = buildObjectivePrompt(board, grade, subject, chapters, formatDistribution, options, textbookContent);
 
     // Call OpenAI
     const response = await openai.chat.completions.create({

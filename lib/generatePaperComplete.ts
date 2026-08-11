@@ -11,6 +11,7 @@
 import { openai } from "./openai";
 import { BOARD_PATTERNS } from "./patterns";
 import { DifficultyLevel } from "./prompts";
+import { getChaptersContent } from "./textbookLookup";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -226,7 +227,8 @@ async function generateSection(
     section: PatternSection,
     questionStartNum: number,
     context: ReturnType<typeof getBoardContext>,
-    scalingFactor: number
+    scalingFactor: number,
+    textbookContent?: string
 ): Promise<string> {
     const sectionMarks = section.count * section.marskPerQuestion;
 
@@ -300,6 +302,12 @@ QUESTION NUMBERING: Start from **Q.${questionStartNum}** to **Q.${questionEndNum
 
 CHAPTERS (ONLY use these): ${chapters}
 ${context.weightageInstruction}
+${textbookContent ? `
+## SOURCE MATERIAL (CRITICAL)
+You MUST base your questions strictly on the following excerpt from the official textbook. Do not use outside knowledge if it conflicts with or goes beyond this material:
+
+${textbookContent.slice(0, 8000)}
+` : ''}
 
 RULES:
 1. ${context.difficultyInstruction}
@@ -392,6 +400,15 @@ export async function generatePaperComplete(
     const { structure, totalMarks, scalingFactor } = resolvePattern(board, grade, subject, options.totalMarks);
     const context = getBoardContext(board, grade, subject, chapters, options);
 
+    // Fetch scraped textbook content to ground the AI
+    const chapterList = chapters.split(",").map(c => c.trim());
+    const textbookContent = getChaptersContent(board, grade, subject, chapterList);
+    if (textbookContent) {
+        console.log(`[GeneratePaperComplete] Found scraped textbook content for grounding (${textbookContent.length} chars)`);
+    } else {
+        console.log(`[GeneratePaperComplete] No scraped textbook content found, relying on AI knowledge`);
+    }
+
     // 2. Build paper header
     const header = buildPaperHeader(board, grade, subject, totalMarks, options.instituteName);
 
@@ -424,7 +441,8 @@ export async function generatePaperComplete(
                 const content = await generateSection(
                     board, grade, subject, chapters,
                     section, currentQuestionNum,
-                    context, scalingFactor
+                    context, scalingFactor,
+                    textbookContent || undefined
                 );
 
                 const qCount = countQuestionsInMarkdown(content);

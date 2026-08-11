@@ -113,7 +113,8 @@ function buildWorksheetPrompt(
     sections: WorksheetSection[],
     totalMarks: number,
     duration: number,
-    options: GenerateWorksheetOptions
+    options: GenerateWorksheetOptions,
+    textbookContent: string
 ): string {
     const boardContext = getWorksheetBoardContext(board);
     const diff = options.difficulty || "moderate";
@@ -162,6 +163,8 @@ Generate ${s.count} Very Long Answer questions (${s.marksPerQuestion} marks each
 
     const includeKey = options.includeAnswerKey !== false;
 
+    const textbookContextBlock = textbookContent ? `\n## SOURCE MATERIAL (CRITICAL)\nYou MUST base your questions strictly on the following excerpt from the official textbook. Do not use outside knowledge if it conflicts with or goes beyond this material:\n\n${textbookContent}\n` : "";
+
     return `You are an expert ${board.toUpperCase()} Board exam paper setter for Class ${grade} ${subject}.
 
 TASK: Generate a COMPLETE WORKSHEET from chapters: ${chapters}
@@ -175,7 +178,7 @@ WORKSHEET STRUCTURE:
 - Total Time: ${duration} minutes
 
 ${sectionInstructions}
-
+${textbookContextBlock}
 FORMAT THE OUTPUT AS CLEAN MARKDOWN:
 
 1. Start with the header (institute name if provided, board, class, subject, marks, time)
@@ -197,10 +200,13 @@ RULES:
 3. Use proper ${board.toUpperCase()} board question language/tone
 4. Total marks of all questions MUST equal ${totalMarks}
 5. Maintain clear formatting with proper spacing
-${options.instituteName ? `6. Use "${options.instituteName}" as the institute name in the header` : ""}`;
+6. If Source Material is provided, STRICTLY use it for question context.
+${options.instituteName ? `7. Use "${options.instituteName}" as the institute name in the header` : ""}`;
 }
 
 // ─── Main generation function ───────────────────────────────────────────────
+
+import { getChaptersContent } from "./textbookLookup";
 
 export async function generateWorksheet(
     board: string,
@@ -217,9 +223,18 @@ export async function generateWorksheet(
     console.log(`[Worksheet Engine] Generating worksheet: ${totalMarks} marks, ${totalQuestions} questions, ${duration} min`);
     console.log(`[Worksheet Engine] Sections:`, sections.map(s => `${s.name}: ${s.count}q × ${s.marksPerQuestion}m`));
 
+    // Fetch scraped textbook content to ground the AI
+    const chapterList = chapters.split(",").map(c => c.trim());
+    const textbookContent = getChaptersContent(board, grade, subject, chapterList);
+    if (textbookContent) {
+        console.log(`[Worksheet Engine] Found scraped textbook content for grounding (${textbookContent.length} chars)`);
+    } else {
+        console.log(`[Worksheet Engine] No scraped textbook content found, relying on AI knowledge`);
+    }
+
     const prompt = buildWorksheetPrompt(
         board, grade, subject, chapters,
-        sections, totalMarks, duration, options
+        sections, totalMarks, duration, options, textbookContent
     );
 
     // Call OpenAI
