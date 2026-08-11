@@ -7,7 +7,7 @@ import { Footer } from "@/components/landing/Footer";
 
 export default function FeaturesPage() {
     return (
-        <main className="min-h-screen bg-slate-50 overflow-x-hidden font-sans pt-20 flex flex-col">
+        <main className="min-h-screen bg-slate-50 overflow-x-hidden font-sans pt-44 flex flex-col">
             <Navbar />
             <div className="flex-grow">
                 <div className="bg-white pt-16 pb-8 border-b border-slate-100">

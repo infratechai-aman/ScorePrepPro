@@ -23,16 +23,16 @@ export function Navbar() {
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 z-50 h-20 transition-all duration-300 bg-white/80 backdrop-blur-xl border-b border-slate-100">
+            <nav className="fixed top-0 left-0 right-0 z-50 h-44 transition-all duration-300 bg-white/80 backdrop-blur-xl border-b border-slate-100">
                 <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 md:px-6">
                     {/* Logo */}
                     <Link href="/" className="flex items-center group transition-transform duration-300 group-hover:scale-105">
                         <Image
                             src="/ScorePrepPro_Logo.png"
                             alt="ScorePrepPro"
-                            width={180}
-                            height={50}
-                            className="h-12 w-auto object-contain"
+                            width={540}
+                            height={150}
+                            className="h-36 w-auto object-contain"
                             priority
                         />
                     </Link>
@@ -95,7 +95,7 @@ export function Navbar() {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="fixed inset-x-0 top-20 bg-white border-b border-slate-100 p-6 flex flex-col gap-4 shadow-xl z-40 md:hidden"
+                        className="fixed inset-x-0 top-44 bg-white border-b border-slate-100 p-6 flex flex-col gap-4 shadow-xl z-40 md:hidden"
                     >
                         {navLinks.map((link) => (
                             <Link

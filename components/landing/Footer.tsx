@@ -11,9 +11,9 @@ export function Footer() {
                         <Image
                             src="/ScorePrepPro_Logo.png"
                             alt="ScorePrepPro"
-                            width={160}
-                            height={45}
-                            className="h-10 w-auto object-contain"
+                            width={480}
+                            height={135}
+                            className="h-[120px] w-auto object-contain"
                         />
                     </Link>
                     <p className="text-slate-500 text-sm mb-6">
