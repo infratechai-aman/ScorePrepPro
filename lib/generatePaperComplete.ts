@@ -376,6 +376,13 @@ RULES:
 4. ${context.boardSpecific}
 5. ${context.isMathSubject ? 'For geometry/trigonometry questions ONLY, you MAY include [FIG:...] diagram tags (see DIAGRAM INSTRUCTION below). For algebra/arithmetic, NO diagrams.' : 'NO IMAGES OR DIAGRAMS. All questions must be purely text-based.'}
 6. GENERATE EXACTLY ${generateCount} QUESTIONS. Not more, not less. This is NON-NEGOTIABLE.
+7. MATH NOTATION (CRITICAL): For ALL mathematical expressions, wrap them in $ $ dollar signs for proper rendering:
+   - Fractions: $\\frac{1}{\\sqrt{3}}$  NOT  (\\frac{1}{\\sqrt{3}})
+   - Powers: $x^2 + y^2 = 25$  NOT  x^2 + y^2 = 25
+   - Roots: $\\sqrt{3}$  NOT  \\sqrt{3}
+   - Greek/Trig: $\\pi$, $\\sin 30°$, $\\theta$, $\\alpha$
+   - Equations: $2x + 3y = 5$
+   - ALWAYS wrap math in $...$. NEVER write raw LaTeX without $ delimiters.
 
 ${context.diagramInstruction || ''}
 ${formatRules}
@@ -384,17 +391,18 @@ OUTPUT FORMAT (Markdown):
 ${sectionHeader}
 ${choiceInstruction ? choiceInstruction : `*(${section.type} — ${section.marskPerQuestion} Mark(s) each | Total: ${sectionMarks} Marks)*`}
 
-**Q.${questionStartNum}** [Question text] **[${section.marskPerQuestion} Mark(s)]**
+**Q.${questionStartNum}** [Question text] [${section.marskPerQuestion} Mark(s)]
 
 (leave one blank line between each question)
 
-**Q.${questionStartNum + 1}** [Next question] **[${section.marskPerQuestion} Mark(s)]**
+**Q.${questionStartNum + 1}** [Next question] [${section.marskPerQuestion} Mark(s)]
 
 ... continue until Q.${questionEndNum}
 
 CRITICAL: You MUST generate ALL ${generateCount} questions from Q.${questionStartNum} to Q.${questionEndNum}. DO NOT stop early. DO NOT skip any question number.
 
 Output ONLY the section content. No preamble, no "Here is...", no explanation.`;
+
 
 
     const maxTokens = estimateMaxTokens({ ...section, count: generateCount });

@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from "react";
 import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft, Lock, Crown, RefreshCw, Trash2, ClipboardList, ListChecks } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { useMemo } from "react";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { ImageIcon } from "lucide-react";
@@ -1407,62 +1408,38 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                 </div>
                             </div>
 
-                            <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "40px", minHeight: "800px", color: "#1e293b" }} className="rounded-2xl shadow-xl space-y-8 relative overflow-hidden">
-                                {/* Free Preview Watermark */}
-                                {!user && (
-                                    <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", fontSize: "80px", color: "rgba(0,0,0,0.05)", fontWeight: "bold", pointerEvents: "none", zIndex: 0 }}>
-                                        FREE PREVIEW
-                                    </div>
-                                )}
-
-                                {/* User Custom Watermark */}
-                                {watermark && (
-                                    <div className="watermark-container-preview" style={{ 
-                                        position: "absolute", 
-                                        top: "0", 
-                                        left: "0",
-                                        right: "0",
-                                        bottom: "0",
-                                        opacity: 1, 
-                                        pointerEvents: "none", 
-                                        zIndex: 0,
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center"
-                                    }}>
-                                        <img src={watermark} alt="Watermark" style={{ width: "80%", maxWidth: "800px", objectFit: "contain", opacity: 0.15 }} />
-                                    </div>
-                                )}
-
-                                <div className="prose prose-slate max-w-none relative z-10">
-                                    {renderPaperContent()}
-                                </div>
-
-                                {/* Flip Question Feature for Premium/Teacher users */}
-
-
-                                {/* Answer Key Display - for ALL types */}
-                                {(generatedSolution || objectiveAnswerKey || worksheetAnswerKey) && (
-                                    <div className="print:break-before-page" style={{ backgroundColor: "rgba(240, 253, 244, 0.5)", borderTop: "4px dotted #cbd5e1", padding: "24px", marginTop: "30px", borderRadius: "12px", position: "relative" }}>
-                                        <div style={{ position: "absolute", top: "0", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#dcfce7", padding: "4px 16px", borderRadius: "999px", color: "#166534", fontWeight: "bold", fontSize: "14px", border: "1px solid #bbf7d0" }}>ANSWER KEY</div>
-                                        <div className="prose prose-green max-w-none" style={{ color: "#166534" }}>
-                                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={{
-                                                h2: ({ node, ...props }) => <h2 style={{ color: "#14532d", borderBottom: "1px solid #bbf7d0", paddingBottom: "4px", marginTop: "24px", marginBottom: "12px" }} className="text-xl font-bold" {...props} />,
-                                                h3: ({ node, ...props }) => <h3 style={{ color: "#166534", marginTop: "20px", marginBottom: "10px" }} className="text-lg font-bold" {...props} />,
-                                                p: ({ node, ...props }) => <p style={{ marginBottom: "12px", lineHeight: "1.7" }} {...props} />,
-                                                ul: ({ node, ...props }) => <ul style={{ listStyleType: "disc", paddingLeft: "24px", marginBottom: "16px" }} {...props} />,
-                                                ol: ({ node, ...props }) => <ol style={{ listStyleType: "decimal", paddingLeft: "24px", marginBottom: "16px" }} {...props} />,
-                                                li: ({ node, ...props }) => <li style={{ marginBottom: "6px" }} {...props} />,
-                                                table: ({ node, ...props }) => <div className="overflow-x-auto my-6"><table className="w-full text-left border-collapse" {...props} /></div>,
-                                                th: ({ node, ...props }) => <th className="border-b-2 border-[#bbf7d0] p-3 text-[#14532d] font-bold bg-[#dcfce7]/50" {...props} />,
-                                                td: ({ node, ...props }) => <td className="border-b border-[#bbf7d0]/50 p-3" {...props} />
-                                            }}>
-                                                {generatedSolution || objectiveAnswerKey || worksheetAnswerKey}
-                                            </ReactMarkdown>
-                                        </div>
-                                    </div>
-                                )}
+                            {/* ── Paper Preview: iframe showing exact PDF output ── */}
+                            <div style={{ background: '#e5e7eb', borderRadius: '12px', padding: '16px', minHeight: '600px' }}>
+                                <iframe
+                                    key={generatedPaper.length}
+                                    srcDoc={buildPrintHTML(
+                                        generatedPaper +
+                                            (generatedSolution ? `\n\n## ANSWER KEY / MARKING SCHEME\n\n${generatedSolution}` : ''),
+                                        {
+                                            instituteName: instituteName || undefined,
+                                            board,
+                                            grade,
+                                            subject,
+                                            chapters: selectedChapters,
+                                            totalMarks: parseInt(totalMarks) || 40,
+                                            paperType: questionType,
+                                            difficulty,
+                                        }
+                                    )}
+                                    style={{
+                                        width: '100%',
+                                        minHeight: '800px',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        background: 'white',
+                                        display: 'block',
+                                    }}
+                                    title="Paper Preview"
+                                    sandbox="allow-scripts"
+                                />
                             </div>
+
+
                         </motion.div>
                     )}
                 </div>
