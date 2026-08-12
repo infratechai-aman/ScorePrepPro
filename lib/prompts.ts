@@ -387,9 +387,6 @@ export function constructPrompt(
 
     ${mandatoryInclusions}
     
-    === PAPER PATTERN (Calculated for ${totalMarks} Marks) ===
-    ${structureText}
-
     === OUTPUT FORMAT ===
     - Use Markdown for strict formatting.
     - DO NOT use raw HTML tags (like <center> or <h1>). ONLY use standard Markdown.

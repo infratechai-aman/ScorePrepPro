@@ -49,29 +49,15 @@ interface GenerateObjectiveOptions {
 
 function getObjectiveBoardContext(board: string, grade: string, subject: string) {
     let boardStyle = "";
-    
     if (board === "cbse") {
-        boardStyle = `CBSE Board Style:
-- Use "Assertion (A): ... Reason (R): ..." format for assertion-reason questions with standard 4 options:
-  (a) Both A and R are true and R is the correct explanation of A
-  (b) Both A and R are true but R is NOT the correct explanation of A
-  (c) A is true but R is false
-  (d) A is false but R is true
-- Statement-based: "Consider the following statements: (I)... (II)... (III)... Which of the above are correct?"
-- Use NCERT textbook language and examples`;
-    } else if (board === "icse") {
-        boardStyle = `ICSE Board Style:
-- Use formal language: "Name the following", "State whether true or false", "Fill in the blanks"
-- Questions should reference Selina/Frank textbook content
-- MCQs should have 4 well-crafted distractors`;
+        boardStyle = `CBSE Style: Assertion-Reason with 4 standard options. Statement-based: "Consider statements (I)...(II)...(III)... Which are correct?" Fill blanks test key terms.`;
     } else if (board === "maharashtra") {
-        boardStyle = `Maharashtra SSC Board Style:
-- Use SSC tone: "Choose the correct alternative", "Complete the statement"
-- For assertion-reason: Use "Statement A" and "Statement B" format
-- Fill in the blanks should use chapter-specific terminology
-- FORBIDDEN: CBSE-specific formats like "Case Based Questions"`;
+        boardStyle = `SSC Style: Direct textbook MCQs. "Choose the correct alternative". No Assertion-Reason. Focus on factual recall and application.`;
+    } else if (board === "icse") {
+        boardStyle = `ICSE Style: Selina/Frank textbook aligned. "Choose the correct option". Precise distractors testing deep understanding.`;
+    } else {
+        boardStyle = `Standard MCQ format with clear stems and plausible distractors.`;
     }
-
     return boardStyle;
 }
 
@@ -137,11 +123,11 @@ function buildObjectivePrompt(
     
     let diffInstruction = "";
     switch (diff) {
-        case "easy": diffInstruction = "EASY: Direct textbook questions, simple recall, no tricky options."; break;
-        case "moderate": diffInstruction = "MODERATE: 70% direct recall, 30% application-based. Some distractors should be close."; break;
-        case "hard": diffInstruction = "HARD: 50% application, 50% analytical. Distractors should be very close and require deep understanding."; break;
-        case "replica": diffInstruction = "EXAM REPLICA: Match exact board exam difficulty and question style from previous years."; break;
-        case "challenging": diffInstruction = "CHALLENGING: High reasoning, multi-concept, tricky distractors. Olympiad/Foundation level."; break;
+        case "easy": diffInstruction = "EASY: Direct textbook, simple recall, no tricky options."; break;
+        case "moderate": diffInstruction = "MODERATE: 70% recall, 30% application. Some close distractors."; break;
+        case "hard": diffInstruction = "HARD: 50% application, 50% analytical. Very close distractors."; break;
+        case "replica": diffInstruction = "EXAM REPLICA: Match exact board exam difficulty and style."; break;
+        case "challenging": diffInstruction = "CHALLENGING: High reasoning, multi-concept, tricky distractors."; break;
     }
 
     // Hard-enforce weightage: calculate exact question counts per chapter
@@ -155,97 +141,35 @@ function buildObjectivePrompt(
     const weightageInstruction = buildWeightagePromptBlock(allocations);
 
     const formatInstructions: string[] = [];
-    
     if (formatDistribution["mcq"]) {
-        formatInstructions.push(`## MCQ QUESTIONS (${formatDistribution["mcq"]} questions)
-Generate ${formatDistribution["mcq"]} Multiple Choice Questions.
-Each must have:
-- Clear question stem
-- 4 options labeled (a), (b), (c), (d)
-- Only ONE correct answer
-- Distractors should be plausible but clearly wrong`);
+        formatInstructions.push(`MCQ: ${formatDistribution["mcq"]} questions. 4 options (a)-(d), ONE correct, plausible distractors.`);
     }
-
     if (formatDistribution["assertion_reason"]) {
-        formatInstructions.push(`## ASSERTION-REASON QUESTIONS (${formatDistribution["assertion_reason"]} questions)
-Generate ${formatDistribution["assertion_reason"]} Assertion-Reason questions.
-Format:
-- Assertion (A): [statement]
-- Reason (R): [statement]
-Options:
-(a) Both A and R are true and R is the correct explanation of A
-(b) Both A and R are true but R is NOT the correct explanation of A
-(c) A is true but R is false
-(d) A is false but R is true`);
+        formatInstructions.push(`ASSERTION-REASON: ${formatDistribution["assertion_reason"]} questions. "Assertion (A):... Reason (R):..." with standard 4 options.`);
     }
-
     if (formatDistribution["statement_based"]) {
-        formatInstructions.push(`## STATEMENT-BASED QUESTIONS (${formatDistribution["statement_based"]} questions)
-Generate ${formatDistribution["statement_based"]} Statement-Based questions.
-Format:
-- "Consider the following statements:"
-- List 3-4 numbered statements (I), (II), (III), (IV)
-- Ask "Which of the above statements is/are correct?"
-Options: Various combinations like "(a) I and II only", "(b) II and III only", etc.`);
+        formatInstructions.push(`STATEMENT-BASED: ${formatDistribution["statement_based"]} questions. 3-4 statements (I),(II),(III),(IV). "Which are correct?"`);
     }
-
     if (formatDistribution["fill_blank"]) {
-        formatInstructions.push(`## FILL IN THE BLANKS (${formatDistribution["fill_blank"]} questions)
-Generate ${formatDistribution["fill_blank"]} Fill in the Blank questions.
-- Each blank should test a key term, formula, or concept
-- The answer should be a single word or short phrase
-- Format: "_________ is the process by which..."`);
+        formatInstructions.push(`FILL BLANKS: ${formatDistribution["fill_blank"]} questions. Test key terms/formulas. Single word/phrase answer.`);
     }
 
     const textbookContextBlock = textbookContent ? `\n## SOURCE MATERIAL (CRITICAL)\nYou MUST base your questions strictly on the following excerpt from the official textbook. Do not use outside knowledge if it conflicts with or goes beyond this material:\n\n${textbookContent}\n` : "";
 
-    return `You are an expert ${board.toUpperCase()} Board exam question paper setter for Class ${grade} ${subject}.
+    return `Expert ${board.toUpperCase()} Board setter for Class ${grade} ${subject}.
 
-TASK: Generate EXACTLY ${totalQ} OBJECTIVE questions from these chapters: ${chapters}
+Generate EXACTLY ${totalQ} OBJECTIVE questions from: ${chapters}
 
 ${boardContext}
-
 DIFFICULTY: ${diffInstruction}
 ${weightageInstruction}
-
-${formatInstructions.join("\n\n")}
+${formatInstructions.join("\n")}
 ${textbookContextBlock}
-RESPOND IN THIS EXACT JSON FORMAT (no markdown, no code blocks, just pure JSON):
-{
-  "questions": [
-    {
-      "id": 1,
-      "type": "mcq",
-      "text": "What is the SI unit of force?",
-      "options": ["(a) Joule", "(b) Newton", "(c) Watt", "(d) Pascal"],
-      "correctAnswer": "(b) Newton",
-      "explanation": "Force is measured in Newtons (N) in the SI system, named after Sir Isaac Newton.",
-      "difficulty": "easy",
-      "chapter": "Forces and Laws of Motion"
-    },
-    {
-      "id": 2,
-      "type": "fill_blank",
-      "text": "The process by which plants make food using sunlight is called _________.",
-      "options": null,
-      "correctAnswer": "Photosynthesis",
-      "explanation": "Photosynthesis is the process where plants convert CO2 and H2O into glucose using sunlight.",
-      "difficulty": "easy",
-      "chapter": "Life Processes"
-    }
-  ]
-}
+RESPOND IN EXACT JSON (no markdown, no code blocks):
+{"questions":[{"id":1,"type":"mcq","text":"...","options":["(a)...","(b)...","(c)...","(d)..."],"correctAnswer":"(b)...","explanation":"...","difficulty":"easy","chapter":"..."}]}
 
-RULES:
-1. Generate EXACTLY ${totalQ} questions — no more, no less
-2. Every question MUST be from the specified chapters
-3. Distribute difficulty as: 30% easy, 50% moderate, 20% hard (adjusted for overall difficulty level)
-4. For MCQs, ensure distractors are plausible — no joke options
-5. Explanations should be 1-2 sentences, concise and educational
-6. ALL content must be grade-appropriate for Class ${grade}
-7. For fill_blank type, set "options" to null
-8. If Source Material is provided, STRICTLY use it.
-9. RETURN ONLY VALID JSON — no additional text, no markdown wrapping`;
+For fill_blank: set "options" to null.
+RULES: EXACTLY ${totalQ} questions. All from specified chapters. 30% easy, 50% moderate, 20% hard. Grade-appropriate for Class ${grade}. Concise 1-2 sentence explanations. If Source Material provided, use it strictly. RETURN ONLY VALID JSON.`;
 }
 
 // ─── Markdown formatter ─────────────────────────────────────────────────────
@@ -394,12 +318,9 @@ export async function generateObjective(
         messages: [
             {
                 role: "system",
-                content: "You are an expert board exam question paper setter. You generate high-quality objective questions in valid JSON format. Never include markdown code blocks or any text outside the JSON."
+                content: "You are an expert board exam question setter. Generate high-quality objective questions in valid JSON format. No markdown, no text outside JSON."
             },
-            {
-                role: "user",
-                content: prompt
-            }
+            { role: "user", content: prompt }
         ],
         max_tokens: 8000,
         temperature: 0.7,

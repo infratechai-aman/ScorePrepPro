@@ -122,89 +122,42 @@ function buildWorksheetPrompt(
     
     let diffInstruction = "";
     switch (diff) {
-        case "easy": diffInstruction = "EASY: Direct textbook questions, simple recall."; break;
-        case "moderate": diffInstruction = "MODERATE: 70% direct, 30% application-based."; break;
-        case "hard": diffInstruction = "HARD: 50% textbook, 50% conceptual/application."; break;
-        case "replica": diffInstruction = "EXAM REPLICA: Match exact board exam difficulty."; break;
-        case "challenging": diffInstruction = "CHALLENGING: High reasoning, multi-step problems."; break;
+        case "easy": diffInstruction = "EASY: Direct textbook, simple recall."; break;
+        case "moderate": diffInstruction = "MODERATE: 70% direct, 30% application."; break;
+        case "hard": diffInstruction = "HARD: 50% textbook, 50% conceptual."; break;
+        case "replica": diffInstruction = "EXAM REPLICA: Match board exam difficulty."; break;
+        case "challenging": diffInstruction = "CHALLENGING: High reasoning, multi-step."; break;
     }
 
-    // Hard-enforce weightage: calculate exact question counts per chapter
     const totalQs = sections.reduce((sum, s) => sum + s.count, 0);
     const chapterList = chapters.split(",").map(c => c.trim()).filter(Boolean);
-    const allocations = calculateChapterQuestionMap(
-        chapterList,
-        options.chapterWeights || {},
-        totalQs
-    );
+    const allocations = calculateChapterQuestionMap(chapterList, options.chapterWeights || {}, totalQs);
     const weightageInstruction = buildWeightagePromptBlock(allocations);
 
     const sectionInstructions = sections.map(s => {
-        if (s.type === "mcq") {
-            return `### ${s.name} [${s.totalMarks} Marks]
-Generate ${s.count} MCQs (${s.marksPerQuestion} mark each).
-- Each MCQ must have 4 options: (a), (b), (c), (d)
-- Only ONE correct answer
-- Mix of direct recall and application-based`;
-        } else if (s.type === "short_answer") {
-            return `### ${s.name} [${s.totalMarks} Marks]
-Generate ${s.count} Short Answer questions (${s.marksPerQuestion} marks each).
-- Answers should be 3-5 sentences
-- Include "Define", "State", "Explain briefly", "Differentiate between" type questions`;
-        } else if (s.type === "long_answer") {
-            return `### ${s.name} [${s.totalMarks} Marks]
-Generate ${s.count} Long Answer questions (${s.marksPerQuestion} marks each).
-- Answers should be detailed paragraphs
-- Include "Explain in detail", "Describe the process", "Prove that" type questions`;
-        } else {
-            return `### ${s.name} [${s.totalMarks} Marks]
-Generate ${s.count} Very Long Answer questions (${s.marksPerQuestion} marks each).
-- These should require detailed explanations with diagrams/steps
-- Include "Derive", "Explain with diagram", "Write a detailed note on" type questions`;
-        }
-    }).join("\n\n");
+        const typeHint = s.type === "mcq" ? "MCQs, 4 options (a)-(d), ONE correct"
+            : s.type === "short_answer" ? "Short Answer (3-5 sentences)"
+            : s.type === "long_answer" ? "Long Answer (detailed paragraphs)"
+            : "Very Long Answer (detailed with steps)";
+        return `${s.name}: ${s.count}q × ${s.marksPerQuestion}m = ${s.totalMarks}M — ${typeHint}`;
+    }).join("\n");
 
     const includeKey = options.includeAnswerKey !== false;
+    const textbookBlock = textbookContent ? `\nSOURCE MATERIAL:\n${textbookContent}\n` : "";
 
-    const textbookContextBlock = textbookContent ? `\n## SOURCE MATERIAL (CRITICAL)\nYou MUST base your questions strictly on the following excerpt from the official textbook. Do not use outside knowledge if it conflicts with or goes beyond this material:\n\n${textbookContent}\n` : "";
-
-    return `You are an expert ${board.toUpperCase()} Board exam paper setter for Class ${grade} ${subject}.
-
-TASK: Generate a COMPLETE WORKSHEET from chapters: ${chapters}
+    return `${board.toUpperCase()} Board worksheet for Class ${grade} ${subject}.
+Chapters: ${chapters}
 
 ${boardContext}
 DIFFICULTY: ${diffInstruction}
 ${weightageInstruction}
-
-WORKSHEET STRUCTURE:
-- Total Marks: ${totalMarks}
-- Total Time: ${duration} minutes
-
+STRUCTURE: ${totalMarks} marks | ${duration} minutes
 ${sectionInstructions}
-${textbookContextBlock}
-FORMAT THE OUTPUT AS CLEAN MARKDOWN:
-
-1. Start with the header (institute name if provided, board, class, subject, marks, time)
-2. Each section should be a ### heading with marks in brackets
-3. Number questions sequentially across sections (Q1, Q2, Q3... continuous)
-4. For MCQs, show options as (a), (b), (c), (d)
-5. For other questions, show marks in brackets at the end: [3 marks]
-
-${includeKey ? `
-AFTER THE WORKSHEET, add a section separator "---" and then:
-## ANSWER KEY
-- For MCQs: Just the correct option letter + 1 line explanation
-- For Short/Long answers: Model answer (concise but complete)
-` : "DO NOT include answer key."}
-
-RULES:
-1. ALL questions must be from the specified chapters
-2. Questions must be grade-appropriate for Class ${grade}
-3. Use proper ${board.toUpperCase()} board question language/tone
-4. Total marks of all questions MUST equal ${totalMarks}
-5. Maintain clear formatting with proper spacing
-6. If Source Material is provided, STRICTLY use it for question context.
-${options.instituteName ? `7. Use "${options.instituteName}" as the institute name in the header` : ""}`;
+${textbookBlock}
+OUTPUT: Clean Markdown. Header with board/class/subject/marks/time. ### section headings. Sequential numbering (Q1,Q2...). Marks in brackets. One blank line between questions.
+${includeKey ? `After worksheet, add "---" then ## ANSWER KEY with concise model answers.` : "No answer key."}
+${options.instituteName ? `Institute: "${options.instituteName}"` : ""}
+All questions from specified chapters. Grade-appropriate. Total marks = ${totalMarks}. ${board.toUpperCase()} tone. If Source Material provided, use it strictly.`;
 }
 
 // ─── Main generation function ───────────────────────────────────────────────

@@ -151,74 +151,74 @@ function getBoardContext(board: string, grade: string, subject: string, chapters
 
     let difficultyInstruction = "";
     switch (diff) {
-        case "easy": difficultyInstruction = "LEVEL: EASY (School Test). Direct textbook questions, simple numbers, no complex reasoning."; break;
-        case "moderate": difficultyInstruction = "LEVEL: MODERATE (Standard Board). 70% direct textbook, 30% simple application."; break;
-        case "hard": difficultyInstruction = "LEVEL: HARD. 50% textbook, 50% conceptual/application. Complex word problems."; break;
-        case "replica": difficultyInstruction = "LEVEL: EXAM REPLICA (Previous Year Style). MATCH EXACT BOARD DIFFICULTY. Mix of repetitive and tricky questions."; break;
-        case "challenging": difficultyInstruction = "LEVEL: CHALLENGING (Olympiad/Foundation). High reasoning depth, multi-step problems, strict concept testing."; break;
+        case "easy": difficultyInstruction = "EASY: Direct textbook questions, simple numbers."; break;
+        case "moderate": difficultyInstruction = "MODERATE: 70% direct textbook, 30% application."; break;
+        case "hard": difficultyInstruction = "HARD: 50% textbook, 50% conceptual/application."; break;
+        case "replica": difficultyInstruction = "EXAM REPLICA: Match exact board exam difficulty."; break;
+        case "challenging": difficultyInstruction = "CHALLENGING: High reasoning, multi-step, Olympiad level."; break;
     }
 
     let toneInstruction = "";
     if (board === "maharashtra") {
-        toneInstruction = `USE MAHARASHTRA SSC TONE: "Attempt any...", "Solve the following", "Give scientific reasons".`;
+        toneInstruction = `SSC TONE: "Attempt any...", "Solve the following", "Give scientific reasons".`;
     } else if (board === "cbse") {
-        toneInstruction = `USE CBSE TONE: "Assertion (A): ... Reason (R): ...", "Read the following passage and answer", "Justify your answer".`;
+        toneInstruction = `CBSE TONE: "Assertion (A):...Reason (R):...", "Read the passage and answer".`;
     } else if (board === "icse") {
-        toneInstruction = `USE ICSE TONE: "Give reasons for the following", "Name the following", "Differentiate between", "Define the term".`;
+        toneInstruction = `ICSE TONE: "Give reasons", "Name the following", "Differentiate between".`;
     }
 
     const gradeNum = parseInt(grade, 10) || 0;
     let textbookSourcing = gradeNum >= 1 && gradeNum <= 9
-        ? `90-100% of questions MUST come from the ${board.toUpperCase()} Board textbook's end-of-chapter exercises.`
-        : `80-90% of questions MUST come from the ${board.toUpperCase()} Board textbook's end-of-chapter exercises.`;
+        ? `90-100% questions from ${board.toUpperCase()} textbook exercises.`
+        : `80-90% questions from ${board.toUpperCase()} textbook exercises.`;
 
     let boardSpecific = '';
     if (board === "maharashtra" && isMathSubject) {
         let firewall = "";
-        if (subject.includes("Algebra") || subject.includes("Part-I")) {
-            firewall = "STRICTLY ALGEBRA ONLY. NO GEOMETRY.";
-        } else if (subject.includes("Geometry") || subject.includes("Part-II")) {
-            firewall = "STRICTLY GEOMETRY ONLY.";
-        }
-        boardSpecific = `SSC MAHARASHTRA MATHS PAPER. ${firewall} Every question MUST require mathematical calculation. ZERO theory/discussion. FORBIDDEN: Case Based, Assertion-Reason, "Explain importance of...", theory/essay questions.`;
+        if (subject.includes("Algebra") || subject.includes("Part-I")) firewall = "STRICTLY ALGEBRA ONLY. NO GEOMETRY.";
+        else if (subject.includes("Geometry") || subject.includes("Part-II")) firewall = "STRICTLY GEOMETRY ONLY.";
+        boardSpecific = `SSC MATHS. ${firewall} Every question MUST require calculation. ZERO theory. FORBIDDEN: Case Based, Assertion-Reason, essay questions.`;
     } else if (board === "maharashtra") {
-        boardSpecific = `SSC MAHARASHTRA PAPER. FORBIDDEN: CBSE-style Case Based, Assertion-Reason, Source Based. USE SSC FORMATS: "Give scientific reasons", "Distinguish between X and Y", "Answer the following".`;
+        boardSpecific = `SSC PAPER. FORBIDDEN: Case Based, Assertion-Reason, Source Based. USE: "Give scientific reasons", "Distinguish between", "Answer the following".`;
     } else if (board === "cbse") {
-        boardSpecific = `CBSE BOARD PAPER. Use "Assertion (A):...Reason (R):..." with 4 options, "Case Based Questions" with 150-250 word passages + sub-questions.`;
+        boardSpecific = `CBSE PAPER. Use Assertion-Reason with 4 options, Case Based with 150-250 word passages + sub-questions.`;
     } else if (board === "icse") {
-        boardSpecific = `ICSE BOARD PAPER. Section I compulsory, Section II has internal choice. Use Selina/Frank textbook style.`;
+        boardSpecific = `ICSE PAPER. Section I compulsory, Section II internal choice. Selina/Frank style.`;
     }
 
-    // ── Math Diagram Instruction
+    // ── Math Diagram Instruction (compact)
     let diagramInstruction = '';
     if (isMathSubject) {
-        diagramInstruction = `
-DIAGRAM INSTRUCTION (MATHEMATICS ONLY):
-For questions that involve geometric figures, add a diagram tag ON ITS OWN LINE immediately after the question text, using this format:
-  [FIG: <type> | <params>]
-
-Supported diagram types and their params:
-  right_triangle  → params: a=Label b=Label c=Label ab=3cm bc=4cm ac=5cm right=b
-  triangle        → params: a=Label b=Label c=Label ab=6cm bc=5cm ca=4cm angle_a=60° angle_b=70° angle_c=50°
-  circle          → params: center=O radius=5cm points=A,B tangent=T chord=A,B
-  parallel_lines  → params: line1=l line2=m transversal=t angle=65deg
-  angle           → params: vertex=O ray1=OA ray2=OB measure=45°
-  coordinate_plane→ params: points=(2,3),(-1,4) labels=A,B
-  number_line     → params: from=0 to=10 mark=3,7
-
-RULES:
-- ONLY add [FIG:...] when the question REQUIRES a diagram to be solved.
-- NEVER add diagrams for algebra (equations, polynomials) or purely numerical questions.
-- ALWAYS on its own line, never inline within question text.
-- Parameters must use key=value format separated by spaces.
-Example: [FIG: right_triangle | a=A b=B c=C ab=6cm bc=8cm ac=10cm right=b]`;
+        diagramInstruction = `DIAGRAMS: For geometry questions, add [FIG: <type> | <params>] on its own line after the question.
+Types: right_triangle, triangle, circle, parallel_lines, angle, coordinate_plane, number_line.
+Params use key=value format. Only add when question REQUIRES a diagram. Never for algebra/numerical.`;
     }
 
-    // Weightage is now computed per-section at generation time using weightageUtils
-    // We store the raw weights here for use by generateSection
     const chapterWeights = options.chapterWeights || {};
 
     return { difficultyInstruction, toneInstruction, textbookSourcing, boardSpecific, isMathSubject, chapterWeights, diagramInstruction };
+}
+
+// ─── Helper: Build system message (sent ONCE, not per-section) ──────────────
+
+function buildSystemMessage(
+    board: string, grade: string, subject: string,
+    context: ReturnType<typeof getBoardContext>
+): string {
+    let sys = `You are a professional ${board.toUpperCase()} Board exam paper setter for Class ${grade} ${subject}. You ALWAYS generate the EXACT number of questions requested.
+
+RULES:
+- ${context.difficultyInstruction}
+- ${context.toneInstruction}
+- ${context.textbookSourcing}
+- ${context.boardSpecific}
+- ${context.isMathSubject ? 'Wrap ALL math in $...$: $\\frac{a}{b}$, $x^2$, $\\sqrt{3}$, $\\pi$, $\\sin 30°$. NEVER raw LaTeX.' : 'NO IMAGES OR DIAGRAMS. Purely text-based questions.'}`;
+
+    if (context.diagramInstruction) {
+        sys += `\n- ${context.diagramInstruction}`;
+    }
+
+    return sys;
 }
 
 // ─── Helper: Estimate max_tokens per section ────────────────────────────────
@@ -284,7 +284,8 @@ async function generateSection(
     questionStartNum: number,
     context: ReturnType<typeof getBoardContext>,
     scalingFactor: number,
-    textbookContent?: string
+    systemMessage: string,
+    sectionTextbook?: string
 ): Promise<string> {
     const sectionMarks = section.count * section.marskPerQuestion;
 
@@ -304,113 +305,52 @@ async function generateSection(
 
     const questionEndNum = questionStartNum + generateCount - 1;
 
-    // Section-specific formatting rules
+    // Section-specific formatting rules (compact)
     let formatRules = "";
     const typeLower = section.type.toLowerCase();
     if (typeLower.includes("mcq") || typeLower.includes("objective") || typeLower.includes("assertion")) {
-        formatRules = `
-- Each question must have 4 options on separate lines: (a) ... (b) ... (c) ... (d) ...
-- For Assertion-Reason: "Assertion (A): ... Reason (R): ..." with standard 4 options.
-- Keep questions concise and direct.`;
+        formatRules = `Each question: 4 options (a)(b)(c)(d). For Assertion-Reason use standard 4 options. Concise.`;
     } else if (typeLower.includes("case") || typeLower.includes("source") || typeLower.includes("passage") || typeLower.includes("paragraph")) {
-        formatRules = `
-- You MUST provide a long, detailed reading passage of AT LEAST 150-250 words.
-- After the passage, provide 4-5 sub-questions numbered (i), (ii), (iii), (iv).
-- Do NOT provide 1-2 sentence snippets. The passage must be substantial.`;
+        formatRules = `Provide a 150-250 word passage, then 4-5 sub-questions (i),(ii),(iii),(iv). No snippets.`;
     } else if (typeLower.includes("match")) {
-        formatRules = `
-- Use a proper Markdown table format:
-| Column A | Column B |
-| :--- | :--- |
-| 1. Item | A. Match |`;
+        formatRules = `Use Markdown table: | Column A | Column B |`;
     } else if (section.marskPerQuestion >= 5) {
-        if (context.isMathSubject) {
-            formatRules = `- Generate multi-step numerical/solving problems requiring detailed working. Include 4-5 steps minimum.`;
-        } else {
-            formatRules = `- Generate detailed, complex, multi-part questions (definition + explanation + applications + example). These must genuinely require a long answer.`;
-        }
+        formatRules = context.isMathSubject ? `Multi-step problems, 4-5 steps minimum.` : `Detailed multi-part questions (definition+explanation+application+example).`;
     } else if (section.marskPerQuestion >= 3) {
-        if (context.isMathSubject) {
-            formatRules = `- Generate problems requiring 2-3 step solutions.`;
-        } else {
-            formatRules = `- Generate questions requiring 3-4 points in the answer.`;
-        }
+        formatRules = context.isMathSubject ? `Problems requiring 2-3 step solutions.` : `Questions requiring 3-4 answer points.`;
     }
 
-    // Build section header based on board
-    let sectionHeader = "";
-    if (board === "maharashtra") {
-        sectionHeader = `### ${section.section}`;
-    } else {
-        sectionHeader = `### ${section.section}`;
-    }
+    const sectionHeader = `### ${section.section}`;
 
-    const prompt = `You are an expert ${board.toUpperCase()} Board Paper Setter for Class ${grade} ${subject.toUpperCase()}.
+    // Build compact user prompt (board rules already in system message)
+    const prompt = `Generate EXACTLY ${generateCount} questions.
 
-TASK: Generate EXACTLY ${generateCount} questions for ONE section of an exam paper.
-
-SECTION: ${section.section}
-QUESTION TYPE: ${section.type}
-MARKS PER QUESTION: ${section.marskPerQuestion}
-NUMBER OF QUESTIONS TO GENERATE: ${generateCount}
-SECTION TOTAL MARKS: ${sectionMarks}
-QUESTION NUMBERING: Start from **Q.${questionStartNum}** to **Q.${questionEndNum}**
-
-CHAPTERS (ONLY use these): ${chapters}
+SECTION: ${section.section} | TYPE: ${section.type} | ${section.marskPerQuestion} marks each | Total: ${sectionMarks}
+NUMBERING: Q.${questionStartNum} to Q.${questionEndNum}
+CHAPTERS: ${chapters}
 ${(() => {
     const chapterList = chapters.split(",").map(c => c.trim()).filter(Boolean);
     const allocations = calculateChapterQuestionMap(chapterList, context.chapterWeights, generateCount);
     return buildWeightagePromptBlock(allocations);
 })()}
-${textbookContent ? `
-## SOURCE MATERIAL (CRITICAL)
-You MUST base your questions strictly on the following excerpt from the official textbook. Do not use outside knowledge if it conflicts with or goes beyond this material:
+${sectionTextbook ? `\nSOURCE MATERIAL:\n${sectionTextbook}\n` : ''}
+${formatRules ? `FORMAT: ${formatRules}` : ''}
 
-${textbookContent.slice(0, 20000)}
-` : ''}
-
-RULES:
-1. ${context.difficultyInstruction}
-2. ${context.toneInstruction}
-3. ${context.textbookSourcing}
-4. ${context.boardSpecific}
-5. ${context.isMathSubject ? 'For geometry/trigonometry questions ONLY, you MAY include [FIG:...] diagram tags (see DIAGRAM INSTRUCTION below). For algebra/arithmetic, NO diagrams.' : 'NO IMAGES OR DIAGRAMS. All questions must be purely text-based.'}
-6. GENERATE EXACTLY ${generateCount} QUESTIONS. Not more, not less. This is NON-NEGOTIABLE.
-7. MATH NOTATION (CRITICAL): For ALL mathematical expressions, wrap them in $ $ dollar signs for proper rendering:
-   - Fractions: $\\frac{1}{\\sqrt{3}}$  NOT  (\\frac{1}{\\sqrt{3}})
-   - Powers: $x^2 + y^2 = 25$  NOT  x^2 + y^2 = 25
-   - Roots: $\\sqrt{3}$  NOT  \\sqrt{3}
-   - Greek/Trig: $\\pi$, $\\sin 30°$, $\\theta$, $\\alpha$
-   - Equations: $2x + 3y = 5$
-   - ALWAYS wrap math in $...$. NEVER write raw LaTeX without $ delimiters.
-
-${context.diagramInstruction || ''}
-${formatRules}
-
-OUTPUT FORMAT (Markdown):
+OUTPUT (Markdown only, no preamble):
 ${sectionHeader}
-${choiceInstruction ? choiceInstruction : `*(${section.type} — ${section.marskPerQuestion} Mark(s) each | Total: ${sectionMarks} Marks)*`}
+${choiceInstruction || `*(${section.type} — ${section.marskPerQuestion} Mark(s) each | Total: ${sectionMarks} Marks)*`}
 
-**Q.${questionStartNum}** [Question text] [${section.marskPerQuestion} Mark(s)]
+**Q.${questionStartNum}** [question] [${section.marskPerQuestion} Mark(s)]
+... through Q.${questionEndNum}
 
-(leave one blank line between each question)
-
-**Q.${questionStartNum + 1}** [Next question] [${section.marskPerQuestion} Mark(s)]
-
-... continue until Q.${questionEndNum}
-
-CRITICAL: You MUST generate ALL ${generateCount} questions from Q.${questionStartNum} to Q.${questionEndNum}. DO NOT stop early. DO NOT skip any question number.
-
-Output ONLY the section content. No preamble, no "Here is...", no explanation.`;
-
-
+Generate ALL ${generateCount} questions. Do NOT stop early.`;
 
     const maxTokens = estimateMaxTokens({ ...section, count: generateCount });
 
     const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
-            { role: "system", content: `You are a professional ${board.toUpperCase()} Board exam paper setter. You ALWAYS generate the EXACT number of questions requested. You never stop early.` },
+            { role: "system", content: systemMessage },
             { role: "user", content: prompt }
         ],
         temperature: 0.7,
@@ -470,11 +410,17 @@ export async function generatePaperComplete(
     const { structure, totalMarks, scalingFactor } = resolvePattern(board, grade, subject, options.totalMarks);
     const context = getBoardContext(board, grade, subject, chapters, options);
 
+    // Build system message ONCE (shared across all section calls)
+    const systemMessage = buildSystemMessage(board, grade, subject, context);
+
     // Fetch scraped textbook content to ground the AI
     const chapterList = chapters.split(",").map(c => c.trim());
-    const textbookContent = getChaptersContent(board, grade, subject, chapterList);
+    // Use a smaller per-section budget: total 12K chars, distributed across sections
+    const activeSections = structure.filter(s => s.count > 0);
+    const textbookBudgetPerSection = activeSections.length > 0 ? Math.floor(12000 / activeSections.length) : 12000;
+    const textbookContent = getChaptersContent(board, grade, subject, chapterList, 12000);
     if (textbookContent) {
-        console.log(`[GeneratePaperComplete] Found scraped textbook content for grounding (${textbookContent.length} chars)`);
+        console.log(`[GeneratePaperComplete] Found scraped textbook content (${textbookContent.length} chars, ${textbookBudgetPerSection} per section)`);
     } else {
         console.log(`[GeneratePaperComplete] No scraped textbook content found, relying on AI knowledge`);
     }
@@ -486,7 +432,7 @@ export async function generatePaperComplete(
     const sectionResults: SectionResult[] = [];
     let currentQuestionNum = 1;
 
-    console.log(`[GeneratePaperComplete] Starting multi-pass generation for ${board} Class ${grade} ${subject} (${totalMarks} marks, ${structure.length} sections)`);
+    console.log(`[GeneratePaperComplete] Starting multi-pass generation for ${board} Class ${grade} ${subject} (${totalMarks} marks, ${activeSections.length} sections)`);
 
     for (const section of structure) {
         if (section.count <= 0) continue;
@@ -500,6 +446,11 @@ export async function generatePaperComplete(
             expectedGenCount = section.count >= 4 ? section.count + 2 : section.count + 1;
         }
 
+        // Smart textbook slicing: give each section only its fair share
+        const sectionTextbook = textbookContent
+            ? textbookContent.slice(0, textbookBudgetPerSection)
+            : undefined;
+
         let bestContent = "";
         let bestCount = 0;
         const MAX_RETRIES = 2;
@@ -512,7 +463,8 @@ export async function generatePaperComplete(
                     board, grade, subject, chapters,
                     section, currentQuestionNum,
                     context, scalingFactor,
-                    textbookContent || undefined
+                    systemMessage,
+                    sectionTextbook
                 );
 
                 const qCount = countQuestionsInMarkdown(content);

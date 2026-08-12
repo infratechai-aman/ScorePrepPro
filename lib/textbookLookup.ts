@@ -98,7 +98,7 @@ export function getChaptersContent(
     grade: string, 
     subject: string, 
     chapters: string[], 
-    maxTotalChars: number = 20000
+    maxTotalChars: number = 12000
 ): string {
     if (!chapters || chapters.length === 0) return "";
 
