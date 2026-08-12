@@ -1443,10 +1443,10 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                 </div>
                             </div>
 
-                            <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "40px", minHeight: "800px", color: "#1e293b" }} className="rounded-2xl shadow-xl space-y-8 relative overflow-hidden">
+                            <div ref={contentRef} style={{ backgroundColor: "#ffffff", minHeight: "800px", color: "#1e293b" }} className="rounded-2xl shadow-xl relative overflow-hidden">
                                 {/* Free Preview Watermark */}
                                 {!user && (
-                                    <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", fontSize: "80px", color: "rgba(0,0,0,0.05)", fontWeight: "bold", pointerEvents: "none", zIndex: 0 }}>
+                                    <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", fontSize: "80px", color: "rgba(0,0,0,0.05)", fontWeight: "bold", pointerEvents: "none", zIndex: 10 }}>
                                         FREE PREVIEW
                                     </div>
                                 )}
@@ -1461,7 +1461,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                         bottom: "0",
                                         opacity: 1,
                                         pointerEvents: "none",
-                                        zIndex: 0,
+                                        zIndex: 10,
                                         display: "flex",
                                         justifyContent: "center",
                                         alignItems: "center"
@@ -1470,9 +1470,36 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                     </div>
                                 )}
 
-                                <div className="prose prose-slate max-w-none relative z-10">
-                                    {renderPaperContent()}
-                                </div>
+                                {/* Paper Preview — uses same buildPrintHTML as PDF download for exact match */}
+                                {(() => {
+                                    const paperToRender = generatedPaper +
+                                        (generatedSolution ? `\n\n## ANSWER KEY / MARKING SCHEME\n\n${generatedSolution}` : "");
+                                    const previewHTML = buildPrintHTML(paperToRender, {
+                                        instituteName: instituteName || undefined,
+                                        board,
+                                        grade,
+                                        subject,
+                                        chapters: selectedChapters,
+                                        totalMarks: parseInt(totalMarks) || 40,
+                                        paperType: questionType,
+                                        difficulty
+                                    });
+                                    return (
+                                        <iframe
+                                            srcDoc={previewHTML}
+                                            className="w-full border-0"
+                                            style={{ minHeight: "900px", height: "auto" }}
+                                            onLoad={(e) => {
+                                                const frame = e.currentTarget;
+                                                try {
+                                                    const h = frame.contentDocument?.body?.scrollHeight;
+                                                    if (h) frame.style.height = h + "px";
+                                                } catch (_) {}
+                                            }}
+                                            title="Paper Preview"
+                                        />
+                                    );
+                                })()}
 
                                 {/* Flip Question Feature for Premium/Teacher users */}
 

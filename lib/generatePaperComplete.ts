@@ -322,11 +322,14 @@ async function generateSection(
 
     const sectionHeader = `### ${section.section}`;
 
-    // Build compact user prompt (board rules already in system message)
-    const prompt = `Generate EXACTLY ${generateCount} questions.
+    // Build user prompt (board rules already in system message)
+    const prompt = `TASK: Generate EXACTLY ${generateCount} questions for this section.
 
-SECTION: ${section.section} | TYPE: ${section.type} | ${section.marskPerQuestion} marks each | Total: ${sectionMarks}
-NUMBERING: Q.${questionStartNum} to Q.${questionEndNum}
+SECTION: ${section.section}
+TYPE: ${section.type}
+MARKS PER QUESTION: ${section.marskPerQuestion}
+GENERATE: ${generateCount} questions (Q.${questionStartNum} to Q.${questionEndNum})
+SECTION TOTAL: ${sectionMarks} marks
 CHAPTERS: ${chapters}
 ${(() => {
     const chapterList = chapters.split(",").map(c => c.trim()).filter(Boolean);
@@ -334,16 +337,21 @@ ${(() => {
     return buildWeightagePromptBlock(allocations);
 })()}
 ${sectionTextbook ? `\nSOURCE MATERIAL:\n${sectionTextbook}\n` : ''}
-${formatRules ? `FORMAT: ${formatRules}` : ''}
+${formatRules ? `FORMAT RULES: ${formatRules}` : ''}
 
-OUTPUT (Markdown only, no preamble):
+OUTPUT FORMAT (Markdown, no preamble):
 ${sectionHeader}
 ${choiceInstruction || `*(${section.type} — ${section.marskPerQuestion} Mark(s) each | Total: ${sectionMarks} Marks)*`}
 
-**Q.${questionStartNum}** [question] [${section.marskPerQuestion} Mark(s)]
-... through Q.${questionEndNum}
+**Q.${questionStartNum}** [Question text] [${section.marskPerQuestion} Mark(s)]
 
-Generate ALL ${generateCount} questions. Do NOT stop early.`;
+(a) Option A  (b) Option B  (c) Option C  (d) Option D  ← if MCQ
+
+**Q.${questionStartNum + 1}** [Next question] [${section.marskPerQuestion} Mark(s)]
+
+... continue with one blank line between each question until Q.${questionEndNum}
+
+CRITICAL: Generate ALL ${generateCount} questions numbered Q.${questionStartNum} to Q.${questionEndNum}. Do NOT stop early. Do NOT skip numbers.`;
 
     const maxTokens = estimateMaxTokens({ ...section, count: generateCount });
 
