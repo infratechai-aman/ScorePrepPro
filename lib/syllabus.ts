@@ -297,12 +297,46 @@ function isCoreSubject(subject: string): boolean {
     });
 }
 
+/**
+ * SCRAPED_SUBJECTS — Only subjects that were actually scraped from Shaalaa.
+ * English, Hindi, Sanskrit etc. were NOT scraped — so they are NOT in this list.
+ * These are the ONLY subjects that will appear in the dropdown for CBSE and SSC.
+ * Key: `${board}-${grade}` → string[] of scraped subject names
+ */
+const SCRAPED_SUBJECTS: Record<string, string[]> = {
+    // ── CBSE (NCERT — Classes 5 to 10) ──────────────────────────────────────
+    "cbse-5":  ["Mathematics", "EVS"],
+    "cbse-6":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)"],
+    "cbse-7":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)"],
+    "cbse-8":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)"],
+    "cbse-9":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)", "Social Science (Economics)"],
+    "cbse-10": ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)", "Social Science (Economics)"],
+
+    // ── Maharashtra SSC (Balbharati — Classes 5 to 10) ──────────────────────
+    "maharashtra-5":  ["Mathematics", "Environmental Studies Part 1", "Environmental Studies Part 2"],
+    "maharashtra-6":  ["Mathematics", "General Science", "History and Civics", "Geography"],
+    "maharashtra-7":  ["Mathematics", "General Science", "History and Civics", "Geography"],
+    "maharashtra-8":  ["Mathematics", "General Science", "History and Civics", "Geography"],
+    "maharashtra-9":  ["Mathematics Part-I (Algebra)", "Mathematics Part-II (Geometry)", "Science and Technology Part-1", "Science and Technology Part-2", "History and Political Science", "Geography"],
+    "maharashtra-10": ["Mathematics Part-I (Algebra)", "Mathematics Part-II (Geometry)", "Science and Technology Part-1", "Science and Technology Part-2", "History and Political Science", "Geography"],
+};
+
 // Helper: Get subjects for a board and class
 export function getSubjects(board: string, grade: string): string[] {
+    const key = `${board}-${grade}`;
+
+    // ── Priority 1: Use scraped subjects allowlist if available ──────────────
+    if (SCRAPED_SUBJECTS[key]) {
+        // Also verify the subject still exists in SYLLABUS_DB (has chapters)
+        const boardData = SYLLABUS_DB[board]?.[grade] || {};
+        return SCRAPED_SUBJECTS[key].filter(subject => 
+            boardData[subject] && boardData[subject].length > 0
+        );
+    }
+
+    // ── Priority 2: Fallback to core-subject filter for other boards/classes ─
     const boardData = SYLLABUS_DB[board]?.[grade] || {};
     const allSubjects = Object.keys(boardData);
-    // Filter to show only core subjects AND only those that have chapters
-    // This removes empty placeholder subjects which clutter the CBSE list
     return allSubjects.filter(subject =>
         isCoreSubject(subject) && boardData[subject].length > 0
     );
