@@ -9,7 +9,6 @@ import { useState, useRef, useEffect } from "react";
 import { Sparkles, FileText, Download, CheckCircle, ChevronRight, ArrowLeft, Lock, Crown, RefreshCw, Trash2, ClipboardList, ListChecks } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { useMemo } from "react";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { ImageIcon } from "lucide-react";
@@ -72,7 +71,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
     // Selection State
     const [selectedChapters, setSelectedChapters] = useState<string[]>([]);
     const [chapterWeights, setChapterWeights] = useState<Record<string, number>>({});
-    
+
     // Config State
     const [instituteName, setInstituteName] = useState("");
     const [difficulty, setDifficulty] = useState("moderate");
@@ -347,12 +346,12 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
     const totalWeight = Object.values(chapterWeights).reduce((a, b) => a + b, 0);
 
     const handleGenerate = async () => {
-    // Allow generation if: (a) no weights set at all, or (b) weights sum to 100 (±1 for rounding)
-    const hasAnyWeight = Object.values(chapterWeights).some(w => w > 0);
-    if (hasAnyWeight && Math.abs(totalWeight - 100) > 1) {
-        setError(`Total weightage must equal 100% (currently ${totalWeight}%). Adjust the sliders or leave all at 0 for even distribution.`);
-        return;
-    }
+        // Allow generation if: (a) no weights set at all, or (b) weights sum to 100 (±1 for rounding)
+        const hasAnyWeight = Object.values(chapterWeights).some(w => w > 0);
+        if (hasAnyWeight && Math.abs(totalWeight - 100) > 1) {
+            setError(`Total weightage must equal 100% (currently ${totalWeight}%). Adjust the sliders or leave all at 0 for even distribution.`);
+            return;
+        }
 
         // AUTH & LIMIT CHECK
         if (!user) {
@@ -436,12 +435,12 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
     // ─── OBJECTIVE GENERATE HANDLER ─────────────────────────────────────────
     const handleGenerateObjective = async () => {
-    // Allow generation if: (a) no weights set at all, or (b) weights sum to 100 (±1 for rounding)
-    const hasAnyWeight = Object.values(chapterWeights).some(w => w > 0);
-    if (hasAnyWeight && Math.abs(totalWeight - 100) > 1) {
-        setError(`Total weightage must equal 100% (currently ${totalWeight}%). Adjust the sliders or leave all at 0 for even distribution.`);
-        return;
-    }
+        // Allow generation if: (a) no weights set at all, or (b) weights sum to 100 (±1 for rounding)
+        const hasAnyWeight = Object.values(chapterWeights).some(w => w > 0);
+        if (hasAnyWeight && Math.abs(totalWeight - 100) > 1) {
+            setError(`Total weightage must equal 100% (currently ${totalWeight}%). Adjust the sliders or leave all at 0 for even distribution.`);
+            return;
+        }
         if (!user) {
             router.push("/login");
             return;
@@ -480,7 +479,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Failed to generate");
-            
+
             setGeneratedPaper(data.content);
             setObjectiveAnswerKey(data.answerKey);
             setObjectiveQuestions(data.questions || []);
@@ -516,12 +515,12 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
     // ─── WORKSHEET GENERATE HANDLER ─────────────────────────────────────────
     const handleGenerateWorksheet = async () => {
-    // Allow generation if: (a) no weights set at all, or (b) weights sum to 100 (±1 for rounding)
-    const hasAnyWeight = Object.values(chapterWeights).some(w => w > 0);
-    if (hasAnyWeight && Math.abs(totalWeight - 100) > 1) {
-        setError(`Total weightage must equal 100% (currently ${totalWeight}%). Adjust the sliders or leave all at 0 for even distribution.`);
-        return;
-    }
+        // Allow generation if: (a) no weights set at all, or (b) weights sum to 100 (±1 for rounding)
+        const hasAnyWeight = Object.values(chapterWeights).some(w => w > 0);
+        if (hasAnyWeight && Math.abs(totalWeight - 100) > 1) {
+            setError(`Total weightage must equal 100% (currently ${totalWeight}%). Adjust the sliders or leave all at 0 for even distribution.`);
+            return;
+        }
         if (!user) {
             router.push("/login");
             return;
@@ -560,7 +559,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
 
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Failed to generate");
-            
+
             setGeneratedPaper(data.content);
             setWorksheetAnswerKey(data.answerKey || "");
             setWorksheetMetadata(data.metadata || null);
@@ -658,7 +657,7 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
             return;
         }
 
-        const paperToRender = generatedPaper + 
+        const paperToRender = generatedPaper +
             (generatedSolution ? `\n\n## ANSWER KEY / MARKING SCHEME\n\n${generatedSolution}` : "");
 
         const html = buildPrintHTML(paperToRender, {
@@ -794,10 +793,10 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                 const res = await fetch(watermark);
                 const blob = await res.blob();
                 const arrayBuffer = await blob.arrayBuffer();
-                
+
                 let w = 800;
                 let h = 800;
-                
+
                 await new Promise<void>((resolve) => {
                     const img = new Image();
                     img.onload = () => {
@@ -939,13 +938,13 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                 getSubjects(board, grade).map(s => ({ value: s, label: s }))
                                             } />
                                         </div>
-                                        
+
                                         <div className="col-span-1 md:col-span-2">
-                                            <Input 
-                                                label="Institute / Classes Name (Optional)" 
-                                                placeholder="e.g. Aman Sir Classes" 
-                                                value={instituteName} 
-                                                onChange={(e) => setInstituteName(e.target.value)} 
+                                            <Input
+                                                label="Institute / Classes Name (Optional)"
+                                                placeholder="e.g. Aman Sir Classes"
+                                                value={instituteName}
+                                                onChange={(e) => setInstituteName(e.target.value)}
                                             />
                                         </div>
                                     </div>
@@ -964,11 +963,10 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                 {/* Subjective - always available */}
                                                 <button
                                                     onClick={() => setQuestionType("subjective")}
-                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
-                                                        questionType === "subjective"
+                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${questionType === "subjective"
                                                             ? "border-indigo-500 bg-indigo-50 shadow-md shadow-indigo-100"
                                                             : "border-slate-200 bg-white hover:border-slate-300"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <FileText className={`h-6 w-6 mx-auto mb-2 ${questionType === "subjective" ? "text-indigo-600" : "text-slate-400"}`} />
                                                     <p className={`text-sm font-semibold ${questionType === "subjective" ? "text-indigo-700" : "text-slate-700"}`}>Subjective</p>
@@ -983,13 +981,12 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                         }
                                                     }}
                                                     disabled={!(userData?.plan === 'premium' || userData?.plan === 'teacher')}
-                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 relative ${
-                                                        questionType === "objective"
+                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 relative ${questionType === "objective"
                                                             ? "border-emerald-500 bg-emerald-50 shadow-md shadow-emerald-100"
                                                             : !(userData?.plan === 'premium' || userData?.plan === 'teacher')
                                                                 ? "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
                                                                 : "border-slate-200 bg-white hover:border-slate-300"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {!(userData?.plan === 'premium' || userData?.plan === 'teacher') && (
                                                         <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">PRO</div>
@@ -1007,13 +1004,12 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                         }
                                                     }}
                                                     disabled={!(userData?.plan === 'premium' || userData?.plan === 'teacher')}
-                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 relative ${
-                                                        questionType === "worksheet"
+                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 relative ${questionType === "worksheet"
                                                             ? "border-purple-500 bg-purple-50 shadow-md shadow-purple-100"
                                                             : !(userData?.plan === 'premium' || userData?.plan === 'teacher')
                                                                 ? "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
                                                                 : "border-slate-200 bg-white hover:border-slate-300"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {!(userData?.plan === 'premium' || userData?.plan === 'teacher') && (
                                                         <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">PRO</div>
@@ -1140,9 +1136,8 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                                 { value: "statement_based", label: "Statement Based" },
                                                                 { value: "fill_blank", label: "Fill in Blanks" },
                                                             ].map(fmt => (
-                                                                <label key={fmt.value} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
-                                                                    objectiveFormats.includes(fmt.value) ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'
-                                                                }`}>
+                                                                <label key={fmt.value} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${objectiveFormats.includes(fmt.value) ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'
+                                                                    }`}>
                                                                     <input
                                                                         type="checkbox"
                                                                         className="w-4 h-4 text-emerald-600 rounded"
@@ -1183,8 +1178,8 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                         { value: "challenging", label: "Challenging" },
                                                     ]} />
                                                     <Switch label="Include Answer Key" checked={includeAnswerKey} onCheckedChange={setIncludeAnswerKey} />
-                                                    
-                                                     {/* Auto-calculated preview — dynamic based on totalMarks */}
+
+                                                    {/* Auto-calculated preview — dynamic based on totalMarks */}
                                                     <div className="bg-white p-3 rounded-lg border border-purple-200">
                                                         <p className="text-xs font-bold text-purple-800 mb-2">Auto-Generated Structure (based on {board.toUpperCase()} {subject || "subject"} pattern):</p>
                                                         <div className="text-xs text-purple-700 space-y-1">
@@ -1231,25 +1226,25 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                                         { value: "challenging", label: "Challenging" },
                                                     ]} />
                                                     <Switch label="Teacher Mode" checked={isTeacherMode} onCheckedChange={setIsTeacherMode} />
-                                                    
+
                                                     <div className="space-y-2">
                                                         <label className="text-sm font-medium text-slate-700 block">Paper Watermark (Optional)</label>
                                                         <div className="flex items-center gap-2">
-                                                            <input 
-                                                                type="file" 
-                                                                accept="image/*" 
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
                                                                 onChange={handleWatermarkUpload}
-                                                                className="hidden" 
-                                                                id="watermark-upload" 
+                                                                className="hidden"
+                                                                id="watermark-upload"
                                                             />
-                                                            <label 
+                                                            <label
                                                                 htmlFor="watermark-upload"
                                                                 className="flex-1 cursor-pointer p-2 border-2 border-dashed border-slate-300 rounded-lg text-center text-xs text-slate-500 hover:border-primary hover:text-primary transition-all"
                                                             >
                                                                 {watermark ? "Image Selected (Click to change)" : "Upload Logo/Watermark"}
                                                             </label>
                                                             {watermark && (
-                                                                <button 
+                                                                <button
                                                                     onClick={() => setWatermark(null)}
                                                                     className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                                                     title="Remove Watermark"
@@ -1335,26 +1330,23 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="md:col-span-3 space-y-6 mt-8">
                             {/* Paper Validation Banner */}
                             {paperMetadata && (
-                                <div className={`p-4 rounded-xl border flex items-center justify-between ${
-                                    paperMetadata.isComplete
+                                <div className={`p-4 rounded-xl border flex items-center justify-between ${paperMetadata.isComplete
                                         ? 'bg-emerald-50 border-emerald-200'
                                         : 'bg-amber-50 border-amber-200'
-                                }`}>
+                                    }`}>
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                            paperMetadata.isComplete
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paperMetadata.isComplete
                                                 ? 'bg-emerald-100 text-emerald-700'
                                                 : 'bg-amber-100 text-amber-700'
-                                        }`}>
+                                            }`}>
                                             {paperMetadata.isComplete
                                                 ? <CheckCircle className="h-5 w-5" />
                                                 : <RefreshCw className="h-5 w-5" />
                                             }
                                         </div>
                                         <div>
-                                            <p className={`font-semibold text-sm ${
-                                                paperMetadata.isComplete ? 'text-emerald-800' : 'text-amber-800'
-                                            }`}>
+                                            <p className={`font-semibold text-sm ${paperMetadata.isComplete ? 'text-emerald-800' : 'text-amber-800'
+                                                }`}>
                                                 {paperMetadata.isComplete
                                                     ? `✅ ${paperMetadata.totalQuestions}/${paperMetadata.expectedQuestions} questions generated | ${paperMetadata.totalMarks} marks`
                                                     : `⚠️ ${paperMetadata.totalQuestions}/${paperMetadata.expectedQuestions} questions generated — some sections may be incomplete`
@@ -1362,11 +1354,10 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                             </p>
                                             <div className="flex flex-wrap gap-2 mt-1">
                                                 {paperMetadata.sections.map((s, i) => (
-                                                    <span key={i} className={`text-xs px-2 py-0.5 rounded-full ${
-                                                        s.actual >= s.expected
+                                                    <span key={i} className={`text-xs px-2 py-0.5 rounded-full ${s.actual >= s.expected
                                                             ? 'bg-emerald-100 text-emerald-700'
                                                             : 'bg-amber-100 text-amber-700'
-                                                    }`}>
+                                                        }`}>
                                                         {s.name}: {s.actual}/{s.expected}
                                                     </span>
                                                 ))}
@@ -1408,38 +1399,62 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                 </div>
                             </div>
 
-                            {/* ── Paper Preview: iframe showing exact PDF output ── */}
-                            <div style={{ background: '#e5e7eb', borderRadius: '12px', padding: '16px', minHeight: '600px' }}>
-                                <iframe
-                                    key={generatedPaper.length}
-                                    srcDoc={buildPrintHTML(
-                                        generatedPaper +
-                                            (generatedSolution ? `\n\n## ANSWER KEY / MARKING SCHEME\n\n${generatedSolution}` : ''),
-                                        {
-                                            instituteName: instituteName || undefined,
-                                            board,
-                                            grade,
-                                            subject,
-                                            chapters: selectedChapters,
-                                            totalMarks: parseInt(totalMarks) || 40,
-                                            paperType: questionType,
-                                            difficulty,
-                                        }
-                                    )}
-                                    style={{
-                                        width: '100%',
-                                        minHeight: '800px',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        background: 'white',
-                                        display: 'block',
-                                    }}
-                                    title="Paper Preview"
-                                    sandbox="allow-scripts"
-                                />
+                            <div ref={contentRef} style={{ backgroundColor: "#ffffff", padding: "40px", minHeight: "800px", color: "#1e293b" }} className="rounded-2xl shadow-xl space-y-8 relative overflow-hidden">
+                                {/* Free Preview Watermark */}
+                                {!user && (
+                                    <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", fontSize: "80px", color: "rgba(0,0,0,0.05)", fontWeight: "bold", pointerEvents: "none", zIndex: 0 }}>
+                                        FREE PREVIEW
+                                    </div>
+                                )}
+
+                                {/* User Custom Watermark */}
+                                {watermark && (
+                                    <div className="watermark-container-preview" style={{
+                                        position: "absolute",
+                                        top: "0",
+                                        left: "0",
+                                        right: "0",
+                                        bottom: "0",
+                                        opacity: 1,
+                                        pointerEvents: "none",
+                                        zIndex: 0,
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center"
+                                    }}>
+                                        <img src={watermark} alt="Watermark" style={{ width: "80%", maxWidth: "800px", objectFit: "contain", opacity: 0.15 }} />
+                                    </div>
+                                )}
+
+                                <div className="prose prose-slate max-w-none relative z-10">
+                                    {renderPaperContent()}
+                                </div>
+
+                                {/* Flip Question Feature for Premium/Teacher users */}
+
+
+                                {/* Answer Key Display - for ALL types */}
+                                {(generatedSolution || objectiveAnswerKey || worksheetAnswerKey) && (
+                                    <div className="print:break-before-page" style={{ backgroundColor: "rgba(240, 253, 244, 0.5)", borderTop: "4px dotted #cbd5e1", padding: "24px", marginTop: "30px", borderRadius: "12px", position: "relative" }}>
+                                        <div style={{ position: "absolute", top: "0", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#dcfce7", padding: "4px 16px", borderRadius: "999px", color: "#166534", fontWeight: "bold", fontSize: "14px", border: "1px solid #bbf7d0" }}>ANSWER KEY</div>
+                                        <div className="prose prose-green max-w-none" style={{ color: "#166534" }}>
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={{
+                                                h2: ({ node, ...props }) => <h2 style={{ color: "#14532d", borderBottom: "1px solid #bbf7d0", paddingBottom: "4px", marginTop: "24px", marginBottom: "12px" }} className="text-xl font-bold" {...props} />,
+                                                h3: ({ node, ...props }) => <h3 style={{ color: "#166534", marginTop: "20px", marginBottom: "10px" }} className="text-lg font-bold" {...props} />,
+                                                p: ({ node, ...props }) => <p style={{ marginBottom: "12px", lineHeight: "1.7" }} {...props} />,
+                                                ul: ({ node, ...props }) => <ul style={{ listStyleType: "disc", paddingLeft: "24px", marginBottom: "16px" }} {...props} />,
+                                                ol: ({ node, ...props }) => <ol style={{ listStyleType: "decimal", paddingLeft: "24px", marginBottom: "16px" }} {...props} />,
+                                                li: ({ node, ...props }) => <li style={{ marginBottom: "6px" }} {...props} />,
+                                                table: ({ node, ...props }) => <div className="overflow-x-auto my-6"><table className="w-full text-left border-collapse" {...props} /></div>,
+                                                th: ({ node, ...props }) => <th className="border-b-2 border-[#bbf7d0] p-3 text-[#14532d] font-bold bg-[#dcfce7]/50" {...props} />,
+                                                td: ({ node, ...props }) => <td className="border-b border-[#bbf7d0]/50 p-3" {...props} />
+                                            }}>
+                                                {generatedSolution || objectiveAnswerKey || worksheetAnswerKey}
+                                            </ReactMarkdown>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-
-
                         </motion.div>
                     )}
                 </div>

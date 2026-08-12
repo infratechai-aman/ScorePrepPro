@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, Download, Printer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import { buildPrintHTML } from "@/lib/buildPrintHTML";
 
 const saveBlob = (blob: Blob, filename: string) => {
     const url = window.URL.createObjectURL(blob);
@@ -36,6 +37,24 @@ export default function PaperViewerPage() {
 
     // Detect if this is a Markdown-based paper (Smart Generator) vs JSON-based (Custom Generator)
     const isMarkdownPaper = paper?.content && typeof paper.content === "string";
+
+    // Build the same HTML that the PDF download uses — ensures preview === download
+    const previewHTML = useMemo(() => {
+        if (!isMarkdownPaper || !paper?.content) return null;
+        return buildPrintHTML(
+            paper.content + (paper.solution ? `\n\n## ANSWER KEY\n\n${paper.solution}` : ""),
+            {
+                board: paper.board || "cbse",
+                grade: String(paper.grade || "10"),
+                subject: paper.subject || "",
+                chapters: paper.chapters || (paper.chapter ? [paper.chapter] : []),
+                totalMarks: paper.totalMarks,
+                paperType: (paper.type as any) || "subjective",
+                difficulty: paper.difficulty,
+                instituteName: paper.instituteName,
+            }
+        );
+    }, [paper]);
 
     useEffect(() => {
         if (user && id) {
@@ -434,26 +453,24 @@ export default function PaperViewerPage() {
                         )}
 
                         {isMarkdownPaper ? (
-                            /* ===== MARKDOWN PAPER (Smart Generator) ===== */
-                            <div className="prose prose-slate max-w-none">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
-                                    {paper.content}
-                                </ReactMarkdown>
-
-                                {paper.solution && (
-                                    <div className="print:break-before-page" style={{ backgroundColor: "rgba(240, 253, 244, 0.5)", borderTop: "4px dotted #cbd5e1", padding: "24px", marginTop: "30px", borderRadius: "12px", position: "relative" }}>
-                                        <div style={{ position: "absolute", top: "0", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#dcfce7", padding: "4px 16px", borderRadius: "999px", color: "#166534", fontWeight: "bold", fontSize: "14px", border: "1px solid #bbf7d0" }}>ANSWER KEY</div>
-                                        <div className="prose prose-green max-w-none" style={{ color: "#166534" }}>
-                                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={{
-                                                ...markdownComponents,
-                                                h2: ({ node, ...props }: any) => <h2 style={{ color: "#14532d", borderBottom: "1px solid #bbf7d0", paddingBottom: "4px", marginTop: "24px", marginBottom: "12px" }} className="text-xl font-bold" {...props} />,
-                                            }}>
-                                                {paper.solution}
-                                            </ReactMarkdown>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            /* ===== MARKDOWN PAPER — preview matches download exactly ===== */
+                            previewHTML ? (
+                                <iframe
+                                    srcDoc={previewHTML}
+                                    className="w-full border-0 rounded-xl"
+                                    style={{ minHeight: "800px", height: "auto" }}
+                                    onLoad={(e) => {
+                                        // Auto-resize iframe to content height
+                                        const frame = e.currentTarget;
+                                        try {
+                                            frame.style.height = frame.contentDocument?.body?.scrollHeight + "px" || "900px";
+                                        } catch (_) {}
+                                    }}
+                                    title="Paper Preview"
+                                />
+                            ) : (
+                                <div className="text-center text-slate-400 py-8">Loading preview...</div>
+                            )
                         ) : (
                             /* ===== JSON PAPER (Custom Generator) ===== */
                             <>
