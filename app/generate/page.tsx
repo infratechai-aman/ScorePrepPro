@@ -1377,8 +1377,40 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                     {questionType === 'objective' ? 'Generated Objective Paper' : questionType === 'worksheet' ? 'Generated Worksheet' : 'Generated Question Paper'}
                                 </h2>
                                 <div className="flex gap-2">
-                                    {/* Answer Key button - only for subjective type */}
+                                    {/* Answer Key button — subjective: generate via API, objective: toggle existing key, worksheet: generate via API */}
                                     {questionType === 'subjective' && !generatedSolution && (
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={handleGenerateSolution}
+                                            isLoading={solutionLoading}
+                                            disabled={userData?.plan === 'basic' || (!user && !canGenerateKey)}
+                                            className={userData?.plan === 'basic' ? "opacity-50 cursor-not-allowed" : ""}
+                                        >
+                                            {userData?.plan === 'basic' ? <Lock className="mr-2 h-4 w-4" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                                            Generate Answer Key
+                                        </Button>
+                                    )}
+                                    {questionType === 'objective' && objectiveAnswerKey && !generatedSolution && (
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => setGeneratedSolution(objectiveAnswerKey)}
+                                        >
+                                            <CheckCircle className="mr-2 h-4 w-4" />
+                                            Show Answer Key
+                                        </Button>
+                                    )}
+                                    {questionType === 'objective' && generatedSolution && (
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => setGeneratedSolution("")}
+                                        >
+                                            Hide Answer Key
+                                        </Button>
+                                    )}
+                                    {questionType === 'worksheet' && !generatedSolution && (
                                         <Button
                                             variant="secondary"
                                             size="sm"
@@ -1393,9 +1425,21 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                     )}
                                     <Button variant="outline" size="sm" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4" /> PDF</Button>
                                     <Button variant="outline" size="sm" onClick={handleDownloadDOCX}><Download className="mr-2 h-4 w-4" /> Word</Button>
-                                    <Button variant="ghost" size="sm" onClick={() => { setStep(1); setGeneratedPaper(""); setGeneratedSolution(""); setPaperMetadata(null); setObjectiveAnswerKey(""); setObjectiveQuestions([]); setWorksheetAnswerKey(""); setWorksheetMetadata(null); }} className="text-slate-500 hover:text-slate-800">
-                                        <ArrowLeft className="mr-2 h-4 w-4" /> Start Over
-                                    </Button>
+                                    {/* View in Repository if saved, otherwise Start Over */}
+                                    {savedPaperId ? (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => router.push('/teacher-dashboard/repository')}
+                                            className="text-indigo-600 hover:text-indigo-800"
+                                        >
+                                            <ArrowLeft className="mr-2 h-4 w-4" /> View in Repository
+                                        </Button>
+                                    ) : (
+                                        <Button variant="ghost" size="sm" onClick={() => { setStep(1); setGeneratedPaper(""); setGeneratedSolution(""); setPaperMetadata(null); setObjectiveAnswerKey(""); setObjectiveQuestions([]); setWorksheetAnswerKey(""); setWorksheetMetadata(null); }} className="text-slate-500 hover:text-slate-800">
+                                            <ArrowLeft className="mr-2 h-4 w-4" /> Start Over
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
 

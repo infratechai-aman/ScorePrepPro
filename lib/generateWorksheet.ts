@@ -104,8 +104,6 @@ function getWorksheetBoardContext(board: string) {
     return "";
 }
 
-// ─── Prompt builder ─────────────────────────────────────────────────────────
-
 function buildWorksheetPrompt(
     board: string,
     grade: string,
@@ -119,7 +117,8 @@ function buildWorksheetPrompt(
 ): string {
     const boardContext = getWorksheetBoardContext(board);
     const diff = options.difficulty || "moderate";
-    
+    const isMathSubject = subject.toLowerCase().includes("math") || subject.toLowerCase().includes("algebra") || subject.toLowerCase().includes("geometry");
+
     let diffInstruction = "";
     switch (diff) {
         case "easy": diffInstruction = "EASY: Direct textbook, simple recall."; break;
@@ -134,31 +133,51 @@ function buildWorksheetPrompt(
     const allocations = calculateChapterQuestionMap(chapterList, options.chapterWeights || {}, totalQs);
     const weightageInstruction = buildWeightagePromptBlock(allocations);
 
+    const answerLineShort = `\n_______________________________________\n_______________________________________\n_______________________________________\n_______________________________________\n`;
+    const answerLineLong = `\n_______________________________________\n_______________________________________\n_______________________________________\n_______________________________________\n_______________________________________\n_______________________________________\n_______________________________________\n_______________________________________\n_______________________________________\n_______________________________________\n`;
+    const answerLineVeryLong = answerLineLong + `_______________________________________\n_______________________________________\n_______________________________________\n_______________________________________\n`;
+
     const sectionInstructions = sections.map(s => {
-        const typeHint = s.type === "mcq" ? "MCQs, 4 options (a)-(d), ONE correct"
-            : s.type === "short_answer" ? "Short Answer (3-5 sentences)"
-            : s.type === "long_answer" ? "Long Answer (detailed paragraphs)"
-            : "Very Long Answer (detailed with steps)";
-        return `${s.name}: ${s.count}q × ${s.marksPerQuestion}m = ${s.totalMarks}M — ${typeHint}`;
-    }).join("\n");
+        if (s.type === "mcq") {
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. MCQs with 4 options (a)-(d), ONE correct. After each MCQ add: "Ans: ____"`;
+        } else if (s.type === "short_answer") {
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Short Answer questions. MANDATORY: After EACH question print exactly 4 blank lines like this:${answerLineShort}`;
+        } else if (s.type === "long_answer") {
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Long Answer questions. MANDATORY: After EACH question print exactly 10 blank lines like this:${answerLineLong}`;
+        } else {
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Very Long Answer questions. MANDATORY: After EACH question print exactly 14 blank lines like this:${answerLineVeryLong}`;
+        }
+    }).join("\n\n");
+
+    const diagramInstruction = isMathSubject ? `
+MATH DIAGRAMS: For geometry/coordinate questions add a tag on its own line after the question text (before blank lines):
+[FIG: <type> | <params>]
+Types: right_triangle, triangle, circle, parallel_lines, angle, coordinate_plane, number_line
+Example: [FIG: right_triangle | a=A b=B c=C ab=6cm bc=8cm ac=10cm right=b]
+Only add when the question requires a diagram. Never for algebra/arithmetic.` : "";
 
     const includeKey = options.includeAnswerKey !== false;
     const textbookBlock = textbookContent ? `\nSOURCE MATERIAL:\n${textbookContent}\n` : "";
 
-    return `${board.toUpperCase()} Board worksheet for Class ${grade} ${subject}.
+    return `${board.toUpperCase()} Board STUDENT WORKSHEET for Class ${grade} ${subject}.
 Chapters: ${chapters}
 
 ${boardContext}
 DIFFICULTY: ${diffInstruction}
 ${weightageInstruction}
 STRUCTURE: ${totalMarks} marks | ${duration} minutes
+${diagramInstruction}
+
+SECTION INSTRUCTIONS (follow exactly):
 ${sectionInstructions}
+
 ${textbookBlock}
-OUTPUT: Clean Markdown. Header with board/class/subject/marks/time. ### section headings. Sequential numbering (Q1,Q2...). Marks in brackets. One blank line between questions.
-${includeKey ? `After worksheet, add "---" then ## ANSWER KEY with concise model answers.` : "No answer key."}
+OUTPUT: Clean Markdown. Header with board/class/subject/marks/time. ### section headings. Sequential numbering Q1,Q2... Marks in brackets. BLANK ANSWER LINES after every non-MCQ question as specified.
+${includeKey ? `After full worksheet add "---" then ## ANSWER KEY with concise model answers.` : "No answer key."}
 ${options.instituteName ? `Institute: "${options.instituteName}"` : ""}
-All questions from specified chapters. Grade-appropriate. Total marks = ${totalMarks}. ${board.toUpperCase()} tone. If Source Material provided, use it strictly.`;
+All questions from specified chapters. Grade-appropriate. Total marks = ${totalMarks}. ${board.toUpperCase()} tone. Source Material: use strictly if provided.`;
 }
+
 
 // ─── Main generation function ───────────────────────────────────────────────
 
