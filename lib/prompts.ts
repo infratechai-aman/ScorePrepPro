@@ -122,21 +122,28 @@ export function constructPrompt(
       const match = s.choice.match(/from\s+(\d+)/i);
       if (match) {
         generateCount = parseInt(match[1], 10);
-        choiceInstruction = `Add instruction in italics under section name: '*Attempt any ${attemptCount} of the following ${generateCount} questions. Give scientific reasons where applicable.*'`;
+        choiceInstruction = `Add instruction in italics under section name: '*Attempt any ${attemptCount} of the following ${generateCount} questions.*'`;
       }
-    } else if (board !== "maharashtra" && attemptCount >= 2 && s.marskPerQuestion >= 2 && !s.type.toLowerCase().includes("mcq") && !s.type.toLowerCase().includes("objective") && !s.type.toLowerCase().includes("assertion")) {
-      // Auto-inject dynamic internal choices for subjective questions ONLY IF NOT MAHARASHTRA BOARD
-      // Maharashtra board expects very strict pre-defined choice counts from the pattern
+    } else if (board === "cbse" && attemptCount >= 2 && s.marskPerQuestion >= 2 && !s.type.toLowerCase().includes("mcq") && !s.type.toLowerCase().includes("objective") && !s.type.toLowerCase().includes("assertion") && !s.type.toLowerCase().includes("case")) {
+      // CBSE Board: Use OR-within-question internal choice (~33%)
+      // Generate extra questions = ceil(attemptCount / 3) for ~33% internal choice
+      const orCount = Math.ceil(attemptCount / 3);
+      generateCount = attemptCount; // Same count, but some questions get an OR alternative
+      choiceInstruction = `For ${orCount} of the ${attemptCount} questions, provide an OR alternative question of the same marks immediately after using "**OR**" on a separate line. This gives ~33% internal choice as per CBSE format. All questions are compulsory — students choose ONE from each OR pair.`;
+    } else if (board !== "maharashtra" && board !== "cbse" && attemptCount >= 2 && s.marskPerQuestion >= 2 && !s.type.toLowerCase().includes("mcq") && !s.type.toLowerCase().includes("objective") && !s.type.toLowerCase().includes("assertion")) {
+      // Other boards (ICSE etc.): use attempt-any-from style
       generateCount = attemptCount >= 4 ? attemptCount + 2 : attemptCount + 1;
-      choiceInstruction = `Add instruction in italics under section name: '*Attempt any ${attemptCount} of the following ${generateCount} questions. Give scientific reasons where applicable.*'`;
+      choiceInstruction = `Add instruction in italics under section name: '*Attempt any ${attemptCount} of the following ${generateCount} questions.*'`;
     }
 
     const sectionTotal = s.count * s.marskPerQuestion;
+    // Include section type in the section heading for descriptive headers
+    const sectionLabel = `${s.section} (${s.type})`;
     if (choiceInstruction) {
-      return `- **${s.section}**: ${s.type} [${sectionTotal} Mark(s)] | GENERATE ${generateCount} QUESTIONS. (Students attempt ${attemptCount}) | ${s.marskPerQuestion} Marks each. | ${choiceInstruction}`;
+      return `- **${sectionLabel}**: [${sectionTotal} Mark(s)] | GENERATE ${generateCount} QUESTIONS. (Students attempt ${attemptCount}) | ${s.marskPerQuestion} Marks each. | ${choiceInstruction}`;
     }
 
-    return `- **${s.section}**: ${s.type} [${sectionTotal} Mark(s)] | GENERATE ${attemptCount} QUESTIONS. | ${s.marskPerQuestion} Marks each.`;
+    return `- **${sectionLabel}**: [${sectionTotal} Mark(s)] | GENERATE ${attemptCount} QUESTIONS. | ${s.marskPerQuestion} Marks each.`;
   }).join("\n");
 
   const diff = options.difficulty || "moderate";
@@ -237,7 +244,7 @@ export function constructPrompt(
   else duration = "3 Hours";
 
   // Dynamic Section Headers
-  let sectionHeaderInstruction = "- **SECTION HEADERS**: Use '### SECTION A' style (Bold and large).";
+  let sectionHeaderInstruction = "- **SECTION HEADERS**: Use '### SECTION A (Type Name)' style. The section name MUST include the question type in parentheses. For example: '### SECTION A (Objective / MCQ)', '### SECTION B (Very Short Answer)', '### SECTION C (Short Answer)', '### SECTION D (Long Answer)', '### SECTION E (Case Based)'. This is MANDATORY.";
   if (board === "maharashtra") {
     sectionHeaderInstruction = "- **NO SECTION HEADERS**: DO NOT use 'SECTION A', 'SECTION B', etc. The Maharashtra board does NOT use sections. Use only the exact question numbers (e.g., '### Q.1 (A)') as the main headers.";
   }
@@ -467,7 +474,7 @@ export function constructSolutionPrompt(paperContent: string, board: string, sub
     STRICT OUTPUT FORMATTING:
     - **CRITICAL**: DO NOT put the entire answer key or multiple questions inside a single giant Markdown table.
     - **Standard Questions**: Answer standard questions using normal paragraphs and bullet points, NOT tables.
-    - **Numbering**: COPY the question numbers EXACTLY from the paper (e.g. "Q.1", "1."). Do not invent new numbering.
+    - **Numbering**: The answer key MUST start numbering from 1. Answer 1 = Paper Question 1, Answer 2 = Paper Question 2, etc. Do NOT continue from any other numbering. Use the format "1.", "2.", "3." etc.
     - **Match Columns**: ONLY use Markdown tables for specific "Match the Following" type questions.
       | Pair | Answer |
       | :--- | :--- |

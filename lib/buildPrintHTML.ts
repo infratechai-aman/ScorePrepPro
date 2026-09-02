@@ -277,10 +277,18 @@ function renderQuestion(q: ParsedQuestion, paperType: string, idx: number): stri
         html += `<div class="q-row"><span class="q-num">${idx}(B).</span><span class="q-body">${inlineMarkdown(q.orText)}</span></div>`;
     }
 
-    // Dotted answer lines for short worksheet/subjective questions
+    // Dotted answer lines for worksheet questions (scaled by marks)
     const marksNum = parseFloat(q.marks || '0');
-    if ((paperType === 'worksheet') && marksNum <= 2 && !q.options.length) {
-        html += `<div class="ans-lines"><div class="ans-line"></div><div class="ans-line"></div></div>`;
+    if (paperType === 'worksheet' && !q.options.length) {
+        let lineCount = 0;
+        if (marksNum <= 1) lineCount = 1;      // 1 mark: 1 answer line
+        else if (marksNum <= 2) lineCount = 3;  // 2 marks: 3 lines
+        else if (marksNum <= 3) lineCount = 5;  // 3 marks: 5 lines
+        else if (marksNum <= 4) lineCount = 7;  // 4 marks: 7 lines
+        else lineCount = 10;                    // 5+ marks: 10 lines
+        if (lineCount > 0) {
+            html += `<div class="ans-lines">${'<div class="ans-line"></div>'.repeat(lineCount)}</div>`;
+        }
     }
 
     html += `</div>`;
@@ -413,9 +421,9 @@ body {
 .q-marks { font-weight: bold; float: right; margin-left: 8px; font-size: 10pt; }
 
 /* ── MCQ options — two column table ── */
-.opt-table { width: 96%; margin: 3px 0 2px 32px; border-collapse: collapse; font-size: 10pt; }
-.opt-table td { width: 50%; padding: 1px 4px 1px 0; vertical-align: top; }
-.opt { margin-bottom: 1px; }
+.opt-table { width: 96%; margin: 8px 0 4px 32px; border-collapse: collapse; font-size: 10pt; }
+.opt-table td { width: 50%; padding: 2px 4px 2px 0; vertical-align: top; }
+.opt { margin-bottom: 3px; }
 
 /* ── Objective 2-col layout ── */
 .mcq-cols { column-count: 2; column-gap: 16px; column-rule: 1px solid #e5e7eb; }
@@ -438,8 +446,8 @@ body {
 .or-div::after { right: 0; }
 
 /* ── Answer lines (worksheet) ── */
-.ans-lines { margin: 4px 0 0 32px; }
-.ans-line { border-bottom: 1px dotted #999; margin-bottom: 12px; height: 0; }
+.ans-lines { margin: 6px 0 2px 32px; width: calc(100% - 32px); }
+.ans-line { border-bottom: 1px solid #888; margin-bottom: 14px; height: 0; width: 100%; }
 
 /* ── Footer ── */
 .paper-footer {
