@@ -336,6 +336,9 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
             setAvailableChapters(chapters);
             setSelectedChapters([]); // Reset selections
             setChapterWeights({});
+            if (subject.toLowerCase().includes("grammar") && questionType === "subjective") {
+                setQuestionType("worksheet");
+            }
         }
     }, [board, grade, subject]);
 
@@ -955,72 +958,83 @@ export default function GeneratorPage({ embedded = false }: { embedded?: boolean
                                         </div>
                                     )}
 
-                                    {/* Question Type Selector - Premium/Teacher only */}
-                                    {subject && (
-                                        <div className="space-y-3 pt-2">
-                                            <label className="text-sm font-semibold text-slate-700">Question Type</label>
-                                            <div className="grid grid-cols-3 gap-3">
-                                                {/* Subjective - always available */}
-                                                <button
-                                                    onClick={() => setQuestionType("subjective")}
-                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${questionType === "subjective"
-                                                            ? "border-indigo-500 bg-indigo-50 shadow-md shadow-indigo-100"
-                                                            : "border-slate-200 bg-white hover:border-slate-300"
-                                                        }`}
-                                                >
-                                                    <FileText className={`h-6 w-6 mx-auto mb-2 ${questionType === "subjective" ? "text-indigo-600" : "text-slate-400"}`} />
-                                                    <p className={`text-sm font-semibold ${questionType === "subjective" ? "text-indigo-700" : "text-slate-700"}`}>Subjective</p>
-                                                    <p className="text-[10px] text-slate-500 mt-1">Board-style paper</p>
-                                                </button>
+                                    {/* Question Type Selector */}
+                                    {subject && (() => {
+                                        const isGrammar = subject.toLowerCase().includes("grammar");
+                                        const isPro = userData?.plan === 'premium' || userData?.plan === 'teacher';
 
-                                                {/* Objective - Premium/Teacher only */}
-                                                <button
-                                                    onClick={() => {
-                                                        if (userData?.plan === 'premium' || userData?.plan === 'teacher') {
-                                                            setQuestionType("objective");
-                                                        }
-                                                    }}
-                                                    disabled={!(userData?.plan === 'premium' || userData?.plan === 'teacher')}
-                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 relative ${questionType === "objective"
-                                                            ? "border-emerald-500 bg-emerald-50 shadow-md shadow-emerald-100"
-                                                            : !(userData?.plan === 'premium' || userData?.plan === 'teacher')
-                                                                ? "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
-                                                                : "border-slate-200 bg-white hover:border-slate-300"
-                                                        }`}
-                                                >
-                                                    {!(userData?.plan === 'premium' || userData?.plan === 'teacher') && (
-                                                        <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">PRO</div>
+                                        return (
+                                            <div className="space-y-3 pt-2">
+                                                <label className="text-sm font-semibold text-slate-700">Question Type</label>
+                                                <div className={`grid ${isGrammar ? "grid-cols-2" : "grid-cols-3"} gap-3`}>
+                                                    {/* Subjective - Hidden ONLY for Grammar, available for all other subjects */}
+                                                    {!isGrammar && (
+                                                        <button
+                                                            onClick={() => setQuestionType("subjective")}
+                                                            className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${questionType === "subjective"
+                                                                    ? "border-indigo-500 bg-indigo-50 shadow-md shadow-indigo-100"
+                                                                    : "border-slate-200 bg-white hover:border-slate-300"
+                                                                }`}
+                                                        >
+                                                            <FileText className={`h-6 w-6 mx-auto mb-2 ${questionType === "subjective" ? "text-indigo-600" : "text-slate-400"}`} />
+                                                            <p className={`text-sm font-semibold ${questionType === "subjective" ? "text-indigo-700" : "text-slate-700"}`}>Subjective</p>
+                                                            <p className="text-[10px] text-slate-500 mt-1">Board-style paper</p>
+                                                        </button>
                                                     )}
-                                                    <ListChecks className={`h-6 w-6 mx-auto mb-2 ${questionType === "objective" ? "text-emerald-600" : "text-slate-400"}`} />
-                                                    <p className={`text-sm font-semibold ${questionType === "objective" ? "text-emerald-700" : "text-slate-700"}`}>Objective</p>
-                                                    <p className="text-[10px] text-slate-500 mt-1">MCQ, A-R, Fill</p>
-                                                </button>
 
-                                                {/* Worksheet - Premium/Teacher only */}
-                                                <button
-                                                    onClick={() => {
-                                                        if (userData?.plan === 'premium' || userData?.plan === 'teacher') {
-                                                            setQuestionType("worksheet");
-                                                        }
-                                                    }}
-                                                    disabled={!(userData?.plan === 'premium' || userData?.plan === 'teacher')}
-                                                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 relative ${questionType === "worksheet"
-                                                            ? "border-purple-500 bg-purple-50 shadow-md shadow-purple-100"
-                                                            : !(userData?.plan === 'premium' || userData?.plan === 'teacher')
-                                                                ? "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
-                                                                : "border-slate-200 bg-white hover:border-slate-300"
-                                                        }`}
-                                                >
-                                                    {!(userData?.plan === 'premium' || userData?.plan === 'teacher') && (
-                                                        <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">PRO</div>
-                                                    )}
-                                                    <ClipboardList className={`h-6 w-6 mx-auto mb-2 ${questionType === "worksheet" ? "text-purple-600" : "text-slate-400"}`} />
-                                                    <p className={`text-sm font-semibold ${questionType === "worksheet" ? "text-purple-700" : "text-slate-700"}`}>Worksheet</p>
-                                                    <p className="text-[10px] text-slate-500 mt-1">Mixed sections</p>
-                                                </button>
+                                                    {/* Objective */}
+                                                    <button
+                                                        onClick={() => {
+                                                            if (isPro || isGrammar) {
+                                                                setQuestionType("objective");
+                                                            }
+                                                        }}
+                                                        disabled={!isPro && !isGrammar}
+                                                        className={`p-4 rounded-xl border-2 text-center transition-all duration-200 relative ${questionType === "objective"
+                                                                ? "border-emerald-500 bg-emerald-50 shadow-md shadow-emerald-100"
+                                                                : !isPro && !isGrammar
+                                                                    ? "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
+                                                                    : "border-slate-200 bg-white hover:border-slate-300"
+                                                            }`}
+                                                    >
+                                                        {!isPro && !isGrammar && (
+                                                            <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">PRO</div>
+                                                        )}
+                                                        <ListChecks className={`h-6 w-6 mx-auto mb-2 ${questionType === "objective" ? "text-emerald-600" : "text-slate-400"}`} />
+                                                        <p className={`text-sm font-semibold ${questionType === "objective" ? "text-emerald-700" : "text-slate-700"}`}>Objective</p>
+                                                        <p className="text-[10px] text-slate-500 mt-1">
+                                                            {isGrammar ? "MCQ, Rule Drills, Spot Error" : "MCQ, A-R, Fill"}
+                                                        </p>
+                                                    </button>
+
+                                                    {/* Worksheet */}
+                                                    <button
+                                                        onClick={() => {
+                                                            if (isPro || isGrammar) {
+                                                                setQuestionType("worksheet");
+                                                            }
+                                                        }}
+                                                        disabled={!isPro && !isGrammar}
+                                                        className={`p-4 rounded-xl border-2 text-center transition-all duration-200 relative ${questionType === "worksheet"
+                                                                ? "border-purple-500 bg-purple-50 shadow-md shadow-purple-100"
+                                                                : !isPro && !isGrammar
+                                                                    ? "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
+                                                                    : "border-slate-200 bg-white hover:border-slate-300"
+                                                            }`}
+                                                    >
+                                                        {!isPro && !isGrammar && (
+                                                            <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">PRO</div>
+                                                        )}
+                                                        <ClipboardList className={`h-6 w-6 mx-auto mb-2 ${questionType === "worksheet" ? "text-purple-600" : "text-slate-400"}`} />
+                                                        <p className={`text-sm font-semibold ${questionType === "worksheet" ? "text-purple-700" : "text-slate-700"}`}>Worksheet</p>
+                                                        <p className="text-[10px] text-slate-500 mt-1">
+                                                            {isGrammar ? "Do as Directed, Gap-Fill, Editing" : "Mixed sections"}
+                                                        </p>
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        );
+                                    })()}
 
                                     <div className="mt-auto pt-8">
                                         <Button className="w-full" onClick={nextStep} disabled={!board || !subject}>

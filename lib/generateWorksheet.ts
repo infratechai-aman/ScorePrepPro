@@ -98,6 +98,51 @@ function calculateSections(totalMarks: number): WorksheetSection[] {
     // Note: 80 mark total = 8+6+6+5+15+20+16 = 76 (4 marks leeway for adjustment)
 }
 
+// ─── Grammar-specific section distribution calculator ────────────────────────
+// Strictly for Grammar worksheets: skill-based transformations, editing, and gap filling.
+// No generic essay-style 10/14-line long answers or awkward factual true/false.
+
+function calculateGrammarSections(totalMarks: number): WorksheetSection[] {
+    if (totalMarks <= 10) {
+        // 10 marks quick classroom drill: Gap filling (4M) + Do as Directed (4M) + Error Spotting (2M) = 10M
+        return [
+            { name: "Section A: Gap-Filling & Usage", type: "grammar_gap_fill", marksPerQuestion: 1, count: 4, totalMarks: 4 },
+            { name: "Section B: Do as Directed (Sentence Transformations)", type: "grammar_do_as_directed", marksPerQuestion: 1, count: 4, totalMarks: 4 },
+            { name: "Section C: Error Spotting & Correction", type: "grammar_error_spotting", marksPerQuestion: 1, count: 2, totalMarks: 2 },
+        ];
+    }
+
+    if (totalMarks <= 20) {
+        // 20 marks period test: Gap filling (5M) + Do as Directed (7M) + Editing Table (4M) + Sentence Synthesis (4M) = 20M
+        return [
+            { name: "Section A: Gap-Filling (Tenses, Prepositions & Modals)", type: "grammar_gap_fill", marksPerQuestion: 1, count: 5, totalMarks: 5 },
+            { name: "Section B: Do as Directed (Transformations)", type: "grammar_do_as_directed", marksPerQuestion: 1, count: 7, totalMarks: 7 },
+            { name: "Section C: Error Spotting & Editing (Proofreading)", type: "grammar_editing_table", marksPerQuestion: 1, count: 4, totalMarks: 4 },
+            { name: "Section D: Sentence Synthesis & Reordering", type: "grammar_synthesis", marksPerQuestion: 1, count: 4, totalMarks: 4 },
+        ];
+    }
+
+    if (totalMarks <= 40) {
+        // 40 marks comprehensive unit worksheet: Gap filling (8M) + Do as Directed (12M) + Editing Passage (8M) + Synthesis (6M) + Dialogue (6M) = 40M
+        return [
+            { name: "Section A: Contextual Gap-Filling (Tenses, Modals & Determiners)", type: "grammar_gap_fill", marksPerQuestion: 1, count: 8, totalMarks: 8 },
+            { name: "Section B: Do as Directed (Comprehensive Transformations)", type: "grammar_do_as_directed", marksPerQuestion: 1, count: 12, totalMarks: 12 },
+            { name: "Section C: Error Spotting & Editing Passage", type: "grammar_editing_table", marksPerQuestion: 1, count: 8, totalMarks: 8 },
+            { name: "Section D: Sentence Synthesis & Clauses", type: "grammar_synthesis", marksPerQuestion: 1, count: 6, totalMarks: 6 },
+            { name: "Section E: Dialogue Completion & Reported Speech", type: "grammar_dialogue", marksPerQuestion: 2, count: 3, totalMarks: 6 },
+        ];
+    }
+
+    // 80 marks master practice pack: Gap filling (16M) + Transformations (24M) + Editing Table (16M) + Synthesis (14M) + Dialogue (10M) = 80M
+    return [
+        { name: "Section A: Objective & Contextual Gap-Filling", type: "grammar_gap_fill", marksPerQuestion: 1, count: 16, totalMarks: 16 },
+        { name: "Section B: Do as Directed (Sentence Transformations)", type: "grammar_do_as_directed", marksPerQuestion: 1, count: 24, totalMarks: 24 },
+        { name: "Section C: Integrated Editing & Proofreading Passages", type: "grammar_editing_table", marksPerQuestion: 1, count: 16, totalMarks: 16 },
+        { name: "Section D: Sentence Synthesis, Clauses & Inversion", type: "grammar_synthesis", marksPerQuestion: 1, count: 14, totalMarks: 14 },
+        { name: "Section E: Reported Speech & Dialogue Transformation", type: "grammar_dialogue", marksPerQuestion: 2, count: 5, totalMarks: 10 },
+    ];
+}
+
 // ─── Duration calculator ────────────────────────────────────────────────────
 
 function calculateDuration(totalMarks: number): number {
@@ -165,55 +210,74 @@ function buildWorksheetPrompt(
     const answerLineVeryLong = answerLineLong + `_______________________________________\n_______________________________________\n_______________________________________\n_______________________________________\n`;
 
     const sectionInstructions = sections.map(s => {
+        // ── GRAMMAR-SPECIFIC SECTION TYPES (Applied strictly when isGrammarSubject is true) ──
+        if (isGrammarSubject) {
+            if (s.type === "grammar_gap_fill") {
+                return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Contextual gap-filling questions testing tenses, prepositions, modals, or determiners. Provide the base/cue word in parentheses at the end of the sentence. Format each with an in-line blank (________) followed by "Ans: ________"
+Example:
+1. By next month, they ________ (complete) the construction work. Ans: ________`;
+            } else if (s.type === "grammar_do_as_directed") {
+                return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Sentence transformation drills (Voice, Direct/Indirect Speech, Degrees of Comparison, Clauses, Conditionals, Inversion, Synthesis). Provide the base sentence followed by explicit instruction in brackets.
+MANDATORY: After EACH question print EXACTLY ONE single clean ruled blank line:
+Ans: ____________________________________________________________________
+Example:
+1. No sooner did the bell ring than the students rushed outside. (Rewrite using 'Hardly...when')
+Ans: ____________________________________________________________________`;
+            } else if (s.type === "grammar_error_spotting") {
+                return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Error spotting and correction sentences. Each sentence contains ONE grammatical error.
+MANDATORY: After EACH question print:
+Error: ________________ | Correction: ________________
+Example:
+1. Each of the suspected culprits were questioned by the police.
+Error: ________________ | Correction: ________________`;
+            } else if (s.type === "grammar_editing_table") {
+                return `${s.name}: ${s.count} lines x ${s.marksPerQuestion}m = ${s.totalMarks}M. Authentic proofreading / editing passage consisting of ${s.count} numbered lines where each line has ONE grammatical error.
+MANDATORY: Output the passage with line numbers (a)-(d) followed by a clean Markdown correction table:
+| Line No. | Incorrect Word | Correction |
+| :--- | :--- | :--- |
+| (a) | ________________ | ________________ |
+| (b) | ________________ | ________________ |`;
+            } else if (s.type === "grammar_synthesis") {
+                return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Sentence synthesis (joining sentences without using 'and', 'but', or 'so', or clause combining) or sentence reordering from jumbled words.
+MANDATORY: After EACH question print EXACTLY ONE single clean ruled blank line:
+Ans: ____________________________________________________________________
+Example:
+1. He heard the thunder. He immediately ran inside. (Join using a Participle)
+Ans: ____________________________________________________________________`;
+            } else if (s.type === "grammar_dialogue") {
+                return `${s.name}: ${s.count} dialogues x ${s.marksPerQuestion}m = ${s.totalMarks}M. Dialogue completion drill. Provide a short 2-person conversation (2-3 exchanges) followed by an indirect speech reported summary containing numbered blanks (a), (b) etc. for students to fill in.`;
+            }
+        }
+
+        // ── STANDARD SUBJECT SECTION TYPES (For all other subjects: Math, Science, SST, etc.) ──
         if (s.type === "mcq") {
-            const mcqDesc = isGrammarSubject
-                ? "Grammar MCQs (e.g. choose the correct verb tense, preposition, modal, determiner, or correct form of sentence)"
-                : "MCQs with 4 options (a)-(d), ONE correct";
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${mcqDesc}. Each option MUST be on a SEPARATE line:
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. MCQs with 4 options (a)-(d), ONE correct. Each option MUST be on a SEPARATE line:
 (a) Option A
 (b) Option B
 (c) Option C
 (d) Option D
 After each MCQ add: "Ans: ____"`;
         } else if (s.type === "true_false") {
-            const tfDesc = isGrammarSubject
-                ? "State whether the grammatical statement or rule/usage is TRUE or FALSE"
-                : "Write a statement and ask students to write TRUE or FALSE";
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${tfDesc}. After each statement add: "Ans: ____"
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Write a statement and ask students to write TRUE or FALSE. After each statement add: "Ans: ____"
 Example format:
-1. ${isGrammarSubject ? "An intransitive verb can never take an object." : "The chemical formula of water is H2O."} (True/False) Ans: ____`;
+1. The chemical formula of water is H2O. (True/False) Ans: ____`;
         } else if (s.type === "fill_blank") {
-            const fibDesc = isGrammarSubject
-                ? "Fill in the blank with appropriate preposition, conjunction, tense form of verb, or article"
-                : "Write a sentence with a key word/phrase replaced by a blank (________)";
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${fibDesc}. After each fill-in-the-blank add: "Ans: ____"
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Write a sentence with a key word/phrase replaced by a blank (________). After each fill-in-the-blank add: "Ans: ____"
 Example format:
-1. ${isGrammarSubject ? "She has been living in Mumbai ________ 2018. (since/for)" : "The process of converting sugar into alcohol is called ________."} Ans: ____`;
+1. The process of converting sugar into alcohol is called ________. Ans: ____`;
         } else if (s.type === "match_following") {
-            const matchDesc = isGrammarSubject
-                ? "Match Column A with Column B (e.g., Idioms/Phrases with Meanings, or Clauses with Types, or Synonyms/Antonyms)"
-                : "Match the Following question with two columns";
-            return `${s.name}: ${s.count} pairs x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${matchDesc}. Use a proper Markdown table:
+            return `${s.name}: ${s.count} pairs x ${s.marksPerQuestion}m = ${s.totalMarks}M. Create a "Match the Following" question with two columns. Use a proper Markdown table:
 | Column A | Column B |
 | :--- | :--- |
 | 1. Item | A. Match |
 | 2. Item | B. Match |
 The answers in Column B must be SHUFFLED (not in the same order as Column A).`;
         } else if (s.type === "short_answer") {
-            const saDesc = isGrammarSubject
-                ? "Do as Directed / Sentence Transformation (e.g. Change Voice, Direct to Indirect Speech, Identify Clause, Rewrite using 'Unless', Degrees of Comparison)"
-                : "Short Answer questions";
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${saDesc}. MANDATORY: After EACH question print exactly 4 blank lines like this:${answerLineShort}`;
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Short Answer questions. MANDATORY: After EACH question print exactly 4 blank lines like this:${answerLineShort}`;
         } else if (s.type === "long_answer") {
-            const laDesc = isGrammarSubject
-                ? "Integrated Grammar / Passage Editing / Error Spotting & Correction (Provide short passages or dialogues with grammatical errors to correct, or multi-step sentence synthesis)"
-                : "Long Answer questions";
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${laDesc}. MANDATORY: After EACH question print exactly 10 blank lines like this:${answerLineLong}`;
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Long Answer questions. MANDATORY: After EACH question print exactly 10 blank lines like this:${answerLineLong}`;
         } else {
-            const vlaDesc = isGrammarSubject
-                ? "Comprehensive Grammar Application (Dialogue completion, passage editing with full justification of rules)"
-                : "Very Long Answer questions";
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${vlaDesc}. MANDATORY: After EACH question print exactly 14 blank lines like this:${answerLineVeryLong}`;
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Very Long Answer questions. MANDATORY: After EACH question print exactly 14 blank lines like this:${answerLineVeryLong}`;
         }
     }).join("\n\n");
 
@@ -226,14 +290,21 @@ Only add when the question requires a diagram. Never for algebra/arithmetic.` : 
 
     const grammarInstruction = isGrammarSubject ? `
 === CRITICAL GRAMMAR INSTRUCTIONS ===
-1. This is a 100% PURE ENGLISH GRAMMAR worksheet for Class ${grade}.
-2. Every question MUST be a grammar drill, transformation, error spotting, or fill-in-the-blank.
+1. This is a 100% PURE ENGLISH GRAMMAR skill-practice worksheet for Class ${grade}.
+2. Every question MUST be a functional grammar drill, transformation, error spotting, or fill-in-the-blank.
 3. STRICTLY FORBIDDEN: NEVER include reading comprehension passages, literature poems, stories, character questions, or textbook prose questions.
-4. Short answers MUST be 'Do as Directed' with clear bracketed instructions e.g. "(Change into Indirect Speech)", "(Begin with 'Hardly had...')", "(Identify the clause)".
-` : "";
+4. DO NOT print generic 10-line or 14-line essay blank blocks. For sentence transformations and synthesis, use EXACTLY ONE single clean ruled answer line (Ans: ____________________________________________________________________).
+5. For editing/error correction, output a clean Markdown correction table with Line No., Incorrect Word, and Correction.` : "";
 
     const includeKey = options.includeAnswerKey !== false;
     const textbookBlock = textbookContent ? `\nSOURCE MATERIAL:\n${textbookContent}\n` : "";
+
+    const grammarKeyRules = isGrammarSubject ? `
+4. **FOR GRAMMAR ANSWER KEY**:
+   - For Gap-Filling: Provide the exact word/verb form (e.g. "1. had completed").
+   - For Do as Directed & Synthesis: Provide the complete, accurate rewritten sentence.
+   - For Error Spotting & Editing: Provide the filled-in table or list with exact Incorrect Word and Correction.
+   - For Dialogue Completion: Provide the exact indirect speech clauses for (a), (b), etc.` : "";
 
     const answerKeyInstructions = includeKey ? `After full worksheet add "---" then ## ANSWER KEY with concise model answers.
 CRITICAL ANSWER KEY RULES:
@@ -244,7 +315,11 @@ CRITICAL ANSWER KEY RULES:
    - 3 Marks: Answer must be 3-4 sentences long.
    - 4 Marks: Answer must be 4-5 sentences long.
    - 5+ Marks: Answer must be 5-6 sentences long with detailed explanation.
-3. For Match the Following: provide the correct pairings (e.g. "1-C, 2-A, 3-B").` : "No answer key.";
+3. For Match the Following: provide the correct pairings (e.g. "1-C, 2-A, 3-B").${grammarKeyRules}` : "No answer key.";
+
+    const blankLineNote = isGrammarSubject
+        ? "Clean single-line ruled answers (Ans: ____________________________________) or tables as specified. NO large 10-line or 14-line essay blocks."
+        : "BLANK ANSWER LINES after every non-MCQ/non-TF/non-FIB question as specified.";
 
     return `${board.toUpperCase()} Board STUDENT WORKSHEET for Class ${grade} ${subject}.
 Chapters: ${chapters}
@@ -260,7 +335,7 @@ SECTION INSTRUCTIONS (follow exactly):
 ${sectionInstructions}
 
 ${textbookBlock}
-OUTPUT: Clean Markdown. Header with board/class/subject/marks/time. ### section headings. Sequential numbering Q1,Q2... Marks in brackets. BLANK ANSWER LINES after every non-MCQ/non-TF/non-FIB question as specified.
+OUTPUT: Clean Markdown. Header with board/class/subject/marks/time. ### section headings. Sequential numbering Q1,Q2... Marks in brackets. ${blankLineNote}
 ${answerKeyInstructions}
 ${options.instituteName ? `Institute: "${options.instituteName}"` : ""}
 All questions from specified chapters. Grade-appropriate. Total marks = ${totalMarks}. ${board.toUpperCase()} tone. Source Material: use strictly if provided.`;
@@ -279,11 +354,12 @@ export async function generateWorksheet(
     options: GenerateWorksheetOptions = {}
 ): Promise<WorksheetResult> {
     const totalMarks = options.totalMarks || 40;
-    const sections = calculateSections(totalMarks);
+    const isGrammarSubject = subject.toLowerCase().includes("grammar");
+    const sections = isGrammarSubject ? calculateGrammarSections(totalMarks) : calculateSections(totalMarks);
     const duration = calculateDuration(totalMarks);
     const totalQuestions = sections.reduce((sum, s) => sum + s.count, 0);
 
-    console.log(`[Worksheet Engine] Generating worksheet: ${totalMarks} marks, ${totalQuestions} questions, ${duration} min`);
+    console.log(`[Worksheet Engine] Generating worksheet (${isGrammarSubject ? "GRAMMAR" : "STANDARD"}): ${totalMarks} marks, ${totalQuestions} questions, ${duration} min`);
     console.log(`[Worksheet Engine] Sections:`, sections.map(s => `${s.name}: ${s.count}q × ${s.marksPerQuestion}m`));
 
     // Fetch scraped textbook content to ground the AI
