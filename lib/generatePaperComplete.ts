@@ -85,7 +85,17 @@ function resolvePattern(board: string, grade: string, subject: string, totalMark
     }
 
     if (!pattern) {
-        if (["English", "Hindi", "Marathi", "Sanskrit"].includes(subject)) {
+        if (subject.toLowerCase().includes("grammar")) {
+            pattern = {
+                totalMarks: 40,
+                structure: [
+                    { section: "SECTION A", type: "Multiple Choice Questions (Objective)", marskPerQuestion: 1, count: 10 },
+                    { section: "SECTION B", type: "Do as Directed (Sentence Transformation)", marskPerQuestion: 2, count: 5 },
+                    { section: "SECTION C", type: "Fill in the Blanks / Gap Filling", marskPerQuestion: 1, count: 10 },
+                    { section: "SECTION D", type: "Error Spotting and Sentence Correction", marskPerQuestion: 2, count: 5 }
+                ]
+            };
+        } else if (["English", "Hindi", "Marathi", "Sanskrit"].includes(subject)) {
             pattern = {
                 totalMarks: 40,
                 structure: [
@@ -148,6 +158,7 @@ function resolvePattern(board: string, grade: string, subject: string, totalMark
 function getBoardContext(board: string, grade: string, subject: string, chapters: string, options: GenerateCompleteOptions) {
     const diff = options.difficulty || "moderate";
     const isMathSubject = subject.toLowerCase().includes("math") || subject.toLowerCase().includes("algebra") || subject.toLowerCase().includes("geometry");
+    const isGrammarSubject = subject.toLowerCase().includes("grammar");
 
     let difficultyInstruction = "";
     switch (diff) {
@@ -173,7 +184,17 @@ function getBoardContext(board: string, grade: string, subject: string, chapters
         : `80-90% questions from ${board.toUpperCase()} textbook exercises.`;
 
     let boardSpecific = '';
-    if (board === "maharashtra" && isMathSubject) {
+    if (isGrammarSubject) {
+        if (board === "maharashtra") {
+            boardSpecific = `SSC LANGUAGE STUDY / GRAMMAR. Strictly test English grammar rules: Transformation of sentences, Change the Voice, Direct/Indirect Speech, Tenses, Question Tags, Degrees of Comparison, Modal Auxiliaries, Clauses, Prefixes/Suffixes. Use standard SSC instructions like "Do as directed", "Rewrite as...", "Identify the clause". FORBIDDEN: Literature, poems, reading comprehension passages, or essay questions.`;
+        } else if (board === "cbse") {
+            boardSpecific = `CBSE INTEGRATED GRAMMAR. Strictly test English grammar: Tenses (gap filling), Subject-Verb Concord, Modals, Reported Speech (Dialogue transformation), Editing/Omission, Clauses, and Determiners. FORBIDDEN: Literature, stories, reading comprehension passages, poems.`;
+        } else if (board === "icse") {
+            boardSpecific = `ICSE FUNCTIONAL GRAMMAR. Strictly test English grammar: Fill in the correct form of verbs (Tenses), Preposition gap-filling, Joining sentences without using 'and', 'but', or 'so', Sentence transformations (Voice, Speech, Degrees). FORBIDDEN: Literature, stories, comprehension passages.`;
+        } else {
+            boardSpecific = `ENGLISH GRAMMAR PAPER. Strictly test grammatical rules, sentence transformations, tenses, active/passive, direct/indirect, prepositions, and error correction. FORBIDDEN: Literature, passages, or stories.`;
+        }
+    } else if (board === "maharashtra" && isMathSubject) {
         let firewall = "";
         if (subject.includes("Algebra") || subject.includes("Part-I")) firewall = "STRICTLY ALGEBRA ONLY. NO GEOMETRY.";
         else if (subject.includes("Geometry") || subject.includes("Part-II")) firewall = "STRICTLY GEOMETRY ONLY.";
@@ -196,7 +217,7 @@ Params use key=value format. Only add when question REQUIRES a diagram. Never fo
 
     const chapterWeights = options.chapterWeights || {};
 
-    return { difficultyInstruction, toneInstruction, textbookSourcing, boardSpecific, isMathSubject, chapterWeights, diagramInstruction };
+    return { difficultyInstruction, toneInstruction, textbookSourcing, boardSpecific, isMathSubject, isGrammarSubject, chapterWeights, diagramInstruction };
 }
 
 // ─── Helper: Build system message (sent ONCE, not per-section) ──────────────
@@ -308,7 +329,9 @@ async function generateSection(
     // Section-specific formatting rules (compact)
     let formatRules = "";
     const typeLower = section.type.toLowerCase();
-    if (typeLower.includes("mcq") || typeLower.includes("objective") || typeLower.includes("assertion")) {
+    if (context.isGrammarSubject) {
+        formatRules = `Provide clear stimulus sentences followed by bracketed instructions. For transformation: provide the base sentence and "(Do as directed: ...)" or "(Change into ...)". For gap filling: use clean blanks "___". For error correction: provide sentences with one error or underlined part. Ensure questions directly test the requested grammar topic.`;
+    } else if (typeLower.includes("mcq") || typeLower.includes("objective") || typeLower.includes("assertion")) {
         formatRules = `Each question: 4 options (a)(b)(c)(d). For Assertion-Reason use standard 4 options. Concise.`;
     } else if (typeLower.includes("case") || typeLower.includes("source") || typeLower.includes("passage") || typeLower.includes("paragraph")) {
         formatRules = `Provide a 150-250 word passage, then 4-5 sub-questions (i),(ii),(iii),(iv). No snippets.`;

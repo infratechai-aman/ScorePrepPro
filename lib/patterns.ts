@@ -34,6 +34,15 @@ export const BOARD_PATTERNS: any = {
                     { section: "SECTION C", type: "Writing Skills", marskPerQuestion: 8, count: 2 },
                     { section: "SECTION D", type: "Literature (Short Answer)", marskPerQuestion: 2, count: 6 }
                 ]
+            },
+            "Grammar": {
+                totalMarks: 50,
+                structure: [
+                    { section: "SECTION A", type: "Multiple Choice Questions (MCQs)", marskPerQuestion: 1, count: 15 },
+                    { section: "SECTION B", type: "Fill in the Blanks / Gap Filling", marskPerQuestion: 1, count: 15 },
+                    { section: "SECTION C", type: "Do as Directed / Sentence Transformation", marskPerQuestion: 2, count: 6 },
+                    { section: "SECTION D", type: "Error Spotting and Sentence Correction", marskPerQuestion: 2, count: 4 }
+                ]
             }
         },
 
@@ -110,6 +119,16 @@ export const BOARD_PATTERNS: any = {
                         { section: "खंड-ख", type: "व्याकरण", marskPerQuestion: 1, count: 15 },
                         { section: "खंड-ग", type: "पाठ्यपुस्तक (लघु उत्तर)", marskPerQuestion: 2, count: 8 },
                         { section: "खंड-घ", type: "लेखन (निबंध / पत्र)", marskPerQuestion: 5, count: 3 }
+                    ]
+                },
+                "Grammar": {
+                    totalMarks: 80,
+                    structure: [
+                        { section: "SECTION A", type: "MCQs & Objective Grammar", marskPerQuestion: 1, count: 20 },
+                        { section: "SECTION B", type: "Fill in the Blanks (Tenses, Prepositions, Modals)", marskPerQuestion: 1, count: 20 },
+                        { section: "SECTION C", type: "Do as Directed (Voice, Speech, Degree, Clauses)", marskPerQuestion: 2, count: 10 },
+                        { section: "SECTION D", type: "Error Detection, Editing & Omission", marskPerQuestion: 1, count: 10 },
+                        { section: "SECTION E", type: "Sentence Synthesis & Reordering", marskPerQuestion: 2, count: 5 }
                     ]
                 }
             };
@@ -197,6 +216,16 @@ export const BOARD_PATTERNS: any = {
                     { section: "SECTION C", type: "Literature Short Answer", marskPerQuestion: 2, count: 10 },
                     { section: "SECTION D", type: "Literature Long Answer", marskPerQuestion: 5, count: 4 }
                 ]
+            },
+            "Grammar": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "MCQs & Objective Grammar", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Integrated Gap Filling (Tenses & Prepositions)", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION C", type: "Do as Directed (Voice, Speech, Clauses, Transformation)", marskPerQuestion: 2, count: 10 },
+                    { section: "SECTION D", type: "Editing, Omission & Error Correction", marskPerQuestion: 1, count: 10 },
+                    { section: "SECTION E", type: "Sentence Synthesis & Contextual Transformation", marskPerQuestion: 2, count: 5 }
+                ]
             }
         },
 
@@ -270,6 +299,16 @@ export const BOARD_PATTERNS: any = {
                     { section: "SECTION B", type: "Grammar & Writing Skills", marskPerQuestion: 1, count: 10 },
                     { section: "SECTION C", type: "Literature Short Answer", marskPerQuestion: 2, count: 10 },
                     { section: "SECTION D", type: "Literature Long Answer", marskPerQuestion: 5, count: 4 }
+                ]
+            },
+            "Grammar": {
+                totalMarks: 80,
+                structure: [
+                    { section: "SECTION A", type: "Multiple Choice Questions (MCQs)", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION B", type: "Gap Filling (Tenses, Modals, Determiners)", marskPerQuestion: 1, count: 20 },
+                    { section: "SECTION C", type: "Reported Speech & Dialogue Transformation", marskPerQuestion: 2, count: 6 },
+                    { section: "SECTION D", type: "Do as Directed (Voice, Clauses, Transformation of Sentences)", marskPerQuestion: 2, count: 7 },
+                    { section: "SECTION E", type: "Error Spotting & Editing (Board Pattern)", marskPerQuestion: 1, count: 14 }
                 ]
             }
         }
@@ -355,6 +394,16 @@ export const BOARD_PATTERNS: any = {
                     { section: "Q.5 (B)", type: "Application-based Answer", marskPerQuestion: 4, count: 1, choice: "Any 1 from 2" },
                     { section: "Q.6", type: "Source-based / Paragraph Answer", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" }
                 ]
+            },
+            "Grammar": {
+                totalMarks: 40,
+                structure: [
+                    { section: "Q.1 (A)", type: "Language Study (Objective / MCQs)", marskPerQuestion: 1, count: 8 },
+                    { section: "Q.1 (B)", type: "Do as Directed (1-mark transformation)", marskPerQuestion: 1, count: 8 },
+                    { section: "Q.2 (A)", type: "Transformation of Sentences (Voice, Speech, Clauses)", marskPerQuestion: 2, count: 4, choice: "Any 4 from 5" },
+                    { section: "Q.2 (B)", type: "Sentence Synthesis & Word Formation", marskPerQuestion: 2, count: 4, choice: "Any 4 from 5" },
+                    { section: "Q.3", type: "Error Spotting and Sentence Correction", marskPerQuestion: 2, count: 4 }
+                ]
             }
         },
 
@@ -431,6 +480,16 @@ export const BOARD_PATTERNS: any = {
                     { section: "Q.3", type: "Give geographical reasons", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
                     { section: "Q.4", type: "Write a detailed note / Distinguish between", marskPerQuestion: 3, count: 2, choice: "Any 2 from 4" },
                     { section: "Q.5", type: "Explain in detail / Application-based", marskPerQuestion: 4, count: 2, choice: "Any 2 from 3" }
+                ]
+            },
+            "Grammar": {
+                totalMarks: 40,
+                structure: [
+                    { section: "Q.1 (A)", type: "Language Study (Objective / MCQs)", marskPerQuestion: 1, count: 8 },
+                    { section: "Q.1 (B)", type: "Do as Directed (1-mark transformation)", marskPerQuestion: 1, count: 8 },
+                    { section: "Q.2 (A)", type: "Transformation of Sentences (Voice, Speech, Clauses)", marskPerQuestion: 2, count: 4, choice: "Any 4 from 5" },
+                    { section: "Q.2 (B)", type: "Sentence Synthesis & Word Formation", marskPerQuestion: 2, count: 4, choice: "Any 4 from 5" },
+                    { section: "Q.3", type: "Error Spotting and Sentence Correction", marskPerQuestion: 2, count: 4 }
                 ]
             }
         },
@@ -510,6 +569,16 @@ export const BOARD_PATTERNS: any = {
                         { section: "Section III", type: "Poetry / Literature Short Answer", marskPerQuestion: 2, count: 5 },
                         { section: "Section IV", type: "Writing Skills (Essay / Letter)", marskPerQuestion: 5, count: 2 }
                     ]
+                },
+                "Grammar": {
+                    totalMarks: 40,
+                    structure: [
+                        { section: "Q.1 (A)", type: "MCQs (Choose the correct option)", marskPerQuestion: 1, count: 8 },
+                        { section: "Q.1 (B)", type: "Fill in the blanks (Tenses / Prepositions / Articles)", marskPerQuestion: 1, count: 8 },
+                        { section: "Q.2 (A)", type: "Do as Directed (Sentence transformation)", marskPerQuestion: 2, count: 4 },
+                        { section: "Q.2 (B)", type: "Identify and Change (Voice / Degree / Speech)", marskPerQuestion: 2, count: 4 },
+                        { section: "Q.3", type: "Punctuation and Error Correction", marskPerQuestion: 2, count: 4 }
+                    ]
                 }
             };
             return acc;
@@ -545,6 +614,15 @@ export const BOARD_PATTERNS: any = {
                     structure: [
                         { section: "SECTION A", type: "Short Answer (Compulsory)", marskPerQuestion: 2, count: 20 },
                         { section: "SECTION B", type: "Long Answer (any 4 of 6)", marskPerQuestion: 10, count: 4, choice: "Any 4 from 6" }
+                    ]
+                },
+                "Grammar": {
+                    totalMarks: 80,
+                    structure: [
+                        { section: "SECTION A", type: "Fill in blanks with correct form of verbs (Tenses)", marskPerQuestion: 1, count: 20 },
+                        { section: "SECTION B", type: "Fill in blanks with appropriate Prepositions", marskPerQuestion: 1, count: 20 },
+                        { section: "SECTION C", type: "Join sentences without using and, but, or so", marskPerQuestion: 2, count: 10 },
+                        { section: "SECTION D", type: "Do as Directed (Sentence transformation & Voice)", marskPerQuestion: 2, count: 10 }
                     ]
                 }
             };

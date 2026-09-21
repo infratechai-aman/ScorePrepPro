@@ -29,7 +29,17 @@ export function constructPrompt(
 
   if (!pattern) {
     console.warn(`[constructPrompt] Exact Pattern not found for Board: ${board}, Class: ${grade}, Subject: ${subject}. Using fallback.`);
-    if (["English", "Hindi", "Marathi", "Sanskrit"].includes(subject)) {
+    if (subject.toLowerCase().includes("grammar")) {
+      pattern = {
+        totalMarks: 40,
+        structure: [
+          { section: "SECTION A", type: "Objective Grammar (MCQs / Gap Filling)", marskPerQuestion: 1, count: 10 },
+          { section: "SECTION B", type: "Language Study & Do as Directed", marskPerQuestion: 2, count: 5 },
+          { section: "SECTION C", type: "Transformation of Sentences", marskPerQuestion: 3, count: 4 },
+          { section: "SECTION D", type: "Integrated Grammar & Error Correction", marskPerQuestion: 4, count: 2 }
+        ]
+      };
+    } else if (["English", "Hindi", "Marathi", "Sanskrit"].includes(subject)) {
       pattern = {
         totalMarks: 40,
         structure: [
@@ -201,9 +211,17 @@ export function constructPrompt(
   }
 
   // Textbook Question Sourcing Logic (grade-aware)
+  const isGrammarSubject = subject.toLowerCase().includes("grammar");
   const gradeNum = parseInt(grade, 10) || 0;
   let textbookSourcingInstruction = '';
-  if (gradeNum >= 1 && gradeNum <= 9) {
+  if (isGrammarSubject) {
+    textbookSourcingInstruction = `
+      === GRAMMAR CURRICULUM & EXERCISE SOURCING (CLASS ${grade}) ===
+      - Sourced from standard ${board.toUpperCase()} English Grammar curriculum for Class ${grade}.
+      - Generate authentic, rigorous grammatical exercises, "Do as Directed", sentence transformations, and error correction drills.
+      - STRICTLY NO prose/poetry passages, literature extracts, or character questions. All questions must test grammatical rules and usage.
+    `;
+  } else if (gradeNum >= 1 && gradeNum <= 9) {
     textbookSourcingInstruction = `
       === TEXTBOOK EXERCISE SOURCING (MANDATORY FOR CLASS ${grade}) ===
       For Class ${grade}, 90% to 100% of the questions MUST come strictly from the textbook's **end-of-chapter exercises**.
@@ -253,7 +271,35 @@ export function constructPrompt(
   const isMathSubject = subject.toLowerCase().includes("math") || subject.toLowerCase().includes("algebra") || subject.toLowerCase().includes("geometry");
   
   let boardSpecificInstructions = '';
-  if (board === "maharashtra" && isMathSubject) {
+  if (isGrammarSubject) {
+    if (board === "maharashtra") {
+      boardSpecificInstructions = `
+        === MAHARASHTRA SSC LANGUAGE STUDY & GRAMMAR RULES ===
+        - Follow Maharashtra Board Language Study (Section I / B) format:
+        - Do as Directed (Simple/Compound/Complex sentences, Voice change, Direct/Indirect speech, Degrees of comparison, Infinitives/Gerunds/Participles, Punctuation, Word chains, Framing questions, Clauses).
+        - Error spotting and sentence correction.
+        - STRICTLY NO textbook chapter/prose/poem questions.
+      `;
+    } else if (board === "cbse") {
+      boardSpecificInstructions = `
+        === CBSE INTEGRATED GRAMMAR RULES ===
+        - Follow CBSE Integrated Grammar specifications for Class ${grade}:
+        - Determiners, Tenses, Modals, Subject-Verb Concord, Reported Speech (Commands/Requests, Statements, Questions).
+        - Gap filling, Error spotting/Editing, and Sentence Transformation / Reordering.
+        - STRICTLY NO literature or reading comprehension passages.
+      `;
+    } else if (board === "icse") {
+      boardSpecificInstructions = `
+        === ICSE FUNCTIONAL GRAMMAR RULES ===
+        - Follow ICSE English Language Paper 1 (Question 5) format:
+        - Fill in blanks with correct form of verbs (Tenses).
+        - Fill in blanks with appropriate prepositions / phrasal verbs.
+        - Join sentences without using 'and', 'but', or 'so'.
+        - Transformation of sentences according to instructions given after each without changing meaning.
+        - STRICTLY NO literature or reading comprehension passages.
+      `;
+    }
+  } else if (board === "maharashtra" && isMathSubject) {
     let mathSyllabusFirewall = "";
     if (subject.includes("Algebra") || subject.includes("Part-I")) {
       mathSyllabusFirewall = "STRICTLY ALGEBRA ONLY. NO GEOMETRY. Do not use geometric shapes, areas, perimeters, angles, or shape properties. Focus on linear equations, quadratic equations, arithmetic progression, probability, statistics, etc.";
@@ -331,7 +377,15 @@ export function constructPrompt(
 
   // Mandatory inclusions — board-aware
   let mandatoryInclusions = '';
-  if (board === "maharashtra" && isMathSubject) {
+  if (isGrammarSubject) {
+    mandatoryInclusions = `
+      === MANDATORY GRAMMAR INCLUSIONS ===
+      - Ensure all questions are authentic, well-structured grammatical drills.
+      - Each "Do as Directed" or sentence transformation question must have explicit bracketed instructions e.g. "(Rewrite in Passive Voice)", "(Begin with 'No sooner...')", "(Identify the clause and state its kind)".
+      - Error spotting questions must provide clear sentences/passages with identifiable grammatical errors.
+      - STRICTLY NO prose/poetry literature questions or character questions.
+    `;
+  } else if (board === "maharashtra" && isMathSubject) {
     // SSC Maths: NO match-the-following, NO passages
     mandatoryInclusions = `
       === MANDATORY INCLUSIONS (SSC Maths) ===
@@ -359,6 +413,8 @@ export function constructPrompt(
   let highValueInstruction = '';
   if (isMathSubject) {
     highValueInstruction = `- **HIGH-VALUE QUESTIONS (3, 4 & 5 Marks)**: For questions worth 3, 4, or 5 marks, generate multi-step numerical/solving problems that require detailed pen-and-paper working. 4-mark and 5-mark problems must have more steps than 3-mark problems. Do NOT generate theory or discussion for Maths.`;
+  } else if (isGrammarSubject) {
+    highValueInstruction = `- **HIGH-VALUE QUESTIONS (3, 4 & 5 Marks)**: For questions worth 3, 4, or 5 marks, generate comprehensive grammar applications: multi-part "Do as Directed" sets, passage editing/error correction with justification, or complex sentence synthesis. Do not generate literature or essay questions.`;
   } else {
     highValueInstruction = `- **HIGH-VALUE QUESTIONS (3, 4 & 5 Marks)**: For questions worth 3, 4 or 5 marks, you MUST generate detailed, complex, multi-part questions (e.g., asking for a definition + explanation + applications + example) that genuinely require a long, extensive answer. 5-mark questions must be significantly larger than 3-mark questions. Do not generate simple 1-line questions for high marks under any circumstances.`;
   }

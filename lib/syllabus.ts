@@ -1,6 +1,99 @@
 // Comprehensive Syllabus Database
 // Sources: shaalaa.com (Balbharati, NCERT, Selina), maharashtrastudy.com, selfstudys.com
-// Structure: board → class → subject → chapters[]
+// Standardized Curriculum-Aligned Grammar Topics (Classes 5 to 10)
+export const GRAMMAR_TOPICS_5 = [
+    "Nouns (Proper, Common, Collective, Abstract)",
+    "Nouns (Number and Gender)",
+    "Pronouns and their Types",
+    "Adjectives and Degrees of Comparison",
+    "Verbs and Simple Tenses (Present, Past, Future)",
+    "Adverbs (Manner, Time, Place)",
+    "Prepositions of Place and Time",
+    "Conjunctions (and, but, or, because, so)",
+    "Articles (A, An, The)",
+    "Subject and Predicate",
+    "Types of Sentences (Declarative, Interrogative, Imperative, Exclamatory)",
+    "Punctuation and Capital Letters",
+    "Synonyms and Antonyms"
+];
+
+export const GRAMMAR_TOPICS_6 = [
+    "Nouns, Pronouns, and Determiners",
+    "Adjectives and Degrees of Comparison",
+    "Verbs (Transitive and Intransitive)",
+    "Tenses (Simple, Continuous, and Perfect)",
+    "Subject-Verb Agreement",
+    "Adverbs and Adverbials",
+    "Prepositions and Prepositional Phrases",
+    "Conjunctions and Sentence Connectors",
+    "Active and Passive Voice (Basic)",
+    "Direct and Indirect Speech (Basic)",
+    "Question Tags",
+    "Prefixes, Suffixes, and Word Formation",
+    "Punctuation and Contractions"
+];
+
+export const GRAMMAR_TOPICS_7 = [
+    "Types of Sentences and Transformation",
+    "Nouns, Countable/Uncountable and Quantifiers",
+    "Pronouns (Relative, Demonstrative, Reflexive)",
+    "Tenses (All 12 Tense Forms and Uses)",
+    "Modals and Auxiliaries (Can, Could, May, Might, Should, Must)",
+    "Subject-Verb Concord (Agreement)",
+    "Active and Passive Voice",
+    "Direct and Indirect Speech (Statements, Commands, Requests)",
+    "Prepositions and Phrasal Verbs",
+    "Conjunctions (Coordinating and Subordinating)",
+    "Clauses (Main and Subordinate Clauses)",
+    "Idioms and Phrasal Expressions",
+    "Editing and Error Spotting"
+];
+
+export const GRAMMAR_TOPICS_8 = [
+    "Tenses and Verb Forms in Context",
+    "Modals and Semi-Modals (Ought to, Used to, Need, Dare)",
+    "Active and Passive Voice (Advanced & Imperatives)",
+    "Reported Speech (Dialogue Transformation & Questions)",
+    "Subject-Verb Agreement (Advanced Rules)",
+    "Non-Finite Verbs (Infinitives, Gerunds, Participles)",
+    "Clauses (Noun, Adjective, and Adverb Clauses)",
+    "Conditionals (Zero, First, Second, Third)",
+    "Transformation of Sentences (Affirmative/Negative, Interrogative, Exclamatory)",
+    "Prepositions and Collocations",
+    "Sentence Synthesis (Joining without and/but/so)",
+    "Editing, Omission, and Sentence Reordering"
+];
+
+export const GRAMMAR_TOPICS_9 = [
+    "Tenses (Integrated Gap Filling & Contextual Use)",
+    "Modals in Context (Ability, Permission, Obligation, Probability)",
+    "Subject-Verb Concord (Advanced Exceptions)",
+    "Reported Speech (Statements, Commands, Requests, Questions)",
+    "Clauses (Noun, Adverb, Relative/Adjective Clauses)",
+    "Determiners and Articles",
+    "Active and Passive Voice (Formal & News Contexts)",
+    "Transformation of Sentences (Simple, Compound, Complex)",
+    "Degrees of Comparison and Interchange",
+    "Prepositions and Complex Prepositional Phrases",
+    "Sentence Synthesis and Combining Sentences",
+    "Error Correction, Editing, and Omission"
+];
+
+export const GRAMMAR_TOPICS_10 = [
+    "Tenses (Advanced Contextual Usage & Gap Filling)",
+    "Modals and Conditionals in Dialogue",
+    "Subject-Verb Agreement / Concord",
+    "Reported Speech (Dialogue Completion & Reporting)",
+    "Determiners (Articles, Quantifiers, Distributives)",
+    "Active and Passive Voice (Board Exam Style)",
+    "Clauses & Synthesis (Relative, Conditional, Noun Clauses)",
+    "Transformation of Sentences (No sooner... than, As soon as, Too... to, Unless)",
+    "Question Tags and Rhetorical Transformations",
+    "Sentence Synthesis (Simple, Compound, Complex)",
+    "Error Spotting, Editing, and Gap-Filling (Board Exam Patterns)",
+    "Vocabulary, Idiomatic Expressions, and Collocations",
+    "Language Study / Figures of Speech (Metaphor, Simile, Personification, etc.)"
+];
 
 export const SYLLABUS_DB: Record<string, any> = {
     // ═══════════════════════════════════════════════════════════════
@@ -30,26 +123,30 @@ export const SYLLABUS_DB: Record<string, any> = {
         "5": {
             "Mathematics": ["Roman Numerals", "Number Work", "Addition and Subtraction", "Multiplication and Division", "Fractions", "Angles", "Circles", "Multiples and Factors", "Decimal Fractions", "Measuring Time", "Problems on Measurement", "Perimeter and Area", "Three Dimensional Objects and Nets", "Pictographs", "Patterns", "Preparation for Algebra"],
             "Environmental Studies Part 1": ["Our Earth and Our Solar System", "Motions of the Earth", "The Earth and its Living World", "Environmental Balance", "Family Values", "Rules Are for Everyone", "Let us Solve our own Problems", "Public Facilities and my School", "Maps – our Companions", "Getting to Know India", "Our Home and Environment", "Food for All", "Methods of Preserving Food", "Transport", "Communication and Mass Media", "Water", "Clothes - our Necessity", "The Environment and Us", "Constituents of Food", "Our Emotional World", "Busy at Work – our Internal Organs", "Growth and Personality Development", "Infectious Diseases and how to Prevent them", "Substances, Objects and Energy", "Community Health and Hygiene"],
-            "Environmental Studies Part 2": ["What is History?", "History and the Concept of Time", "Life on Earth", "Evolution", "Evolution of Mankind", "Stone Age: Stone Tools", "From Shelters to Village-settlements", "Beginning of Settled Life", "Settled Life and Urban Civilization", "Historic Period"]
+            "Environmental Studies Part 2": ["What is History?", "History and the Concept of Time", "Life on Earth", "Evolution", "Evolution of Mankind", "Stone Age: Stone Tools", "From Shelters to Village-settlements", "Beginning of Settled Life", "Settled Life and Urban Civilization", "Historic Period"],
+            "Grammar": GRAMMAR_TOPICS_5
         },
         "6": {
             "Mathematics": ["Basic Concepts in Geometry", "Angles", "Integers", "Operations on Fractions", "Decimal Fractions", "Bar Graphs", "Symmetry", "Divisibility", "HCF-LCM", "Equations", "Ratio-Proportion", "Percentage", "Profit-Loss", "Banks and Simple Interest", "Triangles and their Properties", "Quadrilaterals", "Geometrical Constructions", "Three Dimensional Shapes"],
             "General Science": ["Natural Resources – Air, Water and Land", "The Living World", "Diversity in Living Things and their Classification", "Disaster Management", "Substances in the Surroundings – Their States and Properties", "Substances in Daily Use", "Nutrition and Diet", "Our Skeletal System and the Skin", "Motion and Types of Motion", "Force and Types of Force", "Work and Energy", "Simple Machines", "Sound", "Light and the Formation of Shadows", "Fun with Magnets", "The Universe"],
             "History and Civics": ["The Indian Subcontinent and History", "Sources of History", "The Harappan Civilization", "The Vedic Civilization", "Religious Trends in Ancient India", "Janapadas and Mahajanapadas", "India during the Maurya Period", "States after the Maurya Empire", "Ancient Kingdoms of the South", "Ancient India: Cultural", "Ancient India and the World"],
-            "Geography": ["The Earth and the Graticule", "Let us Use the Graticule", "Comparing a Globe and a Map; Field Visits", "Weather and Climate", "Temperature", "Importance of Oceans", "Rocks and Rock Types", "Natural Resources", "Energy Resources", "Human Occupations"]
+            "Geography": ["The Earth and the Graticule", "Let us Use the Graticule", "Comparing a Globe and a Map; Field Visits", "Weather and Climate", "Temperature", "Importance of Oceans", "Rocks and Rock Types", "Natural Resources", "Energy Resources", "Human Occupations"],
+            "Grammar": GRAMMAR_TOPICS_6
         },
         "7": {
             "Mathematics": ["Geometrical Constructions", "Multiplication and Division of Integers", "HCF and LCM", "Angles and Pairs of Angles", "Operations on Rational Numbers", "Indices", "Joint Bar Graph", "Algebraic Expressions and Operations", "Equations in One Variable", "Properties of Triangles", "Circle", "Perimeter and Area", "Pythagoras' Theorem", "Symmetry"],
             "General Science": ["Plants – Structure and Function", "Plants – Growth", "Properties of Natural Resources", "Nutrition in Living Organisms", "Food Safety", "Measurement of Physical Quantities", "Motion, Force and Work", "Static Electricity", "Heat", "Acids, Bases and Salts", "Classification of Organisms", "The Universe", "Sound", "Properties of Lenses"],
             "History and Civics": ["Sources of History", "India before the Times of Shivaji Maharaj", "Features of the Constitution (contd.)", "Fundamental Rights Part I & II", "Directive Principles", "Expansion of the Maratha Power", "The Marathas and the Mughals", "The Advent of Europeans in India", "British Expansion in India", "Administration, Revenue and Judicial Systems"],
             "Geography": ["Tools for Study of Geography", "India: Location and Extent", "India: Physical Divisions", "India: Climate", "India: Natural Vegetation", "India: Water Resources", "India: Agriculture", "Population"],
-            "English": ["Prose", "Poetry", "Grammar", "Writing Skills", "Reading Comprehension"]
+            "English": ["Prose", "Poetry", "Grammar", "Writing Skills", "Reading Comprehension"],
+            "Grammar": GRAMMAR_TOPICS_7
         },
         "8": {
             "Mathematics": ["Rational and Irrational Numbers", "Parallel Lines and Transversals", "Indices and Cube Root", "Altitudes and Medians of a Triangle", "Expansion Formulae", "Factorisation of Algebraic Expressions", "Variation", "Quadrilateral: Constructions and Types", "Discount and Commission", "Division of Polynomials", "Statistics", "Equations in One Variable", "Congruence of Triangles", "Compound Interest", "Area", "Surface Area and Volume", "Circle: Arc and Chord"],
             "General Science": ["Living World and Classification of Microbes", "Health and Diseases", "Force and Pressure", "Current Electricity and Magnetism", "Inside the Atom", "Composition of Matter", "Combustion, Flame and Fuel", "Pollution", "Disaster Management", "Cell and Cell Organelles", "Human Body and Organ System", "Introduction to Acid and Base", "Chemical Change and Chemical Bond", "Measurement and Effects of Heat", "Sound", "Reflection of Light", "Man-made Materials", "Ecosystems"],
-            "History and Civics": ["Sources of Cultural History", "Arts and Literature During Medieval Period", "India and the Modern World", "The French Revolution", "The Industrial Revolution", "Urbanisation", "The First War of Indian Independence", "Struggle for Equality", "Indian Constitution \u2013 Formation and Concepts", "Fundamental Rights and Duties", "Directive Principles", "The Indian Judiciary"],
-            "Geography": ["Local Time and Standard Time", "Rotation and Revolution of the Earth", "Pressure Belts and Types of Winds", "Volcanoes and Earthquakes", "Rocks and Rock Types", "Internal Processes of the Earth", "Weather and Climate", "India: Introduction, Physical Divisions", "Agriculture in India", "Industries in India", "Transport and Communication"]
+            "History and Civics": ["Sources of Cultural History", "Arts and Literature During Medieval Period", "India and the Modern World", "The French Revolution", "The Industrial Revolution", "Urbanisation", "The First War of Indian Independence", "Struggle for Equality", "Indian Constitution – Formation and Concepts", "Fundamental Rights and Duties", "Directive Principles", "The Indian Judiciary"],
+            "Geography": ["Local Time and Standard Time", "Rotation and Revolution of the Earth", "Pressure Belts and Types of Winds", "Volcanoes and Earthquakes", "Rocks and Rock Types", "Internal Processes of the Earth", "Weather and Climate", "India: Introduction, Physical Divisions", "Agriculture in India", "Industries in India", "Transport and Communication"],
+            "Grammar": GRAMMAR_TOPICS_8
         },
         "9": {
             "Mathematics Part-I (Algebra)": ["Sets", "Real Numbers", "Polynomials", "Ratio and Proportion", "Linear Equations in Two Variables", "Financial Planning", "Statistics"],
@@ -57,7 +154,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Science and Technology Part-1": ["Laws of Motion", "Work and Energy", "Current Electricity", "Measurement of Matter", "Acids, Bases and Salts", "Reflection of Light", "Study of Sound", "Carbon: An Important Element", "Substances in Common Use"],
             "Science and Technology Part-2": ["Classification of Plants", "Energy Flow in an Ecosystem", "Useful and Harmful Microbes", "Environmental Management", "Life Processes in Living Organisms", "Heredity and Variation", "Introduction to Biotechnology", "Observing Space: Telescopes"],
             "History and Political Science": ["Sources of History", "India: Events after 1960", "India's Internal Challenges", "Economic Development", "Education", "Empowerment of Women and other Weaker Sections", "Science and Technology", "Industry and Trade", "Changing Life: 1", "Changing Life: 2", "Post-World War Political Developments", "India's Foreign Policy", "India's Defence System", "The United Nations", "India and Other Nations", "International Problems"],
-            "Geography": ["Distributional Maps", "Endogenetic Movements", "Exogenetic Movements Part-1", "Exogenetic Movements Part-2", "Precipitation", "Properties of Sea Water", "International Date Line", "Introduction to Economics", "Trade", "Urbanisation", "Transport and Communication", "Tourism"]
+            "Geography": ["Distributional Maps", "Endogenetic Movements", "Exogenetic Movements Part-1", "Exogenetic Movements Part-2", "Precipitation", "Properties of Sea Water", "International Date Line", "Introduction to Economics", "Trade", "Urbanisation", "Transport and Communication", "Tourism"],
+            "Grammar": GRAMMAR_TOPICS_9
         },
         "10": {
             "Mathematics Part-I (Algebra)": ["Linear Equations in Two Variables", "Quadratic Equations", "Arithmetic Progression", "Financial Planning", "Probability", "Statistics"],
@@ -65,7 +163,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Science and Technology Part-1": ["Gravitation", "Periodic Classification of Elements", "Chemical Reactions and Equations", "Effects of Electric Current", "Heat", "Refraction of Light", "Lenses", "Metallurgy", "Carbon Compounds", "Space Missions"],
             "Science and Technology Part-2": ["Heredity and Evolution", "Life Processes in Living Organisms Part-1", "Life Processes in Living Organisms Part-2", "Environmental Management", "Towards Green Energy", "Animal Classification", "Introduction to Microbiology", "Cell Biology and Biotechnology", "Social Health", "Disaster Management"],
             "History and Political Science": ["Historiography: Development in the West", "Historiography: Indian Tradition", "Applied History", "History of Indian Arts", "Mass Media and History", "Entertainment and History", "Sports and History", "Tourism and History", "Heritage Management", "Working of the Constitution", "The Electoral Process", "Political Parties", "Social and Political Movements", "Challenges faced by Indian Democracy"],
-            "Geography": ["Location and Extent", "Physiography and Drainage", "Climate", "Natural Vegetation and Wildlife", "Population", "Human Settlements", "Economy and Occupations", "Tourism, Transport and Communication"]
+            "Geography": ["Location and Extent", "Physiography and Drainage", "Climate", "Natural Vegetation and Wildlife", "Population", "Human Settlements", "Economy and Occupations", "Tourism, Transport and Communication"],
+            "Grammar": GRAMMAR_TOPICS_10
         },
         "11": {
             "Mathematics and Statistics Part-I": ["Complex Numbers", "Sequences and Series", "Permutations and Combinations", "Methods of Induction and Binomial Theorem", "Sets and Relations", "Functions", "Limits", "Continuity", "Differentiation"],
@@ -123,7 +222,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Mathematics": ["The Fish Tale", "Shapes and Angles", "How Many Squares?", "Parts and Wholes", "Does it Look the Same?", "Be My Multiple, I'll be Your Factor", "Can You See the Pattern?", "Mapping Your Way", "Boxes and Sketches", "Tenths and Hundredths", "Area and its Boundary", "Smart Charts", "Ways to Multiply and Divide", "How Big? How Heavy?"],
             "English": ["Ice-cream Man", "Wonderful Waste!", "Teamwork", "Flying Together", "My Shadow", "Robinson Crusoe Discovers a Footprint", "Crying", "My Elder Brother", "The Lazy Frog", "Rip Van Winkle", "Class Discussion", "The Talkative Barber", "Topsy-turvy Land", "Gulliver's Travels", "Nobody's Friend", "The Little Bully", "Sing a Song of People", "Around the World", "Malu Bhalu", "Who Will be Ningthou?"],
             "EVS": ["Super Senses", "A Snake Charmer's Story", "From Tasting to Digesting", "Mangoes Round the Year", "Seeds and Seeds", "Every Drop Counts", "Experiments with Water", "A Treat for Mosquitoes", "Up You Go!", "Walls Tell Stories", "Sunita in Space", "What if it Finishes...?", "A Shelter so High!", "When the Earth Shook!", "Blow Hot, Blow Cold", "Who will do this Work?", "Across the Wall", "No Place for Us?", "A Seed tells a Farmer's Story", "Whose Forests?", "Like Father, Like Daughter", "On the Move Again"],
-            "Hindi": ["राख की रस्सी", "फसलों का त्योहार", "खिलौनेवाला", "नन्हा फनकार", "जहाँ चाह वहाँ राह", "चिट्ठी का सफर", "डाकिए की कहानी, कँवरसिंह की जुबानी", "वे दिन भी क्या दिन थे", "एक माँ की बेबसी", "एक दिन की बादशाहत", "चावल की रोटियाँ", "गुरु और चेला", "स्वामी की दादी", "बाघ आया उस रात", "बिशन की दिलेरी", "पानी रे पानी", "छोटी सी हमारी नदी", "चुनौती हिमालय की"]
+            "Hindi": ["राख की रस्सी", "फसलों का त्योहार", "खिलौनेवाला", "नन्हा फनकार", "जहाँ चाह वहाँ राह", "चिट्ठी का सफर", "डाकिए की कहानी, कँवरसिंह की जुबानी", "वे दिन भी क्या दिन थे", "एक माँ की बेबसी", "एक दिन की बादशाहत", "चावल की रोटियाँ", "गुरु और चेला", "स्वामी की दादी", "बाघ आया उस रात", "बिशन की दिलेरी", "पानी रे पानी", "छोटी सी हमारी नदी", "चुनौती हिमालय की"],
+            "Grammar": GRAMMAR_TOPICS_5
         },
         "6": {
             "Mathematics": ["Knowing Our Numbers", "Whole Numbers", "Playing with Numbers", "Basic Geometrical Ideas", "Understanding Elementary Shapes", "Integers", "Fractions", "Decimals", "Data Handling", "Mensuration", "Algebra", "Ratio and Proportion"],
@@ -132,7 +232,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Social Science (Geography)": ["The Earth in the Solar System", "Globe: Latitudes and Longitudes", "Motions of the Earth", "Maps", "Major Domains of the Earth", "Our Country - India"],
             "Social Science (Civics)": ["Understanding Diversity", "Diversity and Discrimination", "What is Government?", "Panchayati Raj", "Rural Administration", "Urban Administration", "Rural Livelihoods", "Urban Livelihoods"],
             "English": ["Who Did Patrick's Homework?", "How the Dog Found Himself a New Master!", "Taro's Reward", "An Indian-American Woman in Space: Kalpana Chawla", "A Different Kind of School", "Who I Am", "Fair Play", "The Banyan Tree"],
-            "Hindi": ["वह चिड़िया जो", "बचपन", "नादान दोस्त", "चाँद से थोड़ी-सी गप्पें", "अक्षरों का महत्त्व", "पार नज़र के", "साथी हाथ बढ़ाना", "ऐसे-ऐसे", "टिकट अलबम", "झाँसी की रानी", "जो देखकर भी नहीं देखते", "संसार पुस्तक है", "मैं सबसे छोटी होऊँ", "लोकगीत", "नौकर", "वन के मार्ग में"]
+            "Hindi": ["वह चिड़िया जो", "बचपन", "नादान दोस्त", "चाँद से थोड़ी-सी गप्पें", "अक्षरों का महत्त्व", "पार नज़र के", "साथी हाथ बढ़ाना", "ऐसे-ऐसे", "टिकट अलबम", "झाँसी की रानी", "जो देखकर भी नहीं देखते", "संसार पुस्तक है", "मैं सबसे छोटी होऊँ", "लोकगीत", "नौकर", "वन के मार्ग में"],
+            "Grammar": GRAMMAR_TOPICS_6
         },
         "7": {
             "Mathematics": ["Integers", "Fractions and Decimals", "Data Handling", "Simple Equations", "Lines and Angles", "The Triangle and its Properties", "Comparing Quantities", "Rational Numbers", "Perimeter and Area", "Algebraic Expressions", "Exponents and Powers", "Symmetry", "Visualising Solid Shapes"],
@@ -141,7 +242,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Social Science (Geography)": ["Environment", "Inside Our Earth", "Our Changing Earth", "Air", "Water", "Human Environment Interactions - The Tropical and the Subtropical Region", "Life in the Deserts"],
             "Social Science (Civics)": ["On Equality", "Role of the Government in Health", "How the State Government Works", "Growing up as Boys and Girls", "Women Change the World", "Understanding Media", "Markets Around Us", "A Shirt in the Market"],
             "English": ["Three Questions", "A Gift of Chappals", "Gopal and the Hilsa Fish", "The Ashes That Made Trees Bloom", "Quality", "Expert Detectives", "The Invention of Vita-Wonk", "A Homage to Our Brave Soldiers"],
-            "Hindi": ["हम पंछी उन्मुक्त गगन के", "दादी माँ", "हिमालय की बेटियाँ", "कठपुतली", "मिठाईवाला", "रक्त और हमारा शरीर", "पापा खो गए", "शाम-एक किसान", "चिड़िया की बच्ची", "अपूर्व अनुभव", "रहीम के दोहे", "कंचा", "एक तिनका", "खानपान की बदलती तस्वीर", "नीलकंठ", "भोर और बरखा", "वीर कुँवर सिंह", "संघर्ष के कारण मैं तुनुकमिज़ाज हो गया: धनराज", "आश्रम का अनुमानित व्यय", "विप्लव गायन"]
+            "Hindi": ["हम पंछी उन्मुक्त गगन के", "दादी माँ", "हिमालय की बेटियाँ", "कठपुतली", "मिठाईवाला", "रक्त और हमारा शरीर", "पापा खो गए", "शाम-एक किसान", "चिड़िया की बच्ची", "अपूर्व अनुभव", "रहीम के दोहे", "कंचा", "एक तिनका", "खानपान की बदलती तस्वीर", "नीलकंठ", "भोर और बरखा", "वीर कुँवर सिंह", "संघर्ष के कारण मैं तुनुकमिज़ाज हो गया: धनराज", "आश्रम का अनुमानित व्यय", "विप्लव गायन"],
+            "Grammar": GRAMMAR_TOPICS_7
         },
         "8": {
             "Mathematics": ["Rational Numbers", "Linear Equations in One Variable", "Understanding Quadrilaterals", "Data Handling", "Squares and Square Roots", "Cubes and Cube Roots", "Comparing Quantities", "Algebraic Expressions and Identities", "Mensuration", "Exponents and Powers", "Direct and Inverse Proportions", "Factorisation", "Introduction to Graphs"],
@@ -150,7 +252,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Social Science (Geography)": ["Resources", "Land, Soil, Water, Natural Vegetation and Wildlife Resources", "Agriculture", "Industries", "Human Resources"],
             "Social Science (Civics)": ["The Indian Constitution", "Understanding Secularism", "Why Do We Need a Parliament", "Understanding Laws", "Judiciary", "Understanding Our Criminal Justice System", "Understanding Marginalisation", "Confronting Marginalisation", "Public Facilities", "Law and Social Justice"],
             "English": ["The Best Christmas Present in the World", "The Tsunami", "Glimpses of the Past", "Bepin Choudhury's Lapse of Memory", "The Summit Within", "This is Jody's Fawn", "A Visit to Cambridge", "A Short Monsoon Diary"],
-            "Hindi": ["ध्वनि", "लाख की चूिड़या", "बस की यात्रा", "दीवानों की हस्ती", "चिट्ठियों की अनूठी दुनिया", "भगवान के डाकिए", "क्या निराश हुआ जाए", "यह सबसे कठिन समय नहीं", "कबीर की साखियाँ", "कामचोर", "जब सिनेमा ने बोलना सीखा", "सुदामा चरित", "जहाँ पहिया है", "अकबरी लोटा", "सूर के पद", "पानी की कहानी", "बाज और साँप", "टोपी"]
+            "Hindi": ["ध्वनि", "लाख की चूिड़या", "बस की यात्रा", "दीवानों की हस्ती", "चिट्ठियों की अनूठी दुनिया", "भगवान के डाकिए", "क्या निराश हुआ जाए", "यह सबसे कठिन समय नहीं", "कबीर की साखियाँ", "कामचोर", "जब सिनेमा ने बोलना सीखा", "सुदामा चरित", "जहाँ पहिया है", "अकबरी लोटा", "सूर के पद", "पानी की कहानी", "बाज और साँप", "टोपी"],
+            "Grammar": GRAMMAR_TOPICS_8
         },
         "9": {
             "Mathematics": ["Number Systems", "Polynomials", "Coordinate Geometry", "Linear Equations in Two Variables", "Introduction to Euclid's Geometry", "Lines and Angles", "Triangles", "Quadrilaterals", "Circles", "Heron's Formula", "Surface Areas and Volumes", "Statistics"],
@@ -160,7 +263,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Social Science (Civics)": ["What is Democracy? Why Democracy?", "Constitutional Design", "Electoral Politics", "Working of Institutions", "Democratic Rights"],
             "Social Science (Economics)": ["The Story of Village Palampur", "People as Resource", "Poverty as a Challenge", "Food Security in India"],
             "English": ["The Fun They Had", "The Sound of Music", "The Little Girl", "A Truly Beautiful Mind", "The Snake and the Mirror", "My Childhood", "Reach for the Top", "Kathmandu", "If I Were You"],
-            "Hindi": ["दो बैलों की कथा", "ल्हासा की ओर", "उपभोक्तावाद की संस्कृति", "साँवले सपनों की याद", "प्रेमचंद के फटे जूते", "मेरे बचपन के दिन", "साखियाँ एवं सबद", "वाख", "सवैये", "कैदी और कोकिला", "ग्राम श्री", "मेघ आए", "बच्चे काम पर जा रहे हैं", "इस जल प्रलय में", "मेरे संग की औरतें", "रीढ़ की हड्डी"]
+            "Hindi": ["दो बैलों की कथा", "ल्हासा की ओर", "उपभोक्तावाद की संस्कृति", "साँवले सपनों की याद", "प्रेमचंद के फटे जूते", "मेरे बचपन के दिन", "साखियाँ एवं सबद", "वाख", "सवैये", "कैदी और कोकिला", "ग्राम श्री", "मेघ आए", "बच्चे काम पर जा रहे हैं", "इस जल प्रलय में", "मेरे संग की औरतें", "रीढ़ की हड्डी"],
+            "Grammar": GRAMMAR_TOPICS_9
         },
         "10": {
             "Mathematics": ["Real Numbers", "Polynomials", "Pair of Linear Equations in Two Variables", "Quadratic Equations", "Arithmetic Progressions", "Triangles", "Coordinate Geometry", "Introduction to Trigonometry", "Some Applications of Trigonometry", "Circles", "Areas Related to Circles", "Surface Areas and Volumes", "Statistics", "Probability"],
@@ -170,7 +274,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Social Science (Civics)": ["Power Sharing", "Federalism", "Gender, Religion and Caste", "Political Parties", "Outcomes of Democracy"],
             "Social Science (Economics)": ["Development", "Sectors of the Indian Economy", "Money and Credit", "Globalization and the Indian Economy"],
             "English": ["A Letter to God", "Nelson Mandela: Long Walk to Freedom", "Two Stories about Flying", "From the Diary of Anne Frank", "Glimpses of India", "Mijbil the Otter", "Madam Rides the Bus", "The Sermon at Benares", "The Proposal"],
-            "Hindi": ["सूरदास", "तुलसीदास", "देव", "जयशंकर प्रसाद", "सूर्यकांत त्रिपाठी 'निराला'", "नागार्जुन", "गिरिजा कुमार माथुर", "ऋतुराज", "मंगलेश डबराल", "स्वयं प्रकाश", "रामवृक्ष बेनीपुरी", "यशपाल", "सर्वेश्वर दयाल सक्सेना", "मन्नू भंडारी", "महावीर प्रसाद द्विवेदी", "यतीन्द्र मिश्रा", "भदंत आनंद कौसल्यायन", "माता का अँचल", "जॉर्ज पंचम की नाक", "साना – साना हाथ जोड़ि…", "एही ठैयाँ झुलनी हेरानी हो रामा!", "मैं क्यों लिखता हूँ?"]
+            "Hindi": ["सूरदास", "तुलसीदास", "देव", "जयशंकर प्रसाद", "सूर्यकांत त्रिपाठी 'निराला'", "नागार्जुन", "गिरिजा कुमार माथुर", "ऋतुराज", "मंगलेश डबराल", "स्वयं प्रकाश", "रामवृक्ष बेनीपुरी", "यशपाल", "सर्वेश्वर दयाल सक्सेना", "मन्नू भंडारी", "महावीर प्रसाद द्विवेदी", "यतीन्द्र मिश्रा", "भदंत आनंद कौसल्यायन", "माता का अँचल", "जॉर्ज पंचम की नाक", "साना – साना हाथ जोड़ि…", "एही ठैयाँ झुलनी हेरानी हो रामा!", "मैं क्यों लिखता हूँ?"],
+            "Grammar": GRAMMAR_TOPICS_10
         }
     },
 
@@ -201,7 +306,8 @@ export const SYLLABUS_DB: Record<string, any> = {
         "5": {
             "Mathematics": ["Numbers and Number Names", "Operations on Large Numbers", "HCF and LCM", "Fractions", "Decimals", "Measurement", "Perimeter and Area", "Volume", "Geometry", "Percentage", "Speed, Distance and Time", "Data Handling"],
             "English": ["Prose", "Poetry", "Grammar (Parts of Speech, Tenses, Active-Passive)", "Composition (Essay, Letter, Story)", "Comprehension"],
-            "EVS / Science": ["Plants", "Animals", "Human Body", "Food and Nutrition", "Earth and Universe", "Matter and Materials", "Energy", "Environment and Pollution"]
+            "EVS / Science": ["Plants", "Animals", "Human Body", "Food and Nutrition", "Earth and Universe", "Matter and Materials", "Energy", "Environment and Pollution"],
+            "Grammar": GRAMMAR_TOPICS_5
         },
         "6": {
             "Mathematics": ["Number System", "Estimation", "Numbers in India and International System", "HCF and LCM", "Fractions", "Decimals", "Ratio and Proportion", "Algebra – Introduction and Simple Equations", "Geometry – Basic Concepts", "Angles", "Symmetry", "Mensuration – Perimeter and Area", "Data Handling"],
@@ -210,7 +316,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Biology": ["The Cell", "Plant Life", "Animal Life", "Human Body – Food and Digestion", "Health and Hygiene", "Habitat and Adaptation"],
             "History and Civics": ["Studying History", "The River Valley Civilizations", "The Vedic Age", "Buddhism and Jainism", "The Mauryan Empire", "Our Constitution – Preamble", "Fundamental Rights and Duties"],
             "Geography": ["The Earth and the Solar System", "Geographic Grid: Latitudes and Longitudes", "Rotation and Revolution", "Structure of the Earth", "Weathering", "Rocks", "Volcanoes and Earthquakes", "Maps"],
-            "English": ["Prose", "Poetry", "Grammar", "Composition", "Comprehension"]
+            "English": ["Prose", "Poetry", "Grammar", "Composition", "Comprehension"],
+            "Grammar": GRAMMAR_TOPICS_6
         },
         "7": {
             "Mathematics": ["Integers", "Fractions and Decimals", "Exponents", "Algebraic Expressions", "Simple Linear Equations", "Ratio and Proportion (Including Sharing in a Ratio)", "Unitary Method (Including Time and Work)", "Percent and Percentage", "Profit, Loss and Discount", "Lines and Angles", "Properties of Triangles", "Congruence of Triangles", "Symmetry", "Perimeter and Area", "Data Handling"],
@@ -219,7 +326,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Biology": ["Plant and Animal Tissues", "Classification of Plants", "Classification of Animals", "Photosynthesis and Respiration", "Reproduction in Plants", "Human Body – Excretory System", "Health and Hygiene"],
             "History and Civics": ["The Medieval World", "The Delhi Sultanate", "The Mughal Empire", "The Marathas", "The Modern Age in Europe", "The State Government", "Fundamental Rights and Duties (contd.)"],
             "Geography": ["Atmosphere – Composition and Structure", "Insolation", "Humidity", "Rainfall", "Weather and Climate", "Water Cycle", "Soils"],
-            "English": ["Prose", "Poetry", "Grammar", "Composition", "Comprehension"]
+            "English": ["Prose", "Poetry", "Grammar", "Composition", "Comprehension"],
+            "Grammar": GRAMMAR_TOPICS_7
         },
         "8": {
             "Mathematics": ["Rational Numbers", "Exponents (Powers)", "Squares and Square Roots", "Cubes and Cube Roots", "Playing with Numbers", "Sets", "Percent and Percentage", "Profit, Loss and Discount", "Interest (Simple and Compound)", "Algebraic Expressions", "Factorisation", "Simultaneous Linear Equations", "Inequalities", "Understanding Shapes", "Representing Solid Shapes", "Area of a Trapezium and a Polygon", "Volume and Surface Area of Solids", "Data Handling"],
@@ -228,7 +336,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Biology": ["Transportation in Plants", "Reproduction in Plants and Animals", "Ecosystems", "Human Body – Endocrine, Circulatory and Nervous System", "Health and Hygiene", "Food Production"],
             "History and Civics": ["The French Revolution", "The American Revolution", "The Industrial Revolution", "The Indian National Movement (Up to 1947)", "The Indian Constitution"],
             "Geography": ["Population Distribution", "Migration", "Urbanisation", "Industries", "Sources of Energy", "Agriculture", "Waste Management"],
-            "English": ["Prose", "Poetry", "Grammar", "Composition", "Comprehension"]
+            "English": ["Prose", "Poetry", "Grammar", "Composition", "Comprehension"],
+            "Grammar": GRAMMAR_TOPICS_8
         },
         "9": {
             "Mathematics": ["Rational and Irrational Numbers", "Compound Interest", "Expansions", "Factorisation", "Simultaneous Linear Equations", "Indices (Exponents)", "Logarithms", "Triangles", "Mid-Point and its Converse", "Pythagoras Theorem", "Rectilinear Figures", "Area and Perimeter of Plane Figures", "Circle", "Statistics", "Mean and Median", "Area and Circumference of a Circle", "Solids"],
@@ -237,7 +346,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Biology": ["Introducing Biology", "Cell – The Unit of Life", "Tissues: Plant and Animal Tissues", "The Flower", "Pollination and Fertilization", "Seeds – Structure and Germination", "Respiration in Plants", "Five Kingdom Classification", "Economic Importance of Bacteria and Fungi", "Nutrition", "Digestive System", "Skeleton – Movement and Locomotion", "The Skin – 'Jack of All Trades'", "The Respiratory System", "Hygiene – A Key to Healthy Life", "Diseases: Cause and Control", "AIDS to Health", "Health Organizations"],
             "History and Civics": ["The Harappan Civilization", "The Vedic Period", "Jainism and Buddhism", "The Mauryan Empire", "The Sangam Age", "The Age of the Guptas", "Medieval India – The Sultanate Period", "The Mughal Empire", "The French Revolution", "The Rise of Nationalism in Europe", "Local Self-Government", "The Indian Parliament", "The Union Executive"],
             "Geography": ["Our Earth", "Earth's Structure", "Earthquakes and Volcanoes", "Weathering and Soil Formation", "Humidity and Rainfall", "Natural Regions of the World", "Map Work"],
-            "English": ["Prose", "Poetry", "Drama", "Grammar", "Composition", "Comprehension"]
+            "English": ["Prose", "Poetry", "Drama", "Grammar", "Composition", "Comprehension"],
+            "Grammar": GRAMMAR_TOPICS_9
         },
         "10": {
             "Mathematics": ["GST (Goods and Services Tax)", "Banking", "Shares and Dividends", "Linear Inequations", "Quadratic Equations", "Ratio and Proportion", "Factorization of Polynomials", "Matrices", "Arithmetic Progression", "Geometric Progression", "Coordinate Geometry", "Similarity", "Loci", "Circles", "Constructions", "Mensuration", "Trigonometry", "Statistics", "Probability"],
@@ -246,7 +356,8 @@ export const SYLLABUS_DB: Record<string, any> = {
             "Biology": ["Cell Division", "Genetics – Some Basic Fundamentals", "Absorption by Roots", "Transpiration", "Photosynthesis", "Chemical Coordination in Plants", "The Circulatory System", "The Excretory System", "The Nervous System and Sense Organs", "The Endocrine System", "The Reproductive System", "Human Population", "Pollution – A Rising Environmental Problem"],
             "History and Civics": ["The Growth of Nationalism", "The First War of Independence 1857", "The Growth of the National Movement (1885-1919)", "Mass Phase of the National Movement", "Independence and Partition of India", "The First World War", "Rise of Dictatorships", "The Second World War", "The United Nations", "Universal Declaration of Human Rights", "Major Agencies of the United Nations", "Judiciary", "The Indian Parliament"],
             "Geography": ["Map Study – Interpretation and Topographical Maps", "Climate of India", "Soils in India", "Natural Vegetation of India", "Water Resources of India", "Mineral Resources of India", "Agriculture in India", "Industries in India", "Waste Management", "Transport in India"],
-            "English": ["Prose", "Poetry", "Drama", "Grammar", "Composition", "Comprehension"]
+            "English": ["Prose", "Poetry", "Drama", "Grammar", "Composition", "Comprehension"],
+            "Grammar": GRAMMAR_TOPICS_10
         }
     }
 };
@@ -282,7 +393,7 @@ function isCoreSubject(subject: string): boolean {
         "math", "algebra", "geometry", "statistics", "calculus",
         "science", "physics", "chemistry", "biology", "evs", "environmental",
         "history", "geography", "civics", "economics", "political science", "social",
-        "english", "hindi", "sanskrit",
+        "english", "hindi", "sanskrit", "grammar",
         "computer", "ai", "artificial intelligence", "ict", "it"
     ];
 
@@ -305,20 +416,28 @@ function isCoreSubject(subject: string): boolean {
  */
 const SCRAPED_SUBJECTS: Record<string, string[]> = {
     // ── CBSE (NCERT — Classes 5 to 10) ──────────────────────────────────────
-    "cbse-5":  ["Mathematics", "EVS"],
-    "cbse-6":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)"],
-    "cbse-7":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)"],
-    "cbse-8":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)"],
-    "cbse-9":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)", "Social Science (Economics)"],
-    "cbse-10": ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)", "Social Science (Economics)"],
+    "cbse-5":  ["Mathematics", "EVS", "Grammar"],
+    "cbse-6":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)", "Grammar"],
+    "cbse-7":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)", "Grammar"],
+    "cbse-8":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)", "Grammar"],
+    "cbse-9":  ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)", "Social Science (Economics)", "Grammar"],
+    "cbse-10": ["Mathematics", "Science", "Social Science (History)", "Social Science (Geography)", "Social Science (Civics)", "Social Science (Economics)", "Grammar"],
 
     // ── Maharashtra SSC (Balbharati — Classes 5 to 10) ──────────────────────
-    "maharashtra-5":  ["Mathematics", "Environmental Studies Part 1", "Environmental Studies Part 2"],
-    "maharashtra-6":  ["Mathematics", "General Science", "History and Civics", "Geography"],
-    "maharashtra-7":  ["Mathematics", "General Science", "History and Civics", "Geography"],
-    "maharashtra-8":  ["Mathematics", "General Science", "History and Civics", "Geography"],
-    "maharashtra-9":  ["Mathematics Part-I (Algebra)", "Mathematics Part-II (Geometry)", "Science and Technology Part-1", "Science and Technology Part-2", "History and Political Science", "Geography"],
-    "maharashtra-10": ["Mathematics Part-I (Algebra)", "Mathematics Part-II (Geometry)", "Science and Technology Part-1", "Science and Technology Part-2", "History and Political Science", "Geography"],
+    "maharashtra-5":  ["Mathematics", "Environmental Studies Part 1", "Environmental Studies Part 2", "Grammar"],
+    "maharashtra-6":  ["Mathematics", "General Science", "History and Civics", "Geography", "Grammar"],
+    "maharashtra-7":  ["Mathematics", "General Science", "History and Civics", "Geography", "Grammar"],
+    "maharashtra-8":  ["Mathematics", "General Science", "History and Civics", "Geography", "Grammar"],
+    "maharashtra-9":  ["Mathematics Part-I (Algebra)", "Mathematics Part-II (Geometry)", "Science and Technology Part-1", "Science and Technology Part-2", "History and Political Science", "Geography", "Grammar"],
+    "maharashtra-10": ["Mathematics Part-I (Algebra)", "Mathematics Part-II (Geometry)", "Science and Technology Part-1", "Science and Technology Part-2", "History and Political Science", "Geography", "Grammar"],
+
+    // ── ICSE (Selina / Frank — Classes 5 to 10) ─────────────────────────────
+    "icse-5":  ["Mathematics", "EVS / Science", "Grammar"],
+    "icse-6":  ["Mathematics", "Physics", "Chemistry", "Biology", "History and Civics", "Geography", "Grammar"],
+    "icse-7":  ["Mathematics", "Physics", "Chemistry", "Biology", "History and Civics", "Geography", "Grammar"],
+    "icse-8":  ["Mathematics", "Physics", "Chemistry", "Biology", "History and Civics", "Geography", "Grammar"],
+    "icse-9":  ["Mathematics", "Physics", "Chemistry", "Biology", "History and Civics", "Geography", "Grammar"],
+    "icse-10": ["Mathematics", "Physics", "Chemistry", "Biology", "History and Civics", "Geography", "Grammar"],
 };
 
 // Helper: Get subjects for a board and class

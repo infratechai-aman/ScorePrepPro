@@ -107,7 +107,19 @@ function calculateDuration(totalMarks: number): number {
 
 // ─── Board context helper ───────────────────────────────────────────────────
 
-function getWorksheetBoardContext(board: string) {
+function getWorksheetBoardContext(board: string, subject: string = "") {
+    const isGrammar = subject.toLowerCase().includes("grammar");
+    if (isGrammar) {
+        if (board === "cbse") {
+            return `CBSE Grammar Worksheet Style: Focus purely on English Language & Grammar drills (Tenses, Reported Speech, Subject-Verb Concord, Modals, Determiners, Error Spotting/Correction, Gap Filling, Sentence Reordering). STRICTLY NO literature passages, poems, or character questions.`;
+        } else if (board === "icse") {
+            return `ICSE Grammar Worksheet Style: Focus purely on Functional English Grammar drills (Prepositions, Conjunctions, Transformation of Sentences without changing meaning, Direct/Indirect speech, Active/Passive voice, Tense sequencing). STRICTLY NO literature or prose questions.`;
+        } else if (board === "maharashtra") {
+            return `Maharashtra SSC Grammar Worksheet Style: Language Study format (Do as Directed, Identify Infinitives/Gerunds/Participles, Punctuation, Word Chains, Compound Words, Clauses identification, Voice and Speech change). STRICTLY NO textbook chapter/prose/poem questions.`;
+        }
+        return `Grammar Worksheet: Focus purely on English grammar drills, Do as Directed, sentence transformations, and error correction. STRICTLY NO literature, story, or reading comprehension questions.`;
+    }
+
     if (board === "cbse") {
         return `CBSE Board Style: Use NCERT language, include Assertion-Reason in MCQs, use "Case Based" style for long answers where appropriate.`;
     } else if (board === "icse") {
@@ -129,9 +141,10 @@ function buildWorksheetPrompt(
     options: GenerateWorksheetOptions,
     textbookContent: string
 ): string {
-    const boardContext = getWorksheetBoardContext(board);
+    const boardContext = getWorksheetBoardContext(board, subject);
     const diff = options.difficulty || "moderate";
     const isMathSubject = subject.toLowerCase().includes("math") || subject.toLowerCase().includes("algebra") || subject.toLowerCase().includes("geometry");
+    const isGrammarSubject = subject.toLowerCase().includes("grammar");
 
     let diffInstruction = "";
     switch (diff) {
@@ -153,33 +166,54 @@ function buildWorksheetPrompt(
 
     const sectionInstructions = sections.map(s => {
         if (s.type === "mcq") {
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. MCQs with 4 options (a)-(d), ONE correct. Each option MUST be on a SEPARATE line:
+            const mcqDesc = isGrammarSubject
+                ? "Grammar MCQs (e.g. choose the correct verb tense, preposition, modal, determiner, or correct form of sentence)"
+                : "MCQs with 4 options (a)-(d), ONE correct";
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${mcqDesc}. Each option MUST be on a SEPARATE line:
 (a) Option A
 (b) Option B
 (c) Option C
 (d) Option D
 After each MCQ add: "Ans: ____"`;
         } else if (s.type === "true_false") {
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Write a statement and ask students to write TRUE or FALSE. After each statement add: "Ans: ____"
+            const tfDesc = isGrammarSubject
+                ? "State whether the grammatical statement or rule/usage is TRUE or FALSE"
+                : "Write a statement and ask students to write TRUE or FALSE";
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${tfDesc}. After each statement add: "Ans: ____"
 Example format:
-1. The chemical formula of water is H2O. (True/False) Ans: ____`;
+1. ${isGrammarSubject ? "An intransitive verb can never take an object." : "The chemical formula of water is H2O."} (True/False) Ans: ____`;
         } else if (s.type === "fill_blank") {
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Write a sentence with a key word/phrase replaced by a blank (________). After each fill-in-the-blank add: "Ans: ____"
+            const fibDesc = isGrammarSubject
+                ? "Fill in the blank with appropriate preposition, conjunction, tense form of verb, or article"
+                : "Write a sentence with a key word/phrase replaced by a blank (________)";
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${fibDesc}. After each fill-in-the-blank add: "Ans: ____"
 Example format:
-1. The process of converting sugar into alcohol is called ________. Ans: ____`;
+1. ${isGrammarSubject ? "She has been living in Mumbai ________ 2018. (since/for)" : "The process of converting sugar into alcohol is called ________."} Ans: ____`;
         } else if (s.type === "match_following") {
-            return `${s.name}: ${s.count} pairs x ${s.marksPerQuestion}m = ${s.totalMarks}M. Create a "Match the Following" question with two columns. Use a proper Markdown table:
+            const matchDesc = isGrammarSubject
+                ? "Match Column A with Column B (e.g., Idioms/Phrases with Meanings, or Clauses with Types, or Synonyms/Antonyms)"
+                : "Match the Following question with two columns";
+            return `${s.name}: ${s.count} pairs x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${matchDesc}. Use a proper Markdown table:
 | Column A | Column B |
 | :--- | :--- |
-| 1. Term | A. Definition |
-| 2. Term | B. Definition |
+| 1. Item | A. Match |
+| 2. Item | B. Match |
 The answers in Column B must be SHUFFLED (not in the same order as Column A).`;
         } else if (s.type === "short_answer") {
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Short Answer questions. MANDATORY: After EACH question print exactly 4 blank lines like this:${answerLineShort}`;
+            const saDesc = isGrammarSubject
+                ? "Do as Directed / Sentence Transformation (e.g. Change Voice, Direct to Indirect Speech, Identify Clause, Rewrite using 'Unless', Degrees of Comparison)"
+                : "Short Answer questions";
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${saDesc}. MANDATORY: After EACH question print exactly 4 blank lines like this:${answerLineShort}`;
         } else if (s.type === "long_answer") {
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Long Answer questions. MANDATORY: After EACH question print exactly 10 blank lines like this:${answerLineLong}`;
+            const laDesc = isGrammarSubject
+                ? "Integrated Grammar / Passage Editing / Error Spotting & Correction (Provide short passages or dialogues with grammatical errors to correct, or multi-step sentence synthesis)"
+                : "Long Answer questions";
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${laDesc}. MANDATORY: After EACH question print exactly 10 blank lines like this:${answerLineLong}`;
         } else {
-            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. Very Long Answer questions. MANDATORY: After EACH question print exactly 14 blank lines like this:${answerLineVeryLong}`;
+            const vlaDesc = isGrammarSubject
+                ? "Comprehensive Grammar Application (Dialogue completion, passage editing with full justification of rules)"
+                : "Very Long Answer questions";
+            return `${s.name}: ${s.count}q x ${s.marksPerQuestion}m = ${s.totalMarks}M. ${vlaDesc}. MANDATORY: After EACH question print exactly 14 blank lines like this:${answerLineVeryLong}`;
         }
     }).join("\n\n");
 
@@ -189,6 +223,14 @@ MATH DIAGRAMS: For geometry/coordinate questions add a tag on its own line after
 Types: right_triangle, triangle, circle, parallel_lines, angle, coordinate_plane, number_line
 Example: [FIG: right_triangle | a=A b=B c=C ab=6cm bc=8cm ac=10cm right=b]
 Only add when the question requires a diagram. Never for algebra/arithmetic.` : "";
+
+    const grammarInstruction = isGrammarSubject ? `
+=== CRITICAL GRAMMAR INSTRUCTIONS ===
+1. This is a 100% PURE ENGLISH GRAMMAR worksheet for Class ${grade}.
+2. Every question MUST be a grammar drill, transformation, error spotting, or fill-in-the-blank.
+3. STRICTLY FORBIDDEN: NEVER include reading comprehension passages, literature poems, stories, character questions, or textbook prose questions.
+4. Short answers MUST be 'Do as Directed' with clear bracketed instructions e.g. "(Change into Indirect Speech)", "(Begin with 'Hardly had...')", "(Identify the clause)".
+` : "";
 
     const includeKey = options.includeAnswerKey !== false;
     const textbookBlock = textbookContent ? `\nSOURCE MATERIAL:\n${textbookContent}\n` : "";
@@ -212,6 +254,7 @@ DIFFICULTY: ${diffInstruction}
 ${weightageInstruction}
 STRUCTURE: ${totalMarks} marks | ${duration} minutes
 ${diagramInstruction}
+${grammarInstruction}
 
 SECTION INSTRUCTIONS (follow exactly):
 ${sectionInstructions}

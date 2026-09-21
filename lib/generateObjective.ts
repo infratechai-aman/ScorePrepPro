@@ -48,6 +48,10 @@ interface GenerateObjectiveOptions {
 // ─── Board context helper ───────────────────────────────────────────────────
 
 function getObjectiveBoardContext(board: string, grade: string, subject: string) {
+    if (subject.toLowerCase().includes("grammar")) {
+        return `ENGLISH GRAMMAR OBJECTIVE ASSESSMENT. Focus on grammar rules, identifying parts of speech, correct verb forms/tenses, voice and speech transformation choices, correct prepositions/articles, and spotting grammatical errors. NEVER include story, literature, or reading comprehension questions. Pure functional grammar.`;
+    }
+
     let boardStyle = "";
     if (board === "cbse") {
         boardStyle = `CBSE Style: Assertion-Reason with 4 standard options. Statement-based: "Consider statements (I)...(II)...(III)... Which are correct?" Fill blanks test key terms.`;
